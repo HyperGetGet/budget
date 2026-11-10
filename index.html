@@ -78,6 +78,10 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 .ldds .t{font-size:13px;color:var(--mut)}.ldds .big{font-size:28px;font-weight:700;color:var(--blue);margin:2px 0}
 .ldds .s{font-size:13px;color:var(--mut);line-height:1.4}
 .linkbtn{background:none;border:0;color:var(--blue);font-size:14px;padding:8px 0;cursor:pointer;text-align:left}
+.spin{width:34px;height:34px;border-radius:50%;border:4px solid var(--chip);border-top-color:var(--acc);margin:18px auto;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.tl{max-height:34vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:2px 12px;margin-top:6px}
+.tl .row{padding:7px 0;font-size:14px}
 .empty{text-align:center;color:var(--mut);padding:30px 10px;line-height:1.5}
 </style>
 </head>
@@ -97,10 +101,11 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 <div id="ov"></div>
 <div id="sheet"></div>
 <div id="toast"></div>
+<input type="file" id="scanFile" accept="image/*,application/pdf" style="display:none">
 
 <script>
 "use strict";
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.2.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -203,6 +208,12 @@ function applyOp(v, op) {
         shift(v, "Véhicule", c.p, false, 1);
       }
     }
+  } else if (op.type === "ticket") {
+    const m = Number(p.total) || 0;
+    if (m > 0) {
+      v.journal.unshift({ date: p.date, lib: p.magasin || "Ticket", mont: m, cat: p.cat, ldds: false, pending: op.id });
+      shift(v, p.cat, m, false, 1);
+    }
   } else if (op.type === "ldds") {
     if (v.ldds) v.ldds.soldeReel = p.mont;
   } else if (op.type === "solde") {
@@ -235,9 +246,9 @@ function fuelCalc(f) {
 const f2 = n => (Math.round(n * 100) / 100).toFixed(2).replace(".", ",");
 
 // ---------- réseau ----------
-async function call(action, payload) {
+async function call(action, payload, ms) {
   const ctrl = new AbortController();
-  const to = setTimeout(() => ctrl.abort(), 30000);
+  const to = setTimeout(() => ctrl.abort(), ms || 30000);
   try {
     const res = await fetch(S.cfg.url, {
       method: "POST", redirect: "follow", signal: ctrl.signal,
@@ -424,6 +435,76 @@ function render() {
 function openSheet(html) { $("#sheet").innerHTML = html; $("#ov").style.display = "block"; requestAnimationFrame(() => $("#sheet").classList.add("open")); }
 function closeSheet() { $("#sheet").classList.remove("open"); $("#ov").style.display = "none"; S.edit = null; S.form = null; }
 
+// ---------- lecture d'un ticket ----------
+function loadImage(file) {
+  return new Promise((res, rej) => {
+    const u = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(u); res(im); };
+    im.onerror = () => rej(new Error("image illisible"));
+    im.src = u;
+  });
+}
+function fileB64(file) {
+  return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = () => rej(new Error("lecture du fichier impossible")); r.readAsDataURL(file); });
+}
+async function filePayload(file) {
+  if (file.type === "application/pdf") {
+    if (file.size > 7 * 1024 * 1024) throw new Error("PDF trop lourd (7 Mo maximum)");
+    return { mime: "application/pdf", data: await fileB64(file) };
+  }
+  const im = await loadImage(file);
+  const k = Math.min(1, 2400 / Math.max(im.naturalWidth, im.naturalHeight));
+  const c = document.createElement("canvas");
+  c.width = Math.max(1, Math.round(im.naturalWidth * k)); c.height = Math.max(1, Math.round(im.naturalHeight * k));
+  c.getContext("2d").drawImage(im, 0, 0, c.width, c.height);
+  return { mime: "image/jpeg", data: c.toDataURL("image/jpeg", 0.85).split(",")[1] };
+}
+async function scanTicket(file) {
+  if (!file) return;
+  if (!navigator.onLine || S.offline) { toast("Il faut du réseau pour lire un ticket"); return; }
+  openSheet(`<h3>📷 Lecture du ticket…</h3><div class="spin"></div><div class="hint" style="text-align:center">Gemini analyse l'image, quelques secondes.</div>`);
+  try {
+    const pl = await filePayload(file);
+    const r = await call("scan", pl, 70000);
+    if (!r.ok) throw new Error(r.error || "lecture impossible");
+    openTicket(r.ticket);
+  } catch (e) {
+    closeSheet();
+    toast("⚠ " + (e.name === "AbortError" ? "Gemini met trop de temps, réessaie" : e.message));
+  }
+}
+function guessTicketCat(t) {
+  let c = categorize(t.magasin || "");
+  if (c) return { cat: c, auto: true };
+  const n = {};
+  (t.lignes || []).forEach(l => { const x = categorize(l.lib); if (x) n[x] = (n[x] || 0) + 1; });
+  const best = Object.keys(n).sort((a, b) => n[b] - n[a])[0];
+  return best ? { cat: best, auto: true } : { cat: "Hors budget", auto: false };
+}
+function openTicket(t) {
+  const g = guessTicketCat(t);
+  S.form = { vmode: "ticket", magasin: t.magasin || "", date: t.date || todayISO(), total: t.total ? String(t.total).replace(".", ",") : "", cat: g.cat, auto: g.auto, lignes: t.lignes || [] };
+  const f = S.form;
+  const somme = f.lignes.reduce((s, l) => s + l.mont, 0);
+  const ecart = Math.round((somme - (num(f.total) || 0)) * 100) / 100;
+  openSheet(`<h3>🧾 Vérifie le ticket</h3>
+    <label>Magasin</label><input type="text" id="tM" value="${esc(f.magasin)}" autocomplete="off">
+    <div class="two"><div><label>Date</label><input type="date" id="tD" value="${esc(f.date)}"></div>
+    <div><label>Total payé (€)</label><input type="text" id="tT" inputmode="decimal" value="${esc(f.total)}" autocomplete="off"></div></div>
+    <label>Catégorie <span class="hint">${g.auto ? "· détectée" : "· inconnue → à choisir"}</span></label>
+    <div class="cats" id="tCats">${Object.keys(CATS).map(c => `<button type="button" class="cat ${f.cat === c ? "on" : ""}" data-tcat="${esc(c)}">${CATS[c]} ${esc(c)}</button>`).join("")}</div>
+    ${f.lignes.length ? `<label>${f.lignes.length} article(s) lus${Math.abs(ecart) > 0.05 ? ` · ⚠ somme ${f2(somme)} € ≠ total` : ""}</label>
+    <div class="tl">${f.lignes.map(l => `<div class="row"><div class="rt"><b>${esc(l.lib)}</b></div><div class="am">${f2(l.mont)} €</div></div>`).join("")}</div>` : `<div class="hint">Aucun article lu : seul le total sera enregistré.</div>`}
+    <button class="btn" id="tSave">Enregistrer le ticket</button>
+    <div class="hint">Le total va dans le journal, le détail des articles dans l'onglet « Tickets appli » du Sheet.</div>`);
+}
+function saveTicket() {
+  const f = S.form, total = num(f.total);
+  if (!(total > 0)) { toast("Indique le total du ticket"); return; }
+  enqueue("ticket", { date: f.date || todayISO(), magasin: f.magasin.trim() || "Ticket", total: Math.round(total * 100) / 100, cat: f.cat || "Hors budget", lignes: f.lignes });
+  closeSheet(); toast("✔ Ticket enregistré");
+}
+
 function openFuel(prefill) {
   const v = computeView();
   const last = (v && v.vehicule && v.vehicule.kmActuel) || 0;
@@ -475,6 +556,7 @@ function openAdd(prefill) {
   S.form = Object.assign({ text: "", mont: "", cat: "", manualCat: false, ldds: false, date: todayISO() }, prefill || {});
   const f = S.form;
   openSheet(`<h3>${S.edit ? "Modifier la dépense" : "Nouvelle dépense"}</h3>
+    ${S.edit ? "" : `<button type="button" class="btn sec" id="scanBtn" style="margin:0 0 6px">📷 Scanner un ticket</button>`}
     <label>Qu'as-tu dépensé ? (ex. « Leclerc 45 »)</label>
     <input type="text" id="fText" value="${esc(f.text)}" autocomplete="off" autocapitalize="sentences">
     <label>Montant (€)</label><input type="text" id="fMont" inputmode="decimal" value="${esc(f.mont)}" autocomplete="off">
@@ -542,6 +624,9 @@ document.addEventListener("click", e => {
     S.form.cat = t.dataset.cat; S.form.manualCat = true; updateAuto(); return;
   }
   if (t.id === "fFuelBtn") { openFuel(); return; }
+  if (t.id === "scanBtn") { $("#scanFile").click(); return; }
+  if (t.id === "tSave") { saveTicket(); return; }
+  if (t.dataset.tcat) { S.form.cat = t.dataset.tcat; document.querySelectorAll("#tCats .cat").forEach(b => b.classList.toggle("on", b.dataset.tcat === S.form.cat)); return; }
   if (t.id === "vBack") { openAdd({ cat: "Véhicule", manualCat: true }); return; }
   if (t.id === "vSave") { saveFuel(); return; }
   if (t.dataset.qui) { S.form.qui = t.dataset.qui; document.querySelectorAll("#vQui .cat").forEach(b => b.classList.toggle("on", b.dataset.qui === S.form.qui)); return; }
@@ -577,8 +662,14 @@ document.addEventListener("input", e => {
   if (e.target.id === "fText") { S.form.text = e.target.value; updateAuto(); }
   if (e.target.id === "fMont") S.form.mont = e.target.value;
   if (e.target.id === "fDate") S.form.date = e.target.value;
+  const tk = { tM: "magasin", tD: "date", tT: "total" }[e.target.id];
+  if (tk) { S.form[tk] = e.target.value; return; }
   const fk = { vL: "litres", vP: "prix", vQ: "prixL", vK: "km" }[e.target.id];
   if (fk) { S.form[fk] = e.target.value; updateFuelCalc(); }
+});
+
+document.addEventListener("change", e => {
+  if (e.target.id === "scanFile") { const f = e.target.files && e.target.files[0]; e.target.value = ""; scanTicket(f); }
 });
 
 async function saveCfgFromForm() {

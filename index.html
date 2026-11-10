@@ -82,6 +82,12 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 @keyframes sp{to{transform:rotate(360deg)}}
 .tl{max-height:34vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:2px 12px;margin-top:6px}
 .tl .row{padding:7px 0;font-size:14px}
+.who{display:flex;gap:8px;margin-bottom:12px}.who .cat{flex:1;text-align:center;padding:10px 6px;font-size:15px}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px 12px;text-align:center;cursor:pointer;border:0;color:var(--ink);font-size:14px;font-weight:600}
+.tile span{display:block;font-size:30px;margin-bottom:6px}.tile small{display:block;font-weight:400;color:var(--mut);font-size:11px;margin-top:3px}
+.tile.soon{opacity:.6}
+.amz{display:flex;gap:6px;align-items:center}.amz .col{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--mut);width:44px}
 .empty{text-align:center;color:var(--mut);padding:30px 10px;line-height:1.5}
 </style>
 </head>
@@ -96,7 +102,7 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
   <button data-tab="home"><span>🏠</span>Accueil</button>
   <button data-tab="journal"><span>📒</span>Journal</button>
   <button data-tab="annuels"><span>📅</span>Annuels</button>
-  <button data-tab="reglages"><span>⚙️</span>Réglages</button>
+  <button data-tab="plus"><span>☰</span>Plus</button>
 </nav>
 <div id="ov"></div>
 <div id="sheet"></div>
@@ -105,7 +111,7 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 
 <script>
 "use strict";
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.3.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -120,7 +126,7 @@ const S = {
   cfg: LS.get("bf.cfg", { url: "", key: "" }),
   base: LS.get("bf.base", null),
   queue: LS.get("bf.queue", []),
-  flushing: false, loading: false, offline: false, error: "", edit: null, form: null
+  who: LS.get("bf.who", "Commun"), flushing: false, loading: false, offline: false, error: "", edit: null, form: null
 };
 
 // ---------- utilitaires ----------
@@ -191,12 +197,15 @@ function shift(v, cat, mont, ldds, sign) {
 }
 function applyOp(v, op) {
   const p = op.payload;
-  if (op.type === "add") {
+  if (op.type === "add" && isPerso(p.qui)) { persoAdd(v, p.qui, p.cat, p.lib, p.mont, p.date, op.id); }
+  else if (op.type === "del" && isPerso(p.qui)) { persoDel(v, p.qui, p.lib, p.mont); }
+  else if (op.type === "add") {
     v.journal.unshift({ date: p.date, lib: p.lib, mont: p.mont, cat: p.cat, ldds: p.ldds === true, pending: op.id });
     shift(v, p.cat, p.mont, p.ldds === true, 1);
+    if (p.ldds === true) lddsMove(v, -p.mont);
   } else if (op.type === "del") {
     const i = v.journal.findIndex(j => j.date === p.date && j.lib === p.lib && Math.abs(j.mont - p.mont) < .005 && j.ldds === (p.ldds === true));
-    if (i >= 0) { v.journal.splice(i, 1); shift(v, p.cat, p.mont, p.ldds === true, -1); }
+    if (i >= 0) { v.journal.splice(i, 1); shift(v, p.cat, p.mont, p.ldds === true, -1); if (p.ldds === true) lddsMove(v, p.mont); }
   } else if (op.type === "plein") {
     const c = fuelCalc(p);
     if (c.l > 0 && c.p > 0) {
@@ -210,12 +219,17 @@ function applyOp(v, op) {
     }
   } else if (op.type === "ticket") {
     const m = Number(p.total) || 0;
-    if (m > 0) {
+    if (m > 0 && isPerso(p.qui)) { persoAdd(v, p.qui, p.cat, p.magasin || "Ticket", m, p.date, op.id); }
+    else if (m > 0) {
       v.journal.unshift({ date: p.date, lib: p.magasin || "Ticket", mont: m, cat: p.cat, ldds: false, pending: op.id });
       shift(v, p.cat, m, false, 1);
     }
+  } else if (op.type === "amazon") { amzApply(v, p);
   } else if (op.type === "ldds") {
-    if (v.ldds) v.ldds.soldeReel = p.mont;
+    if (v.ldds) {
+      const old = v.ldds.soldeEstime != null ? v.ldds.soldeEstime : v.ldds.soldeReel;
+      v.ldds.soldeFinMois += p.mont - old; v.ldds.soldeEstime = p.mont; v.ldds.soldeReel = p.mont; v.ldds.releveLe = todayISO();
+    }
   } else if (op.type === "solde") {
     v.totaux.soldeTheorique = p.mont; v.previsionnel.soldeReel = p.mont;
   } else if (op.type === "annuel") {
@@ -224,6 +238,7 @@ function applyOp(v, op) {
       a.paye = p.paye; a.datePaye = p.paye ? todayISO() : "";
       v.totaux.soldeTheorique += (p.paye ? -1 : 1) * a.mont;
       v.totaux.ldds += (p.paye ? 1 : -1) * a.mont;
+      if (v.ldds && v.ldds.soldeEstime != null) v.ldds.soldeEstime -= (p.paye ? 1 : -1) * a.mont;
     }
   }
 }
@@ -321,15 +336,146 @@ function pctBar(spent, total) {
   return `<div class="bar"><i class="${cls}" style="width:${p}%"></i></div>`;
 }
 
+
+// ---------- onglets individuels et Amazon ----------
+const PAYERS = ["Commun", "Gaétan", "Mathilde"];
+const PERSO_CATS = ["Courses", "Loisirs", "Véhicule"];
+const isPerso = q => q === "Gaétan" || q === "Mathilde";
+function lddsMove(v, delta) {
+  if (!v.ldds) return;
+  if (v.ldds.soldeEstime != null) v.ldds.soldeEstime += delta;
+  v.ldds.soldeFinMois += delta;
+}
+function persoAdd(v, qui, cat, lib, mont, date, id) {
+  const P = v.perso && v.perso[qui]; if (!P) return;
+  const d = String(date || todayISO());
+  const label = lib + " " + d.slice(8, 10) + "/" + d.slice(5, 7);
+  const c2 = PERSO_CATS.includes(cat) ? cat : "Hors budget";
+  P.entrees.push({ cat: c2, lib: label, mont, pending: id });
+  const k = CAT_ENV[c2];
+  if (k && P.enveloppes[k]) { P.enveloppes[k].restant -= mont; P.enveloppes[k].depense += mont; } else { P.horsBudget += mont; }
+  P.resteAVivre -= (k ? 0 : mont);
+}
+function persoDel(v, qui, lib, mont) {
+  const P = v.perso && v.perso[qui]; if (!P) return;
+  const i = P.entrees.findIndex(e => e.lib === lib && Math.abs(e.mont - mont) < .005);
+  if (i < 0) return;
+  const e = P.entrees.splice(i, 1)[0];
+  const k = CAT_ENV[e.cat];
+  if (k && P.enveloppes[k]) { P.enveloppes[k].restant += mont; P.enveloppes[k].depense -= mont; } else { P.horsBudget -= mont; P.resteAVivre += mont; }
+}
+function amzTotals(a) {
+  ["cur", "suiv"].forEach(b => { a[b].total = Math.round(a.groupes.reduce((s, g) => s + g.items.reduce((t, i) => t + (i[b] || 0), 0), 0) * 100) / 100; });
+}
+function amzApply(v, p) {
+  const a = v.amazon; if (!a) return;
+  if (p.jour != null && p.jour !== "") { a[p.bloc].jour = Number(p.jour); return; }
+  const g = a.groupes.find(x => x.nom === p.groupe); if (!g) return;
+  const i = g.items.findIndex(x => x.lib.toLowerCase() === String(p.lib).toLowerCase());
+  if (p.suppr) { if (i >= 0) g.items.splice(i, 1); amzTotals(a); return; }
+  let it = i >= 0 ? g.items[i] : null;
+  if (!it) { it = { lib: p.lib, prix: 0, cur: 0, suiv: 0 }; g.items.push(it); }
+  if (p.prix > 0) it.prix = p.prix;
+  if (p.mont != null && p.mont >= 0) it[p.bloc] = p.mont;
+  amzTotals(a);
+}
+const mshort = s => { const w = String(s || "").split(" ")[0].toLowerCase(); return w ? w.charAt(0).toUpperCase() + w.slice(1, 3) + "." : ""; };
+function setWho(w) { S.who = w; LS.set("bf.who", w); render(); }
+function whoBar() {
+  return `<div class="who">` + PAYERS.map(w => `<button type="button" class="cat ${S.who === w ? "on" : ""}" data-who="${w}">${w === "Commun" ? "🏠" : "👤"} ${w}</button>`).join("") + `</div>`;
+}
+function payerChips(id, cur, attr) {
+  return `<div class="cats" id="${id}">` + PAYERS.map(w => `<button type="button" class="cat ${cur === w ? "on" : ""}" ${attr}="${w}">${w}</button>`).join("") + `</div>`;
+}
+function viewPerso(v) {
+  const P = (v.perso || {})[S.who];
+  if (!P) return whoBar() + `<div class="empty">L'onglet ${esc(S.who)} n'est pas encore disponible.<br>Mets à jour le script du Sheet (v19) puis appuie sur ⟳.</div>`;
+  let h = whoBar();
+  h += `<div class="hero"><small>Reste à vivre · ${esc(S.who)}</small><div class="big ${P.resteAVivre < 0 ? "neg" : ""}">${eur(P.resteAVivre)}</div>
+    <div class="sub">Salaire ${eur(P.salaire)} · dépenses fixes ${eur(P.fixes)}</div></div>`;
+  h += `<div class="grid">` + [["courses", "Courses", "🛒"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]].map(([k, nom, ic]) => {
+    const e = P.enveloppes[k]; const tot = e.restant + e.depense;
+    return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div><div class="v" style="color:${e.restant < 0 ? "var(--bad)" : "inherit"}">${eur(e.restant)}</div>${pctBar(e.depense, tot)}<div class="s">${eur(e.depense)} sur ${eur(tot)}</div></div>`;
+  }).join("") + `<div class="env"><div class="t"><span>📦 Hors budget</span></div><div class="v">${eur(P.horsBudget)}</div><div class="s">ce mois</div></div></div>`;
+  h += persoList(P);
+  return h;
+}
+function persoList(P) {
+  if (!P.entrees.length) return `<div class="empty">Aucune dépense dans l'onglet ${esc(S.who)}.<br>Appuie sur + puis choisis « Payé par ${esc(S.who)} ».</div>`;
+  return `<h2>Dépenses de l'onglet</h2><div class="card" style="padding:4px 14px">` + P.entrees.map((e, i) =>
+    `<div class="row ${e.pending ? "pend" : ""}" data-act="pitem" data-i="${i}"><div class="ic">${CATS[e.cat] || "📦"}</div><div class="rt"><b>${esc(e.lib)}</b><span>${esc(e.cat)}${e.pending ? " · ⏳ en attente" : ""}</span></div><div class="am">${eur(e.mont)}</div></div>`).join("") + `</div>`;
+}
+function viewPlus() {
+  const T = (ic, nom, sub, act, extra) => `<button class="tile ${act === "soon" ? "soon" : ""}" data-act="${act}" ${extra || ""}><span>${ic}</span>${nom}<small>${sub}</small></button>`;
+  return `<h2>Plus</h2><div class="tiles">` +
+    T("📦", "Amazon P&amp;É", "abonnements du mois", "goamz") +
+    T("🩺", "Soins et mutuelle", "bientôt", "soon", 'data-n="Soins et mutuelle"') +
+    T("🏖️", "Congés", "bientôt", "soon", 'data-n="Congés"') +
+    T("📈", "Bourse", "bientôt", "soon", 'data-n="Bourse"') +
+    T("🍽️", "Menus et courses", "bientôt", "soon", 'data-n="Menus et courses"') +
+    T("⚙️", "Réglages", "connexion, mise à jour", "goreg") + `</div>`;
+}
+function viewAmazon(v) {
+  const a = v.amazon;
+  let h = `<button class="linkbtn" data-act="goplus">← Plus</button>`;
+  if (!a) return h + `<div class="empty">Onglet « Amazon P&amp;É » introuvable.<br>Mets à jour le script (v19) puis appuie sur ⟳.</div>`;
+  const mc = mshort(a.cur.mois), ms = mshort(a.suiv.mois);
+  h += `<div class="hero"><small>Amazon Prévoyez et Économisez</small><div class="big">${eur(a.cur.total)}</div>
+    <div class="sub">${esc(a.cur.mois)} · débit le ${a.cur.jour || "?"} · puis ${eur(a.suiv.total)} en ${esc(a.suiv.mois)} (le ${a.suiv.jour || "?"})</div></div>
+    <div class="two"><button class="btn sec" style="margin:0" data-act="amzjour" data-bloc="cur">Jour de débit ${esc(mc)}</button><button class="btn sec" style="margin:0" data-act="amzjour" data-bloc="suiv">Jour de débit ${esc(ms)}</button></div>
+    <div class="hint" style="margin:8px 4px">Coche les articles que tu gardes ce mois-ci et le mois suivant. Touche un nom pour changer son prix.</div>`;
+  a.groupes.forEach(g => {
+    const sc = g.items.reduce((s, i) => s + i.cur, 0), ss = g.items.reduce((s, i) => s + i.suiv, 0);
+    h += `<h2>${esc(g.nom)} · ${eur(sc)} · ${eur(ss)}</h2><div class="card" style="padding:4px 14px">`;
+    h += g.items.length ? g.items.map(i => `<div class="row"><div class="rt" data-act="amzedit" data-g="${esc(g.nom)}" data-lib="${esc(i.lib)}" data-prix="${i.prix}"><b>${esc(i.lib)}</b><span>${eur(i.prix)}</span></div>
+      <div class="amz"><div class="col">${esc(mc)}<div class="tg ${i.cur > 0 ? "on" : ""}" data-act="amz" data-bloc="cur" data-g="${esc(g.nom)}" data-lib="${esc(i.lib)}" data-prix="${i.prix}"></div></div>
+      <div class="col">${esc(ms)}<div class="tg ${i.suiv > 0 ? "on" : ""}" data-act="amz" data-bloc="suiv" data-g="${esc(g.nom)}" data-lib="${esc(i.lib)}" data-prix="${i.prix}"></div></div></div></div>`).join("") : `<div class="hint" style="padding:8px 0">Aucun article.</div>`;
+    h += `<button class="linkbtn" data-act="amzadd" data-g="${esc(g.nom)}">+ Ajouter un article</button></div>`;
+  });
+  return h;
+}
+function openAmzItem(g, lib, prix) {
+  const nouveau = !lib;
+  S.form = { vmode: "amz", g, lib: lib || "", prix: prix || "", nouveau };
+  openSheet(`<h3>${nouveau ? "Nouvel article · " + esc(g) : esc(lib)}</h3>
+    ${nouveau ? `<label>Nom de l'article</label><input type="text" id="aN" autocomplete="off">` : ""}
+    <label>Prix habituel (€)</label><input type="text" id="aP" inputmode="decimal" value="${esc(prix ? String(prix).replace(".", ",") : "")}" autocomplete="off">
+    ${nouveau ? `<div class="line"><div><b>Pris ce mois-ci</b></div><div class="tg on" id="aC"></div></div><div class="line"><div><b>Pris le mois suivant</b></div><div class="tg on" id="aS"></div></div>` : ""}
+    <button class="btn" id="aSave">Enregistrer</button>
+    ${nouveau ? "" : `<button class="btn sec red" id="aDel" style="color:#fff">Retirer l'article</button>`}`);
+  setTimeout(() => { const t = $(nouveau ? "#aN" : "#aP"); if (t) t.focus(); }, 250);
+}
+function saveAmzItem() {
+  const f = S.form;
+  const lib = f.nouveau ? ($("#aN").value || "").trim() : f.lib;
+  const prix = num($("#aP").value);
+  if (!lib) { toast("Donne un nom à l'article"); return; }
+  if (f.nouveau) {
+    if (!(prix > 0)) { toast("Indique un prix"); return; }
+    ["cur", "suiv"].forEach(b => { const on = $(b === "cur" ? "#aC" : "#aS").classList.contains("on"); enqueue("amazon", { bloc: b, groupe: f.g, lib, prix, mont: on ? prix : 0 }); });
+  } else {
+    if (!(prix > 0)) { toast("Indique un prix"); return; }
+    const v = computeView(); const g = v.amazon.groupes.find(x => x.nom === f.g); const it = g && g.items.find(x => x.lib === lib);
+    ["cur", "suiv"].forEach(b => enqueue("amazon", { bloc: b, groupe: f.g, lib, prix, mont: it && it[b] > 0 ? prix : 0 }));
+  }
+  closeSheet(); toast("✔ Enregistré");
+}
+function openAmzJour(bloc) {
+  const v = computeView(); const a = v && v.amazon; if (!a) return;
+  S.form = { vmode: "amzj", bloc };
+  openSheet(`<h3>Jour de débit · ${esc(a[bloc].mois)}</h3>
+    <label>Jour du mois (1 à 31)</label><input type="text" id="jJ" inputmode="numeric" value="${esc(a[bloc].jour || "")}" autocomplete="off">
+    <button class="btn" id="jSave">Enregistrer</button>`);
+}
+
 function lddsCard(v, full) {
   const l = v.ldds; if (!l) return "";
   const reel = l.soldeReel > 0;
-  const sous = [];
-  if (reel) sous.push("Solde réel saisi · touche pour le mettre à jour");
-  else sous.push("Solde réel non saisi · touche pour le renseigner");
+  const est = l.soldeEstime != null ? l.soldeEstime : l.soldeReel;
+  const sous = reel ? "Estimé aujourd'hui · relevé de " + eur(l.soldeReel) + (l.releveLe ? " le " + esc(l.releveLe.split("-").reverse().slice(0, 2).join("/")) : "") + " · touche pour le mettre à jour" : "Solde réel non saisi · touche pour le renseigner";
   let h = `<div class="card ldds" data-act="ldds"><div class="t">💙 LDDS${l.mois ? " · " + esc(l.mois) : ""}</div>
-    <div class="big">${eur(reel ? l.soldeReel : l.soldeFinMois)}</div>
-    <div class="s">${sous.join("")}</div>
+    <div class="big">${eur(reel ? est : l.soldeFinMois)}</div>
+    <div class="s">${sous}</div>
     <div class="s">Prévu fin de mois : <b>${eur(l.soldeFinMois)}</b>${l.seuil ? " · seuil de sécurité " + eur(l.seuil) : ""}</div>`;
   if (full && l.alerte) h += `<div class="s" style="margin-top:6px">${esc(l.alerte)}</div>`;
   if (full && l.aFaire) h += `<div class="s" style="margin-top:6px">${esc(l.aFaire)}</div>`;
@@ -343,10 +489,16 @@ function fuelCard(v) {
   h += `<button class="btn sec" data-act="fuel" style="margin-top:10px">⛽ Ajouter un plein</button></div>`;
   return h;
 }
+function amzCard(v) {
+  const a = v.amazon; if (!a || (a.cur.total <= 0 && a.suiv.total <= 0)) return "";
+  return `<div class="card" data-act="goamz" style="cursor:pointer"><div class="t" style="font-size:13px;color:var(--mut)">📦 Amazon Prévoyez et Économisez</div>
+    <div style="font-size:15px;margin-top:4px"><b>${eur(a.cur.total)}</b> ${esc(mshort(a.cur.mois))} · débit le ${a.cur.jour || "?"} &nbsp;|&nbsp; <b>${eur(a.suiv.total)}</b> ${esc(mshort(a.suiv.mois))}</div></div>`;
+}
 function viewHome(v) {
+  if (S.who !== "Commun") return viewPerso(v);
   const t = v.totaux, pv = v.previsionnel;
   const neg = t.soldeTheorique < 0;
-  let h = `<div class="hero" data-act="solde" style="cursor:pointer"><small>Solde théorique aujourd'hui</small>
+  let h = whoBar() + `<div class="hero" data-act="solde" style="cursor:pointer"><small>Solde théorique aujourd'hui</small>
     <div class="big ${neg ? "neg" : ""}">${eur(t.soldeTheorique)}</div>
     <div class="sub">Plus bas prévu : ${esc(pv.plusBas)} · ${esc(pv.plusBasDate)}</div>
     <div class="sub" style="margin-top:6px;opacity:.75">Solde réel saisi : ${eur(pv.soldeReel)} · touche pour le mettre à jour</div></div>`;
@@ -354,7 +506,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += lddsCard(v, true);
+  h += lddsCard(v, true) + amzCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -380,8 +532,9 @@ function viewHome(v) {
 }
 
 function viewJournal(v) {
+  if (S.who !== "Commun") { const P = (v.perso || {})[S.who]; return whoBar() + (P ? persoList(P) : `<div class="empty">Onglet non disponible.</div>`); }
   if (!v.journal.length) return `<div class="empty">Aucune dépense pour l'instant.<br>Appuie sur + pour en ajouter.</div>`;
-  let h = "", last = "";
+  let h = whoBar(), last = "";
   v.journal.forEach((j, i) => {
     if (j.date !== last) { h += `<div class="day">${esc(fmtDay(j.date))}</div>`; last = j.date; }
     h += `<div class="card" style="padding:4px 14px;margin-bottom:6px"><div class="row ${j.pending ? "pend" : ""}" data-act="item" data-i="${i}">
@@ -417,18 +570,21 @@ function viewReglages() {
     <div class="hint">Astuce : un lien de configuration (avec #u=…&k=…) règle tout en un clic sur le deuxième téléphone.</div></div>
     <div class="card"><b>État</b>
     <div class="hint">Version ${APP_VERSION} · ${S.queue.length} saisie(s) en attente · ${S.base ? "dernier chargement : " + new Date(S.base.genere).toLocaleString("fr-FR") : "aucune donnée chargée"}</div>
-    <button class="btn sec" id="cfgReload">Recharger l'appli (mise à jour)</button></div>`;
+    <button class="btn sec" id="cfgReload">Recharger l'appli (mise à jour)</button></div>
+    <button class="linkbtn" data-act="goplus">← Plus</button>`;
 }
 
 function render() {
   const v = computeView();
   const el = $("#view");
-  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab));
-  $("#fab").style.display = S.tab === "reglages" ? "none" : "block";
+  const grpPlus = ["plus", "amazon", "reglages"].includes(S.tab);
+  document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
+  $("#fab").style.display = grpPlus ? "none" : "block";
+  if (S.tab === "plus") { el.innerHTML = viewPlus(); return; }
   if (S.tab === "reglages") { if (!el.querySelector("#cfgSave")) el.innerHTML = viewReglages(); return; }
   if (!configured()) { S.tab = "reglages"; el.innerHTML = viewReglages(); toast("Configure d'abord la connexion"); return; }
   if (!v) { el.innerHTML = `<div class="empty">${S.loading ? "Chargement…" : "Pas encore de données.<br>Vérifie la connexion puis appuie sur ⟳."}</div>`; return; }
-  el.innerHTML = S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : viewAnnuels(v);
+  el.innerHTML = S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : S.tab === "amazon" ? viewAmazon(v) : viewAnnuels(v);
 }
 
 // ---------- fenêtre d'ajout ----------
@@ -483,7 +639,7 @@ function guessTicketCat(t) {
 }
 function openTicket(t) {
   const g = guessTicketCat(t);
-  S.form = { vmode: "ticket", magasin: t.magasin || "", date: t.date || todayISO(), total: t.total ? String(t.total).replace(".", ",") : "", cat: g.cat, auto: g.auto, lignes: t.lignes || [] };
+  S.form = { vmode: "ticket", qui: S.who, magasin: t.magasin || "", date: t.date || todayISO(), total: t.total ? String(t.total).replace(".", ",") : "", cat: g.cat, auto: g.auto, lignes: t.lignes || [] };
   const f = S.form;
   const somme = f.lignes.reduce((s, l) => s + l.mont, 0);
   const ecart = Math.round((somme - (num(f.total) || 0)) * 100) / 100;
@@ -491,6 +647,7 @@ function openTicket(t) {
     <label>Magasin</label><input type="text" id="tM" value="${esc(f.magasin)}" autocomplete="off">
     <div class="two"><div><label>Date</label><input type="date" id="tD" value="${esc(f.date)}"></div>
     <div><label>Total payé (€)</label><input type="text" id="tT" inputmode="decimal" value="${esc(f.total)}" autocomplete="off"></div></div>
+    <label>Payé par</label>${payerChips("tQui", f.qui, "data-tqui")}
     <label>Catégorie <span class="hint">${g.auto ? "· détectée" : "· inconnue → à choisir"}</span></label>
     <div class="cats" id="tCats">${Object.keys(CATS).map(c => `<button type="button" class="cat ${f.cat === c ? "on" : ""}" data-tcat="${esc(c)}">${CATS[c]} ${esc(c)}</button>`).join("")}</div>
     ${f.lignes.length ? `<label>${f.lignes.length} article(s) lus${Math.abs(ecart) > 0.05 ? ` · ⚠ somme ${f2(somme)} € ≠ total` : ""}</label>
@@ -501,7 +658,7 @@ function openTicket(t) {
 function saveTicket() {
   const f = S.form, total = num(f.total);
   if (!(total > 0)) { toast("Indique le total du ticket"); return; }
-  enqueue("ticket", { date: f.date || todayISO(), magasin: f.magasin.trim() || "Ticket", total: Math.round(total * 100) / 100, cat: f.cat || "Hors budget", lignes: f.lignes });
+  enqueue("ticket", { date: f.date || todayISO(), magasin: f.magasin.trim() || "Ticket", total: Math.round(total * 100) / 100, cat: f.cat || "Hors budget", lignes: f.lignes, qui: f.qui || "Commun" });
   closeSheet(); toast("✔ Ticket enregistré");
 }
 
@@ -546,14 +703,14 @@ function saveFuel() {
 function openLdds() {
   const v = computeView();
   openSheet(`<h3>Solde réel du LDDS</h3>
-    <div class="hint">Saisis le solde affiché par ta banque maintenant. Les prévisions du calendrier repartent de ce chiffre.</div>
+    <div class="hint">Saisis le solde affiché par ta banque maintenant. Le solde estimé baisse ensuite tout seul avec tes dépenses amorties et tes prélèvements payés.</div>
     <label>Solde LDDS (€)</label><input type="text" id="lMont" inputmode="decimal" value="${esc(v && v.ldds && v.ldds.soldeReel ? String(v.ldds.soldeReel).replace(".", ",") : "")}" autocomplete="off">
     <button class="btn" id="lSave">Enregistrer</button>`);
   setTimeout(() => { const t = $("#lMont"); if (t) { t.focus(); t.select(); } }, 250);
 }
 
 function openAdd(prefill) {
-  S.form = Object.assign({ text: "", mont: "", cat: "", manualCat: false, ldds: false, date: todayISO() }, prefill || {});
+  S.form = Object.assign({ text: "", mont: "", cat: "", manualCat: false, ldds: false, date: todayISO(), qui: S.who }, prefill || {});
   const f = S.form;
   openSheet(`<h3>${S.edit ? "Modifier la dépense" : "Nouvelle dépense"}</h3>
     ${S.edit ? "" : `<button type="button" class="btn sec" id="scanBtn" style="margin:0 0 6px">📷 Scanner un ticket</button>`}
@@ -564,7 +721,8 @@ function openAdd(prefill) {
     <div class="cats" id="fCats">${Object.keys(CATS).map(c => `<button type="button" class="cat ${f.cat === c ? "on" : ""}" data-cat="${esc(c)}">${CATS[c]} ${esc(c)}</button>`).join("")}</div>
     <button type="button" class="linkbtn" id="fFuelBtn" style="display:none">⛽ C'est un plein ? Saisir litres, km, qui a payé…</button>
     <label>Date</label><input type="date" id="fDate" value="${esc(f.date)}">
-    <div class="line"><div><b>💙 Amorti par le LDDS</b><div class="hint">Visible, mais hors budget du mois</div></div><div class="tg ${f.ldds ? "on" : ""}" id="fLdds"></div></div>
+    ${S.edit ? "" : `<label>Payé par</label>` + payerChips("fQui", f.qui, "data-payer")}
+    <div class="line" id="fLddsLine" style="${f.qui !== "Commun" ? "display:none" : ""}"><div><b>💙 Amorti par le LDDS</b><div class="hint">Visible, mais hors budget du mois</div></div><div class="tg ${f.ldds ? "on" : ""}" id="fLdds"></div></div>
     <button class="btn" id="fSave">Enregistrer</button>
     ${S.edit ? `<button class="btn sec red" id="fDel" style="color:#fff">Supprimer</button>` : ""}`);
   setTimeout(() => { const t = $("#fText"); if (t && !S.edit) t.focus(); }, 250);
@@ -599,7 +757,8 @@ function saveForm() {
   if (q && !(mont > 0)) { lib = q.lib; mont = q.mont; }
   else if (q && String(f.mont).trim() === "") { lib = q.lib; mont = q.mont; }
   if (!lib || !(mont > 0)) { toast("Indique un libellé et un montant"); return; }
-  const payload = { date: f.date || todayISO(), lib, mont: Math.round(mont * 100) / 100, cat: f.cat || "Hors budget", ldds: f.ldds === true };
+  const qui = S.edit ? "Commun" : (f.qui || "Commun");
+  const payload = { date: f.date || todayISO(), lib, mont: Math.round(mont * 100) / 100, cat: f.cat || "Hors budget", ldds: qui === "Commun" && f.ldds === true, qui };
   if (S.edit) deleteItem(S.edit, true);
   enqueue("add", payload);
   closeSheet(); toast("✔ Enregistré");
@@ -615,6 +774,36 @@ function deleteItem(j, silent) {
 document.addEventListener("click", e => {
   const t = e.target.closest("button,[data-act]"); if (!t) return;
   if (t.dataset.tab) { S.tab = t.dataset.tab; render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.who) { setWho(t.dataset.who); return; }
+  if (t.dataset.payer) { S.form.qui = t.dataset.payer; document.querySelectorAll("#fQui .cat").forEach(b => b.classList.toggle("on", b.dataset.payer === S.form.qui)); const l = $("#fLddsLine"); if (l) l.style.display = S.form.qui === "Commun" ? "flex" : "none"; return; }
+  if (t.dataset.tqui) { S.form.qui = t.dataset.tqui; document.querySelectorAll("#tQui .cat").forEach(b => b.classList.toggle("on", b.dataset.tqui === S.form.qui)); return; }
+  if (t.dataset.act === "goplus") { S.tab = "plus"; render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.act === "goamz") { S.tab = "amazon"; render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.act === "goreg") { S.tab = "reglages"; render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.act === "soon") { toast((t.dataset.n || "Cette section") + " : prévu dans une prochaine version"); return; }
+  if (t.dataset.act === "pitem") {
+    const v = computeView(); const P = v.perso && v.perso[S.who]; const e = P && P.entrees[Number(t.dataset.i)]; if (!e) return;
+    if (confirm("Supprimer « " + e.lib + " » (" + eur(e.mont) + ") de l'onglet " + S.who + " ?")) {
+      const pend = e.pending && S.queue.findIndex(o => o.id === e.pending);
+      if (e.pending && pend >= 0) { S.queue.splice(pend, 1); saveQueue(); render(); setSync(); }
+      else enqueue("del", { qui: S.who, lib: e.lib, mont: e.mont, cat: e.cat, date: todayISO(), ldds: false });
+    }
+    return;
+  }
+  if (t.dataset.act === "amz") {
+    const on = !t.classList.contains("on"), prix = Number(t.dataset.prix) || 0;
+    enqueue("amazon", { bloc: t.dataset.bloc, groupe: t.dataset.g, lib: t.dataset.lib, prix, mont: on ? prix : 0 }); return;
+  }
+  if (t.dataset.act === "amzedit") { openAmzItem(t.dataset.g, t.dataset.lib, Number(t.dataset.prix) || 0); return; }
+  if (t.dataset.act === "amzadd") { openAmzItem(t.dataset.g, "", 0); return; }
+  if (t.dataset.act === "amzjour") { openAmzJour(t.dataset.bloc); return; }
+  if (t.id === "aSave") { saveAmzItem(); return; }
+  if (t.id === "aDel") { if (confirm("Retirer cet article de la liste Amazon ?")) { enqueue("amazon", { groupe: S.form.g, lib: S.form.lib, suppr: true }); closeSheet(); } return; }
+  if (t.id === "jSave") {
+    const j = parseInt($("#jJ").value, 10);
+    if (!(j >= 1 && j <= 31)) { toast("Indique un jour entre 1 et 31"); return; }
+    enqueue("amazon", { bloc: S.form.bloc, jour: j }); closeSheet(); toast("✔ Jour de débit enregistré"); return;
+  }
   if (t.id === "fab") { S.edit = null; openAdd(); return; }
   if (t.id === "refresh") { if (S.queue.length) flush(); else refresh(); return; }
   if (t.id === "fSave") { saveForm(); return; }
@@ -656,9 +845,9 @@ document.addEventListener("click", e => {
     return;
   }
 });
-document.addEventListener("click", e => { if (e.target.id === "ov") closeSheet(); if (e.target.id === "fLdds") { S.form.ldds = !S.form.ldds; e.target.classList.toggle("on", S.form.ldds); } });
+document.addEventListener("click", e => { if (e.target.id === "ov") closeSheet(); if (e.target.id === "fLdds") { S.form.ldds = !S.form.ldds; e.target.classList.toggle("on", S.form.ldds); } if (e.target.id === "aC" || e.target.id === "aS") e.target.classList.toggle("on"); });
 document.addEventListener("input", e => {
-  if (!S.form) return;
+  if (!S.form || S.form.vmode === "amz" || S.form.vmode === "amzj") return;
   if (e.target.id === "fText") { S.form.text = e.target.value; updateAuto(); }
   if (e.target.id === "fMont") S.form.mont = e.target.value;
   if (e.target.id === "fDate") S.form.date = e.target.value;

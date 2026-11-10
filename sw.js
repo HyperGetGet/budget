@@ -1,5 +1,5 @@
 // Service worker : l'appli s'ouvre sans connexion et se met à jour toute seule dès qu'une nouvelle version est publiée
-const CACHE = "bf-v1.2.0";
+const CACHE = "bf-v1.3.0";
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {

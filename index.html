@@ -63,7 +63,7 @@ nav button span{font-size:21px}nav button.on{color:var(--acc);font-weight:650}
 #sheet.open{transform:none}
 #sheet h3{margin:0 0 12px;font-size:18px}
 label{display:block;font-size:12px;color:var(--mut);margin:12px 0 4px}
-input[type=text],input[type=date],input[type=password],input[type=url]{font-family:inherit;width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+input[type=text],input[type=date],input[type=password],input[type=url],input[type=number]{font-family:inherit;width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .cats{display:flex;flex-wrap:wrap;gap:8px}
 .cat{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:99px;padding:8px 12px;font-size:14px;cursor:pointer}
 .cat.on{background:var(--acc);border-color:var(--acc);color:#fff}
@@ -73,6 +73,11 @@ input[type=text],input[type=date],input[type=password],input[type=url]{font-fami
 .hint{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.4}
 #toast{position:fixed;left:50%;top:calc(66px + env(safe-area-inset-top));transform:translateX(-50%);background:#14212e;color:#fff;padding:10px 16px;border-radius:99px;font-size:14px;z-index:60;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}
 #toast.show{opacity:1}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ldds{border-left:5px solid var(--blue);cursor:pointer}
+.ldds .t{font-size:13px;color:var(--mut)}.ldds .big{font-size:28px;font-weight:700;color:var(--blue);margin:2px 0}
+.ldds .s{font-size:13px;color:var(--mut);line-height:1.4}
+.linkbtn{background:none;border:0;color:var(--blue);font-size:14px;padding:8px 0;cursor:pointer;text-align:left}
 .empty{text-align:center;color:var(--mut);padding:30px 10px;line-height:1.5}
 </style>
 </head>
@@ -95,7 +100,7 @@ input[type=text],input[type=date],input[type=password],input[type=url]{font-fami
 
 <script>
 "use strict";
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.1.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -187,6 +192,19 @@ function applyOp(v, op) {
   } else if (op.type === "del") {
     const i = v.journal.findIndex(j => j.date === p.date && j.lib === p.lib && Math.abs(j.mont - p.mont) < .005 && j.ldds === (p.ldds === true));
     if (i >= 0) { v.journal.splice(i, 1); shift(v, p.cat, p.mont, p.ldds === true, -1); }
+  } else if (op.type === "plein") {
+    const c = fuelCalc(p);
+    if (c.l > 0 && c.p > 0) {
+      if (!v.vehicule) v.vehicule = { pleins: [], kmActuel: 0, payeurs: ["Commun", "Mathilde", "Gaétan"], types: ["Plein", "Complément"] };
+      v.vehicule.pleins.unshift({ date: todayISO(), litres: c.l, prix: c.p, km: p.km, qui: p.qui, prixL: c.q, conso: null, dist: null, type: p.type, pending: op.id });
+      v.vehicule.kmActuel = Math.max(v.vehicule.kmActuel || 0, p.km);
+      if (p.qui === "Commun") {
+        v.journal.unshift({ date: todayISO(), lib: "Plein SEAT", mont: c.p, cat: "Véhicule", ldds: false, pending: op.id });
+        shift(v, "Véhicule", c.p, false, 1);
+      }
+    }
+  } else if (op.type === "ldds") {
+    if (v.ldds) v.ldds.soldeReel = p.mont;
   } else if (op.type === "solde") {
     v.totaux.soldeTheorique = p.mont; v.previsionnel.soldeReel = p.mont;
   } else if (op.type === "annuel") {
@@ -198,6 +216,23 @@ function applyOp(v, op) {
     }
   }
 }
+
+// ---------- carburant ----------
+function num(x) {
+  if (x === null || x === undefined || String(x).trim() === "") return null;
+  const n = parseFloat(String(x).replace(/\s/g, "").replace(",", ".").replace(/[^\d.\-]/g, ""));
+  return isNaN(n) ? null : n;
+}
+// 2 valeurs sur 3 suffisent : la troisième est calculée
+function fuelCalc(f) {
+  let l = num(f.litres), p = num(f.prix), q = num(f.prixL), calc = "";
+  if (l !== null && p !== null) { if (q === null && l > 0) { q = p / l; calc = "q"; } }
+  else if (l !== null && q !== null) { p = Math.round(l * q * 100) / 100; calc = "p"; }
+  else if (p !== null && q !== null && q > 0) { l = Math.round(p / q * 100) / 100; calc = "l"; }
+  else { l = null; p = null; q = null; }
+  return { l, p, q, calc };
+}
+const f2 = n => (Math.round(n * 100) / 100).toFixed(2).replace(".", ",");
 
 // ---------- réseau ----------
 async function call(action, payload) {
@@ -275,6 +310,28 @@ function pctBar(spent, total) {
   return `<div class="bar"><i class="${cls}" style="width:${p}%"></i></div>`;
 }
 
+function lddsCard(v, full) {
+  const l = v.ldds; if (!l) return "";
+  const reel = l.soldeReel > 0;
+  const sous = [];
+  if (reel) sous.push("Solde réel saisi · touche pour le mettre à jour");
+  else sous.push("Solde réel non saisi · touche pour le renseigner");
+  let h = `<div class="card ldds" data-act="ldds"><div class="t">💙 LDDS${l.mois ? " · " + esc(l.mois) : ""}</div>
+    <div class="big">${eur(reel ? l.soldeReel : l.soldeFinMois)}</div>
+    <div class="s">${sous.join("")}</div>
+    <div class="s">Prévu fin de mois : <b>${eur(l.soldeFinMois)}</b>${l.seuil ? " · seuil de sécurité " + eur(l.seuil) : ""}</div>`;
+  if (full && l.alerte) h += `<div class="s" style="margin-top:6px">${esc(l.alerte)}</div>`;
+  if (full && l.aFaire) h += `<div class="s" style="margin-top:6px">${esc(l.aFaire)}</div>`;
+  return h + `</div>`;
+}
+function fuelCard(v) {
+  const vh = v.vehicule; if (!vh) return "";
+  const p = vh.pleins.slice(0, 3);
+  let h = `<h2>⛽ Carburant</h2><div class="card">`;
+  h += p.length ? p.map(x => `<div class="row ${x.pending ? "pend" : ""}"><div class="rt"><b>${f2(x.litres)} L · ${esc(x.type)}</b><span>${esc(fmtDay(x.date))} · ${esc(x.qui)} · ${x.km ? x.km.toLocaleString("fr-FR") + " km" : ""}${x.conso ? " · " + x.conso.toFixed(1).replace(".", ",") + " L/100" : ""}${x.pending ? " · ⏳" : ""}</span></div><div class="am">${eur(x.prix)}</div></div>`).join("") : `<div class="hint">Aucun plein enregistré.</div>`;
+  h += `<button class="btn sec" data-act="fuel" style="margin-top:10px">⛽ Ajouter un plein</button></div>`;
+  return h;
+}
 function viewHome(v) {
   const t = v.totaux, pv = v.previsionnel;
   const neg = t.soldeTheorique < 0;
@@ -286,6 +343,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
+  h += lddsCard(v, true);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -304,6 +362,7 @@ function viewHome(v) {
     h += `<h2>À venir</h2><div class="card">` + next.map(j => `<div class="row"><div class="rt"><b>${esc(j.date)}</b><span>${esc(j.detail)}</span></div><div class="am">${esc(j.solde)}</div></div>`).join("") + `</div>`;
   }
   if (pv.prochainesCourses) h += `<div class="chips"><div class="chip"><b>${esc(pv.prochainesCourses)}</b><span>Prochaines courses</span></div></div>`;
+  h += fuelCard(v);
   h += `<h2>Charges fixes du mois · ${eur(t.fixes)}</h2><div class="card">` +
     (v.fixes || []).filter(f => f.mont > 0).map(f => `<div class="row"><div class="rt"><b>${esc(f.lib.replace(/^\[[A-Z]+\]\s*/, ""))}</b><span>le ${f.jour}</span></div><div class="am">${eur(f.mont)}</div></div>`).join("") + `</div>`;
   return h;
@@ -328,7 +387,7 @@ function viewAnnuels(v) {
   const cur = v.mois || todayISO().slice(0, 7);
   const groups = {};
   list.filter(a => a.mois >= cur).forEach(a => { (groups[a.mois] = groups[a.mois] || []).push(a); });
-  let h = `<div class="hint" style="margin:0 4px 6px">Coche une dépense quand elle est payée : elle est tracée dans le journal et déduite du LDDS, sans toucher au budget du mois.</div>`;
+  let h = lddsCard(v, false) + `<div class="hint" style="margin:0 4px 6px">Coche une dépense quand elle est payée : elle est tracée dans le journal et déduite du LDDS, sans toucher au budget du mois.</div>`;
   Object.keys(groups).sort().slice(0, 14).forEach(m => {
     const tot = groups[m].reduce((s, a) => s + a.mont, 0);
     h += `<h2>${esc(fmtMonth(m))} · ${eur(tot)}</h2><div class="card" style="padding:4px 14px">` + groups[m].map(a =>
@@ -365,6 +424,53 @@ function render() {
 function openSheet(html) { $("#sheet").innerHTML = html; $("#ov").style.display = "block"; requestAnimationFrame(() => $("#sheet").classList.add("open")); }
 function closeSheet() { $("#sheet").classList.remove("open"); $("#ov").style.display = "none"; S.edit = null; S.form = null; }
 
+function openFuel(prefill) {
+  const v = computeView();
+  const last = (v && v.vehicule && v.vehicule.kmActuel) || 0;
+  S.form = Object.assign({ vmode: "fuel", cat: "Véhicule", manualCat: true, litres: "", prix: "", prixL: "", km: "", qui: LS.get("bf.qui", "Commun"), type: "Plein" }, prefill || {});
+  const f = S.form;
+  const payeurs = (v && v.vehicule && v.vehicule.payeurs) || ["Commun", "Mathilde", "Gaétan"];
+  openSheet(`<h3>⛽ Plein de carburant</h3>
+    <div class="hint">Remplis 2 valeurs sur 3 : la troisième se calcule toute seule.</div>
+    <div class="two"><div><label>Litres</label><input type="text" id="vL" inputmode="decimal" value="${esc(f.litres)}" autocomplete="off"></div>
+    <div><label>Prix payé (€)</label><input type="text" id="vP" inputmode="decimal" value="${esc(f.prix)}" autocomplete="off"></div></div>
+    <label>Prix au litre (€/L)</label><input type="text" id="vQ" inputmode="decimal" value="${esc(f.prixL)}" autocomplete="off">
+    <div class="hint" id="vCalc"></div>
+    <label>Kilométrage au compteur${last ? " · dernier : " + last.toLocaleString("fr-FR") + " km" : ""}</label><input type="text" id="vK" inputmode="numeric" value="${esc(f.km)}" autocomplete="off">
+    <label>Payé par</label>
+    <div class="cats" id="vQui">${payeurs.map(x => `<button type="button" class="cat ${f.qui === x ? "on" : ""}" data-qui="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+    <label>Type</label>
+    <div class="cats" id="vType">${["Plein", "Complément"].map(x => `<button type="button" class="cat ${f.type === x ? "on" : ""}" data-type="${esc(x)}">${esc(x)}</button>`).join("")}</div>
+    <div class="hint">Enregistré à la date du jour.</div>
+    <button class="btn" id="vSave">Enregistrer le plein</button>
+    <button class="linkbtn" id="vBack">Autre dépense véhicule (entretien, péage…)</button>`);
+  setTimeout(() => { const t = $("#vL"); if (t) t.focus(); }, 250);
+  updateFuelCalc();
+}
+function updateFuelCalc() {
+  const f = S.form; if (!f || f.vmode !== "fuel") return;
+  const c = fuelCalc(f), el = $("#vCalc"); if (!el) return;
+  el.textContent = c.calc === "q" ? `→ ${f2(c.q)} €/L` : c.calc === "p" ? `→ ${f2(c.p)} €` : c.calc === "l" ? `→ ${f2(c.l)} L` : "";
+}
+function saveFuel() {
+  const f = S.form, c = fuelCalc(f), km = num(f.km);
+  if (!(c.l > 0) || !(c.p > 0)) { toast("Indique 2 valeurs parmi litres, prix et prix au litre"); return; }
+  if (!(km > 0)) { toast("Indique le kilométrage"); return; }
+  const v = computeView(); const last = (v && v.vehicule && v.vehicule.kmActuel) || 0;
+  if (last && km <= last && !confirm("Ce kilométrage (" + km + ") n'est pas supérieur au dernier plein (" + last + "). Enregistrer quand même ?")) return;
+  LS.set("bf.qui", f.qui);
+  enqueue("plein", { litres: num(f.litres), prix: num(f.prix), prixL: num(f.prixL), km, qui: f.qui, type: f.type });
+  closeSheet(); toast("✔ Plein enregistré");
+}
+function openLdds() {
+  const v = computeView();
+  openSheet(`<h3>Solde réel du LDDS</h3>
+    <div class="hint">Saisis le solde affiché par ta banque maintenant. Les prévisions du calendrier repartent de ce chiffre.</div>
+    <label>Solde LDDS (€)</label><input type="text" id="lMont" inputmode="decimal" value="${esc(v && v.ldds && v.ldds.soldeReel ? String(v.ldds.soldeReel).replace(".", ",") : "")}" autocomplete="off">
+    <button class="btn" id="lSave">Enregistrer</button>`);
+  setTimeout(() => { const t = $("#lMont"); if (t) { t.focus(); t.select(); } }, 250);
+}
+
 function openAdd(prefill) {
   S.form = Object.assign({ text: "", mont: "", cat: "", manualCat: false, ldds: false, date: todayISO() }, prefill || {});
   const f = S.form;
@@ -374,6 +480,7 @@ function openAdd(prefill) {
     <label>Montant (€)</label><input type="text" id="fMont" inputmode="decimal" value="${esc(f.mont)}" autocomplete="off">
     <label>Catégorie <span id="fAuto" class="hint"></span></label>
     <div class="cats" id="fCats">${Object.keys(CATS).map(c => `<button type="button" class="cat ${f.cat === c ? "on" : ""}" data-cat="${esc(c)}">${CATS[c]} ${esc(c)}</button>`).join("")}</div>
+    <button type="button" class="linkbtn" id="fFuelBtn" style="display:none">⛽ C'est un plein ? Saisir litres, km, qui a payé…</button>
     <label>Date</label><input type="date" id="fDate" value="${esc(f.date)}">
     <div class="line"><div><b>💙 Amorti par le LDDS</b><div class="hint">Visible, mais hors budget du mois</div></div><div class="tg ${f.ldds ? "on" : ""}" id="fLdds"></div></div>
     <button class="btn" id="fSave">Enregistrer</button>
@@ -401,6 +508,7 @@ function updateAuto() {
   }
   document.querySelectorAll("#fCats .cat").forEach(b => b.classList.toggle("on", b.dataset.cat === f.cat));
   const a = $("#fAuto"); if (a) a.textContent = note;
+  const fb = $("#fFuelBtn"); if (fb) fb.style.display = (f.cat === "Véhicule" && !S.edit) ? "block" : "none";
 }
 function saveForm() {
   const f = S.form;
@@ -429,7 +537,22 @@ document.addEventListener("click", e => {
   if (t.id === "refresh") { if (S.queue.length) flush(); else refresh(); return; }
   if (t.id === "fSave") { saveForm(); return; }
   if (t.id === "fDel") { if (confirm("Supprimer cette dépense ?")) deleteItem(S.edit); return; }
-  if (t.dataset.cat) { S.form.cat = t.dataset.cat; S.form.manualCat = true; updateAuto(); return; }
+  if (t.dataset.cat) {
+    if (t.dataset.cat === "Véhicule" && !S.edit) { openFuel(); return; }
+    S.form.cat = t.dataset.cat; S.form.manualCat = true; updateAuto(); return;
+  }
+  if (t.id === "fFuelBtn") { openFuel(); return; }
+  if (t.id === "vBack") { openAdd({ cat: "Véhicule", manualCat: true }); return; }
+  if (t.id === "vSave") { saveFuel(); return; }
+  if (t.dataset.qui) { S.form.qui = t.dataset.qui; document.querySelectorAll("#vQui .cat").forEach(b => b.classList.toggle("on", b.dataset.qui === S.form.qui)); return; }
+  if (t.dataset.type) { S.form.type = t.dataset.type; document.querySelectorAll("#vType .cat").forEach(b => b.classList.toggle("on", b.dataset.type === S.form.type)); return; }
+  if (t.dataset.act === "fuel") { openFuel(); return; }
+  if (t.dataset.act === "ldds") { openLdds(); return; }
+  if (t.id === "lSave") {
+    const m = parseFloat(String($("#lMont").value).replace(/\s/g, "").replace(",", "."));
+    if (isNaN(m)) { toast("Indique un montant"); return; }
+    enqueue("ldds", { mont: Math.round(m * 100) / 100 }); closeSheet(); toast("✔ Solde LDDS mis à jour"); return;
+  }
   if (t.id === "cfgSave") { saveCfgFromForm(); return; }
   if (t.id === "cfgReload") { reloadApp(); return; }
   if (t.dataset.act === "solde") { openSolde(); return; }
@@ -454,6 +577,8 @@ document.addEventListener("input", e => {
   if (e.target.id === "fText") { S.form.text = e.target.value; updateAuto(); }
   if (e.target.id === "fMont") S.form.mont = e.target.value;
   if (e.target.id === "fDate") S.form.date = e.target.value;
+  const fk = { vL: "litres", vP: "prix", vQ: "prixL", vK: "km" }[e.target.id];
+  if (fk) { S.form[fk] = e.target.value; updateFuelCalc(); }
 });
 
 async function saveCfgFromForm() {

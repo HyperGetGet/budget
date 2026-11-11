@@ -1,5 +1,5 @@
 // Service worker : l'appli s'ouvre sans connexion et se met à jour toute seule dès qu'une nouvelle version est publiée
-const CACHE = "bf-v1.6.1";
+const CACHE = "bf-v1.6.3";
 const IMG = "bf-img"; // photos des recettes (Wikimedia Commons), gardées d'une version à l'autre pour l'usage hors ligne
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
@@ -15,7 +15,7 @@ self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-  if (url.hostname === "upload.wikimedia.org") {        // photos : cache d'abord, réseau sinon
+  if (url.hostname === "upload.wikimedia.org" || url.hostname === "thumb.wikimedia.org") {        // photos : cache d'abord, réseau sinon
     e.respondWith(caches.open(IMG).then(c => c.match(req).then(r => r || fetch(req).then(res => { if (res.ok || res.type === "opaque") c.put(req, res.clone()); return res; }))));
     return;
   }

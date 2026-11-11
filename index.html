@@ -193,7 +193,7 @@ select{font-family:inherit;width:100%;font-size:16px;padding:10px;border-radius:
 
 <script>
 "use strict";
-const APP_VERSION = "1.6.1";
+const APP_VERSION = "1.6.3";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -844,9 +844,9 @@ function viewAnnuels(v) {
   let h = lddsCard(v, false) + `<div class="hint" style="margin:0 4px 6px">Coche une dépense quand elle est payée : elle est tracée dans le journal et déduite du LDDS, sans toucher au budget du mois.</div>`;
   Object.keys(groups).sort().slice(0, 14).forEach(m => {
     const tot = groups[m].reduce((s, a) => s + a.mont, 0);
-    h += `<h2>${esc(fmtMonth(m))} · ${eur(tot)}</h2><div class="card" style="padding:4px 14px">` + groups[m].map(a =>
+    h += `<h2>${esc(fmtMonth(m))} · ${eur(tot)} de sorties prévues</h2><div class="card" style="padding:4px 14px">` + groups[m].map(a =>
       `<div class="row ${a.paye ? "paid" : ""}" data-act="annuel" data-row="${a.row}" data-lib="${esc(a.lib)}" data-mont="${a.mont}">
-        <div class="rt"><b>${esc(a.lib)}</b><span>${a.paye ? "payé le " + esc(a.datePaye.split("-").reverse().join("/")) : (a.datePrevue ? "prévu le " + esc(a.datePrevue.split("-").reverse().join("/")) : "date non fixée")}</span></div>
+        <div class="rt"><b>${esc(a.lib)}</b><span>${a.paye ? "payé le " + esc(a.datePaye.split("-").reverse().join("/")) : (a.datePrevue ? "prévu le " + esc(a.datePrevue.split("-").reverse().join("/")) + (a.datePrevue < todayISO() ? " · <b style='color:var(--warn);font-weight:600'>pas encore passé, reporté à demain</b>" : "") : "date non fixée")}</span></div>
         <div class="am">${eur(a.mont)}</div><div class="tg ${a.paye ? "on" : ""}"></div></div>`).join("") + `</div>`;
   });
   return h;
@@ -914,7 +914,7 @@ async function scanTicket(file) {
     const pl = await filePayload(file);
     const r = await call("scan", pl, 70000);
     if (!r.ok) throw new Error(r.error || "lecture impossible");
-    openTicket(r.ticket);
+    if (S.finCourses) finCoursesComparer(r.ticket); else openTicket(r.ticket);
   } catch (e) {
     closeSheet();
     toast("⚠ " + (e.name === "AbortError" ? "Gemini met trop de temps, réessaie" : e.message));
@@ -1101,10 +1101,16 @@ const actives = v => (R(v).recettes || []).filter(r => r.actif);
 function semData(v, sem) { const s = (R(v).semaines || {})[sem]; return s ? s : { jours: [], etats: {}, manuels: [] }; }
 const estPlacard = p => !p || p.m === "placard" || p.r === RAYON_PLACARD;
 const estMaison = p => p && p.r === RAYON_MAISON;
+const PROT_COL = { "Poulet": ["#f6d365", "#fda085"], "Dinde": ["#fbc2eb", "#f6a5c0"], "Bœuf": ["#f5576c", "#c9415a"], "Porc": ["#ffb199", "#ff7a7a"], "Poisson": ["#89f7fe", "#66a6ff"], "Œufs": ["#fff1a8", "#f7d774"], "Saucisse": ["#f8b26a", "#e07b39"], "Jambon": ["#ffc3a0", "#ffafbd"] };
 function photoHtml(r, cls) {
-  const ic = PROT_IC[r && r.proteine] || "🍽️";
-  return `<div class="ph ${cls || ""}">${r && r.photo ? `<img src="${esc(r.photo)}" alt="" loading="lazy" onerror="this.remove()">` : ""}${r && r.photo ? "" : ic}</div>`;
+  const ic = PROT_IC[r && r.proteine] || "🍽️", c = PROT_COL[r && r.proteine] || ["#d9e4f5", "#b8c6db"];
+  const fond = `background:linear-gradient(135deg,${c[0]},${c[1]})`;
+  return `<div class="ph ${cls || ""}" style="${fond}">${r && r.photo ? `<img src="${esc(r.photo)}" alt="" loading="lazy" onerror="this.remove()">` : `<span style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))">${ic}</span>`}</div>`;
 }
+const plusLong = r => (r.cuisson || 0) > 30;
+const estPimente = r => /piment/i.test(r.tags || "");
+// types d'un soir : cuisine, restes, libre, reporte (pas fait → semaine suivante), reprise (plat reporté, ingrédients déjà achetés)
+const estPlat = j => j && (j.type === "cuisine" || j.type === "reprise");
 // coût d'une recette au prorata (sans arrondir aux paquets) pour 4 portions
 function coutRecette(r, pm, coef) {
   let t = 0;
@@ -1117,7 +1123,7 @@ const tempsTotal = r => (r.prepa || 0) + (r.cuisson || 0);
 function besoins(v, jours) {
   const k = reg(v).coef || 1, need = {};
   (jours || []).forEach(j => {
-    if (j.type !== "cuisine") return;
+    if (j.type !== "cuisine" && j.type !== "reporte") return;
     const r = recette(v, j.id); if (!r) return;
     const f = (Number(j.portions) || 4) / 4 * k;
     r.ings.forEach(([n, q]) => { need[n] = (need[n] || 0) + q * f; });
@@ -1130,7 +1136,7 @@ function fmtQte(q, u) {
 }
 function construireListe(v, sem, jours) {
   const pm = prodMap(v), need = besoins(v, jours), data = semData(v, sem), lignes = [];
-  const plan = (jours || []).some(j => j.type === "cuisine");
+  const plan = (jours || []).some(j => j.type === "cuisine" || j.type === "reporte");
   if (plan) (R(v).produits || []).forEach(p => { if (p.base > 0 && !estPlacard(p)) need[p.n] = (need[p.n] || 0) + p.base; });
   Object.keys(need).forEach(n => {
     const p = pm[n] || { n, r: "Divers", m: "pack", u: "", pas: 1, c: "", prix: 0 }, q = need[n];
@@ -1158,7 +1164,7 @@ const coutAlim = (v, sem, jours) => construireListe(v, sem, jours).alim;
 // ---------- générateur de semaine ----------
 function genererSemaine(v, sem, o) {
   const g = reg(v);
-  o = Object.assign({ budget: g.alim, prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, soirs: [0, 1, 2, 3, 4], appareil: g.appareil }, o || {});
+  o = Object.assign({ budget: g.alim, prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, soirs: [0, 1, 2, 3, 4], appareil: g.appareil, pimente: "libre" }, o || {});
   const dates = o.soirs.slice().sort().map(k => addDays(sem, k));
   if (!dates.length) return [];
   let cands = proposables(v).filter(r => r.prepa <= o.prepaMax && r.cuisson <= o.cuissonMax);
@@ -1179,10 +1185,16 @@ function genererSemaine(v, sem, o) {
     if (pick.length < dates.length) continue;
     const jours = dates.map((d, i) => ({ date: d, id: pick[i].id, nom: pick[i].nom, portions: 4, type: "cuisine" }));
     const c = coutAlim(v, sem, jours);
-    const score = Math.max(0, c - o.budget) * 25 + c * .4 + pick.filter(r => avant.has(r.id)).length * 3 + pick.filter(r => !prefAppareil(v, r, o.appareil)).length * 15 + Math.random() * 2;
+    const score = Math.max(0, c - o.budget) * 25 + c * .4 + pick.filter(r => avant.has(r.id)).length * 3 + pick.filter(r => !prefAppareil(v, r, o.appareil)).length * 15 + penPiment(pick, o.pimente) + Math.random() * 2;
     if (!best || score < best.score) best = { score, jours };
   }
   return best ? best.jours : dates.map((d, i) => ({ date: d, id: cands[i % cands.length].id, nom: cands[i % cands.length].nom, portions: 4, type: "cuisine" }));
+}
+function penPiment(pick, mode) {
+  const n = pick.filter(estPimente).length;
+  if (mode === "non") return n * 40;
+  if (mode === "un") return (n < 1 ? 30 : 0) + Math.max(0, n - 2) * 30;
+  return 0;
 }
 function enregistrerSemaine(v, sem, jours) {
   enqueue("repasmenu", { semaine: sem, jours: jours.map(j => ({ date: j.date, id: j.id || "", nom: j.nom || "", portions: j.portions || 0, type: j.type || "cuisine", avant: j.avant || "" })), lignes: lignesSheet(v, sem, jours) });
@@ -1205,6 +1217,7 @@ function repasApply(v, op) {
   } else if (op.type === "repasmot") { v.repas.inconnus = (v.repas.inconnus || []).filter(i => i.lib !== p.lib); }
   else if (op.type === "repasreglage") { v.repas.reglages = Object.assign({}, v.repas.reglages, { [p.cle]: p.valeur }); }
   else if (op.type === "repasprix") { const x = (v.repas.produits || []).find(q => q.n === p.produit); if (x) Object.assign(x, { prix: p.prix, appris: true, mag: "saisie manuelle", date: todayISO() }); }
+  else if (op.type === "repasphotochoix") { const x = (v.repas.recettes || []).find(q => q.id === p.recette); if (x) Object.assign(x, { photo: p.aucune ? "" : p.url, credit: p.aucune ? "" : p.credit, page: p.aucune ? "" : p.page, photoChoisie: true }); }
   else if (op.type === "repasactif") { const x = (v.repas.recettes || []).find(q => q.id === p.recette); if (x) x.actif = p.actif; }
 }
 function fusionCourses(c) {
@@ -1249,26 +1262,29 @@ function viewRepas(v) {
       ${rp.erreur ? `<div class="alert bad" style="margin-top:10px">${esc(rp.erreur)}</div>` : ""}
       <button class="btn" data-rr="install">Installer</button><div class="hint">Il faut du réseau ; ça prend jusqu'à une minute.</div></div>`;
   }
-  const seg = [["menus", "Menus"], ["courses", "Courses"], ["recettes", "Recettes"], ["tiroir", "🧊 Tiroir"]];
+  const seg = [["menus", "Menus"], ["courses", "Courses"], ["recettes", "Recettes"], ["tiroir", "Tiroir"], ["flemme", "⚡ Flemme"]];
   let h = `<div class="seg">${seg.map(([k, n]) => `<button data-rsub="${k}" class="${S.rp.sub === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   if (S.rp.sub === "courses") return h + viewCourses(v);
   if (S.rp.sub === "recettes") return h + viewRecettes(v);
   if (S.rp.sub === "tiroir") return h + viewTiroir(v);
+  if (S.rp.sub === "flemme") return h + viewFlemme(v);
   return h + viewMenus(v);
 }
 function weekChips() {
-  const lib = ["Cette semaine", "Semaine pro.", "Dans 2 sem.", "Dans 3 sem."];
-  return `<div class="wk">${lib.map((n, i) => `<button data-rwk="${i}" class="${S.rp.wk === i ? "on" : ""}">${n}</button>`).join("")}</div>`;
+  const lib = [[-1, "Sem. passée"], [0, "Cette semaine"], [1, "Semaine pro."], [2, "Dans 2 sem."], [3, "Dans 3 sem."]];
+  return `<div class="wk">${lib.map(([i, n]) => `<button data-rwk="${i}" class="${S.rp.wk === i ? "on" : ""}">${n}</button>`).join("")}</div>`;
 }
 function viewMenus(v) {
   const sem = semaineOff(S.rp.wk), d = semData(v, sem), g = reg(v), pm = prodMap(v);
   let h = (S.rp.wk === 0 ? tonightCard(v, true) : "") + weekChips() + `<h2 style="margin-top:4px">Semaine ${esc(libSemaine(sem))}</h2>`;
+  if (!d.jours.length && S.rp.wk < 0) return h + `<div class="empty">Pas de menus enregistrés pour la semaine passée.</div>`;
   if (!d.jours.length) {
     const o = S.rp.gen || (S.rp.gen = { soirs: [0, 1, 2, 3, 4], prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, budget: g.alim, appareil: g.appareil || "mixte" });
     return h + `<div class="card"><b>✨ Générer ma semaine</b>
       <label>Soirs à cuisiner</label><div class="tchips">${["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((n, i) => `<button class="cat ${o.soirs.includes(i) ? "on" : ""}" data-rsoir="${i}">${n}</button>`).join("")}</div>
       <label>Préparation (sans appareil) maximum</label><div class="tchips">${[10, 15, 20].map(m => `<button class="cat ${o.prepaMax === m ? "on" : ""}" data-rprep="${m}">${m} min</button>`).join("")}</div>
-      <label>Cuisson maximum</label><div class="tchips">${[20, 25, 30, 35].map(m => `<button class="cat ${o.cuissonMax === m ? "on" : ""}" data-rcuis="${m}">${m} min</button>`).join("")}</div>
+      <label>Cuisson maximum</label><div class="tchips">${[20, 25, 30, 45].map(m => `<button class="cat ${o.cuissonMax === m ? "on" : ""}" data-rcuis="${m}">${m === 45 ? "45 min (plus long)" : m + " min"}</button>`).join("")}</div>
+      <label>🌶 Plats pimentés</label><div class="tchips">${[["libre", "Comme ça vient"], ["un", "1 ou 2 dans la semaine"], ["non", "Aucun"]].map(([k, n]) => `<button class="cat ${(o.pimente || "libre") === k ? "on" : ""}" data-rpim="${k}">${n}</button>`).join("")}</div>
       <label>Appareils</label><div class="tchips">${[["mixte", "Mixte"], ["Thermomix", "Thermomix"], ["Four", "Four"], ["Plaques", "Plaques"]].map(([k, n]) => `<button class="cat ${o.appareil === k ? "on" : ""}" data-rapp="${k}">${n}</button>`).join("")}</div>
       <label>Budget alimentaire de la semaine (€)</label><input type="number" inputmode="decimal" id="rBud" value="${o.budget}">
       <button class="btn" data-rr="generer">Générer les menus</button>
@@ -1283,14 +1299,16 @@ function viewMenus(v) {
     const lab = `<div class="dl">${esc(jourLong(j.date))}${j.date === today ? " · ce soir" : ""}${r && !okGouts(v, r) ? " · ⚠ contient un ingrédient évité" : ""}</div>`;
     if (j.type === "libre") { h += `<div class="dayc ${j.date === today ? "today" : ""}"><div class="ph">🍕</div><div class="rt">${lab}<b>Pas de repas prévu</b><div class="acts"><button data-rr="changer" data-i="${i}">Choisir un plat</button></div></div></div>`; return; }
     if (j.type === "restes") { h += `<div class="dayc ${j.date === today ? "today" : ""}"><div class="ph">🥡</div><div class="rt">${lab}<b>Restes : ${esc(r ? r.nom : j.nom)}</b><span class="hint">Rien à cuisiner</span></div></div>`; return; }
+    if (j.type === "reporte") { h += `<div class="dayc" style="opacity:.6">${photoHtml(r)}<div class="rt">${lab}<b>${esc(r ? r.nom : j.nom)}</b><span>↪ pas fait, reporté à la semaine suivante</span></div></div>`; return; }
     if (!r) { h += `<div class="dayc"><div class="ph">❓</div><div class="rt">${lab}<b>${esc(j.nom || "Recette introuvable")}</b><div class="acts"><button data-rr="changer" data-i="${i}">Changer</button></div></div></div>`; return; }
     const cp = coutRecette(r, pm, reg(v).coef) / 4;
     h += `<div class="dayc ${j.date === today ? "today" : ""}"><div data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${photoHtml(r)}</div>
-      <div class="rt">${lab}<b data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${esc(r.nom)}</b><span>⏱ ${tempsTotal(r)} min (prépa ${r.prepa}) · ${eur(cp)} / part${j.portions > 4 ? " · ×2" : ""}</span>
-      <div class="acts"><button data-rr="doubler" data-i="${i}" class="${j.portions > 4 ? "on" : ""}">${j.portions > 4 ? "×2 ✓" : "Doubler"}</button><button data-rr="changer" data-i="${i}">Changer</button><button data-rr="libre" data-i="${i}">🗑 Retirer</button></div></div></div>`;
+      <div class="rt">${lab}<b data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${esc(r.nom)}</b><span>⏱ ${tempsTotal(r)} min (prépa ${r.prepa})${estPimente(r) ? " · 🌶" : ""} · ${j.type === "reprise" ? "↩ reporté, déjà acheté" : eur(cp) + " / part"}${j.portions > 4 ? " · ×2" : ""}</span>
+      <div class="acts"><button data-rr="doubler" data-i="${i}" class="${j.portions > 4 ? "on" : ""}">${j.portions > 4 ? "×2 ✓" : "Doubler"}</button><button data-rr="changer" data-i="${i}">Changer</button><button data-rr="libre" data-i="${i}">🗑 Retirer</button>${j.date <= today ? `<button data-rr="pasfait" data-i="${i}">↪ Pas fait</button>` : ""}</div></div></div>`;
   });
   h += `<div class="two" style="margin-top:6px"><button class="btn sec" style="margin:0" data-rr="regenerer">🔀 Régénérer</button><button class="btn sec" style="margin:0" data-rsub="courses">🛒 Voir la liste</button></div>
     <button class="linkbtn" data-rr="effacer" style="color:var(--bad)">🗑 Effacer les menus de cette semaine</button>`;
+  if (S.rp.wk <= 0) h += bilanCard(v, sem);
   return h + reglagesCard(v);
 }
 function reglagesCard(v) {
@@ -1334,18 +1352,19 @@ function viewCourses(v) {
     });
     h += `</div>`;
   });
+  h += `<button class="btn" data-rr="fincourses" style="margin-top:16px">✅ J'ai fini les courses : scanner le ticket</button><div class="hint" style="text-align:center">Photo ou PDF du ticket : la dépense est enregistrée une seule fois, et comparée à la liste.</div>`;
   return h + `<div class="hint" style="margin:10px 4px">Touche un article quand il est dans le caddie (il se coche aussi chez l'autre). 🏠 = déjà à la maison, il sort du total. Touche un prix pour le corriger : il sera retenu pour les prochaines listes.</div>`;
 }
 function viewRecettes(v) {
   const pm = prodMap(v), q = norm(S.rp.q || ""), f = S.rp.filt || "";
   const prots = [...new Set(actives(v).map(r => r.proteine))].filter(Boolean);
   const nbEv = actives(v).filter(r => !okGouts(v, r)).length;
-  let list = (S.rp.tous ? actives(v) : proposables(v)).filter(r => (!q || norm(r.nom + " " + r.ings.map(i => i[0]).join(" ")).includes(q)) && (!f || (f === "rapide" ? tempsTotal(r) <= 25 : r.proteine === f)));
+  let list = (S.rp.tous ? actives(v) : proposables(v)).filter(r => (!q || norm(r.nom + " " + r.ings.map(i => i[0]).join(" ")).includes(q)) && (!f || (f === "rapide" ? tempsTotal(r) <= 25 : f === "pimente" ? estPimente(r) : r.proteine === f)));
   list.sort((a, b) => tempsTotal(a) - tempsTotal(b));
   let h = `<input type="text" id="rQ" placeholder="🔎 Chercher une recette ou un ingrédient" value="${esc(S.rp.q || "")}" autocomplete="off" style="margin-bottom:10px">
-    <div class="tchips" style="margin-bottom:12px"><button class="cat ${!f ? "on" : ""}" data-rfilt="">Tout</button><button class="cat ${f === "rapide" ? "on" : ""}" data-rfilt="rapide">⚡ ≤ 25 min</button>${prots.map(p => `<button class="cat ${f === p ? "on" : ""}" data-rfilt="${esc(p)}">${PROT_IC[p] || ""} ${esc(p)}</button>`).join("")}</div>`;
+    <div class="tchips" style="margin-bottom:12px"><button class="cat ${!f ? "on" : ""}" data-rfilt="">Tout</button><button class="cat ${f === "rapide" ? "on" : ""}" data-rfilt="rapide">⚡ ≤ 25 min</button><button class="cat ${f === "pimente" ? "on" : ""}" data-rfilt="pimente">🌶 Pimenté</button>${prots.map(p => `<button class="cat ${f === p ? "on" : ""}" data-rfilt="${esc(p)}">${PROT_IC[p] || ""} ${esc(p)}</button>`).join("")}</div>`;
   if (!list.length) return h + `<div class="empty">Aucune recette ne correspond.</div>`;
-  h += `<div class="rgrid">` + list.map(r => `<button class="rcard" data-rr="fiche" data-id="${r.id}">${photoHtml(r)}<div class="t">${esc(r.nom)}<span>⏱ ${tempsTotal(r)} min · ${eur(coutRecette(r, pm, reg(v).coef) / 4)} / part</span></div></button>`).join("") + `</div>`;
+  h += `<div class="rgrid">` + list.map(r => `<button class="rcard" data-rr="fiche" data-id="${r.id}">${photoHtml(r)}<div class="t">${esc(r.nom)}<span>⏱ ${tempsTotal(r)} min${estPimente(r) ? " · 🌶" : ""}${plusLong(r) ? " · 📅 plus long" : ""} · ${eur(coutRecette(r, pm, reg(v).coef) / 4)} / part</span></div></button>`).join("") + `</div>`;
   if (nbEv) h += `<button class="linkbtn" data-rr="tous">${S.rp.tous ? "Masquer" : "Afficher"} les ${nbEv} recette(s) avec un ingrédient évité</button>`;
   const off = (R(v).recettes || []).filter(r => !r.actif);
   if (off.length) h += `<h2>Plats non proposés (${off.length})</h2><div class="card" style="padding:4px 14px">` + off.map(r => `<div class="row" data-rr="reactiver" data-id="${r.id}" style="cursor:pointer"><div class="rt"><b style="white-space:normal">${esc(r.nom)}</b><span>${/^A\d/.test(r.id) ? "ancien plat (trop long)" : "retiré par vous"} · toucher pour le proposer à nouveau</span></div></div>`).join("") + `</div>`;
@@ -1392,7 +1411,7 @@ function openFiche(id, ctx) {
     <div class="sth">⚡ À partir de ${esc(hm(h0))} : cuisson <span>heures creuses</span></div><ol class="steps" style="counter-reset:st ${r.prep.length}">${r.cuis.map((s, k) => step(s, "c" + k)).join("")}${step("Servir 2 portions et mettre le reste en boîtes hermétiques dès que c'est tiède, au frigo.", "z")}</ol>
     ${r.astuce ? `<div class="alert" style="margin-top:12px">💡 ${esc(r.astuce)}</div>` : ""}
     ${ctx && ctx.choisir ? `<button class="btn" data-rr="choisirici" data-id="${r.id}">Mettre ce plat ${esc(ctx.choisirLib || "")}</button>` : ""}
-    <div class="two"><button class="btn sec" data-rr="photo" data-id="${r.id}">🖼 Autre photo</button><button class="btn sec" data-rr="nonplat" data-id="${r.id}">👎 Ne plus proposer</button></div>
+    <div class="two"><button class="btn sec" data-rr="photochoix" data-id="${r.id}">🖼 Choisir la photo</button><button class="btn sec" data-rr="nonplat" data-id="${r.id}">👎 Ne plus proposer</button></div>
     ${r.credit ? `<div class="credit">${esc(r.credit)}${r.page ? ` · <a href="${esc(r.page)}" target="_blank" rel="noopener">source</a>` : ""}</div>` : ""}`);
   if (ctx && ctx.cuisine && navigator.wakeLock) { navigator.wakeLock.request("screen").then(l => { S.wake = l; }).catch(() => {}); }
 }
@@ -1401,7 +1420,7 @@ function openFiche(id, ctx) {
 function propositions(v) {
   const c = ceSoir(v), today = todayISO(), out = [], vus = new Set();
   const courant = c.j && c.j.id;
-  c.jours.filter(j => j.type === "cuisine" && j.date > today && j.id !== courant).forEach(j => {
+  c.jours.filter(j => estPlat(j) && j.date > today && j.id !== courant).forEach(j => {
     const r = recette(v, j.id); if (r && !vus.has(r.id)) { vus.add(r.id); out.push({ r, swap: j.date, tag: "Inverser avec " + jourLong(j.date).toLowerCase() + " : rien à racheter", cls: "ok" }); }
   });
   const achete = new Set(Object.keys(semData(v, c.sem).etats || {}));
@@ -1411,16 +1430,18 @@ function propositions(v) {
   reste.filter(x => x.manque.length).sort((a, b) => a.manque.length - b.manque.length).slice(0, 12).forEach(x => out.push({ r: x.r, tag: "Il manque : " + x.manque.join(", "), cls: "warn" }));
   return out;
 }
-function openDeck() {
+function openDeck(tmax) {
   const v = computeView();
-  S.deck = { list: propositions(v), i: 0 };
+  const t = tmax === undefined ? (S.deck && S.deck.tmax) || 0 : tmax;
+  S.deck = { list: propositions(v).filter(x => !t || tempsTotal(x.r) <= t), i: 0, tmax: t };
   renderDeck();
 }
 function renderDeck() {
   const D = S.deck, x = D.list[D.i];
-  if (!x) { openSheet(`<h3>Plus d'idées</h3><div class="hint">Tu as tout passé en revue.</div><button class="btn sec" data-rr="soirchoix">Choisir dans la liste</button><button class="btn sec" data-rr="soirlibre">Ce soir, soir libre</button>`); return; }
+  if (!x) { openSheet(`<h3>Plus d'idées</h3><div class="tchips" style="margin:6px 0">${[[0, "Tout"], [20, "⚡ ≤ 20 min"], [30, "≤ 30 min"]].map(([k, n]) => `<button class="cat ${S.deck.tmax === k ? "on" : ""}" data-rtmax="${k}">${n}</button>`).join("")}</div><div class="hint">Tu as tout passé en revue.</div><button class="btn sec" data-rr="soirchoix">Choisir dans la liste</button><button class="btn sec" data-rsub="flemme">😴 Mode flemme : pâtes, steak ou poulet + une sauce</button><button class="btn sec" data-rr="soirlibre">Ce soir, soir libre</button>`); return; }
   const r = x.r;
-  openSheet(`<h3>Une autre idée pour ce soir ?</h3><div class="hint">Glisse à droite pour choisir, à gauche pour passer.</div>
+  const T = S.deck.tmax;
+  openSheet(`<h3>Une autre idée pour ce soir ?</h3><div class="tchips" style="margin:6px 0">${[[0, "Tout"], [20, "⚡ ≤ 20 min"], [30, "≤ 30 min"]].map(([k, n]) => `<button class="cat ${T === k ? "on" : ""}" data-rtmax="${k}">${n}</button>`).join("")}<button class="cat" data-rsub="flemme">😴 Flemme : pâtes + sauce</button></div><div class="hint">Glisse à droite pour choisir, à gauche pour passer.</div>
     <div class="deck"><div class="swc" id="swc">${photoHtml(r)}<div class="stamp yes">OUI</div><div class="stamp no">NON</div>
       <div class="in"><b>${esc(r.nom)}</b><div class="hint">🔪 ${r.prepa} min · ⚡ ${r.cuisson} min · ${esc(r.appareil)}</div><span class="tag ${x.cls}">${esc(x.tag)}</span></div></div></div>
     <div class="swbtn"><button data-rr="swno" aria-label="Passer">❌</button><button data-rr="fiche" data-id="${r.id}" aria-label="Voir la recette" style="font-size:22px">📖</button><button data-rr="swyes" aria-label="Choisir">✅</button></div>
@@ -1587,11 +1608,27 @@ function openPrix(nom) {
     <div class="hint">${p.appris ? (p.mag === "saisie manuelle" ? "Prix saisi à la main" : "Appris sur un ticket " + esc(p.mag || "")) + (p.date ? " le " + esc(p.date.split("-").reverse().join("/")) : "") : "Prix estimé (aucun ticket pour l'instant)"}.</div>
     <label>${auKilo ? "Prix au kilo (€/" + (p.u === "ml" ? "L" : "kg") + ")" : "Prix pour : " + esc(p.c || fmtQte(p.pas, p.u)) + " (€)"}</label>
     <input type="text" id="rPx" inputmode="decimal" value="${esc(f2(cur))}" autocomplete="off">
+    ${p.u === "g" || p.u === "ml" ? `<label>…ou ce que tu as payé (l'appli calcule)</label><div class="two"><input type="text" id="rPpaye" inputmode="decimal" placeholder="Payé (€)" autocomplete="off"><input type="text" id="rPpoids" inputmode="decimal" placeholder="Poids (${p.u === "ml" ? "ml ou L" : "g ou kg"})" autocomplete="off"></div><div class="hint" id="rPcalc"></div>` : ""}
     <button class="btn" data-rr="prixsave">Enregistrer ce prix</button>
     <div class="hint">Il sert tout de suite pour les listes. Un ticket plus récent le remplacera automatiquement.</div>`);
   setTimeout(() => { const t = $("#rPx"); if (t) { t.focus(); t.select(); } }, 250);
 }
+// « 1,2 kg » → 1200 ; « 750 » → 750 g ; « 1,5 » (petit nombre) → kg
+function poidsSaisi(s, u) {
+  const t = String(s || "").toLowerCase().replace(",", "."), n = parseFloat(t);
+  if (!(n > 0)) return 0;
+  if (/kg|\bl\b|litre/.test(t)) return n * 1000;
+  if (/cl/.test(t)) return n * 10;
+  return n < 20 ? n * 1000 : n;
+}
+function prixDepuisPaye() {
+  const v = computeView(), p = prodMap(v)[S.rf.prix], pa = num(($("#rPpaye") || {}).value), po = poidsSaisi(($("#rPpoids") || {}).value, p && p.u);
+  if (!p || !(pa > 0) || !(po > 0)) return null;
+  return { lot: pa * p.pas / po, kilo: pa / po * 1000 };
+}
 function savePrix() {
+  const pp = prixDepuisPaye();
+  if (pp) { const v = computeView(), p = prodMap(v)[S.rf.prix]; enqueue("repasprix", { produit: p.n, prix: Math.round(pp.lot * 100) / 100 }); closeSheet(); toast("✔ " + p.n + " : " + f2(pp.kilo) + " €/kg retenu"); return; }
   const v = computeView(), p = prodMap(v)[S.rf.prix], x = num($("#rPx").value);
   if (!p || !(x > 0)) { toast("Indique un prix"); return; }
   const lot = Math.round((S.rf.auKilo ? x * p.pas / 1000 : x) * 100) / 100;
@@ -1599,14 +1636,179 @@ function savePrix() {
   closeSheet(); toast("✔ Prix enregistré : " + p.n);
 }
 
+// ---------- « Pas fait » : le plat passe à la semaine suivante, sans racheter ses ingrédients ----------
+function pasFait(i) {
+  const v = computeView(), sem = semaineOff(S.rp.wk), jours = semData(v, sem).jours.map(j => Object.assign({}, j)), j = jours[i];
+  if (!j || !estPlat(j)) return;
+  const r = recette(v, j.id), next = addDays(sem, 7), nj = semData(v, next).jours.map(x => Object.assign({}, x));
+  let cible = null;
+  for (let k = 0; k < 7 && !cible; k++) { const d = addDays(next, k), x = nj.find(y => y.date === d); if (!x || x.type === "libre") cible = d; }
+  if (!cible) { toast("La semaine suivante est complète : retire d'abord un plat"); return; }
+  const deja = j.type === "reprise";
+  j.type = deja ? "libre" : "reporte";
+  const nouv = { date: cible, id: j.id, nom: j.nom, portions: j.portions || 4, type: "reprise" };
+  const k = nj.findIndex(y => y.date === cible); if (k >= 0) nj[k] = nouv; else nj.push(nouv);
+  enregistrerSemaine(v, sem, jours); enregistrerSemaine(v, next, nj);
+  toast("↪ " + (r ? r.nom : "Plat") + " : " + jourLong(cible).toLowerCase() + " (déjà acheté)");
+}
+// ---------- bilan de la semaine ----------
+function bilanCard(v, sem) {
+  const d = semData(v, sem), g = reg(v), pm = prodMap(v);
+  if (!d.jours.length) return "";
+  const L = construireListe(v, sem, d.jours), deb = dateCourses(v, sem), fin = addDays(deb, 6);
+  const reel = (v.journal || []).filter(j => j.cat === "Courses" && j.date >= deb && j.date <= fin && !j.ldds).reduce((s, j) => s + j.mont, 0);
+  const plats = d.jours.filter(estPlat), rep = d.jours.filter(j => j.type === "reporte").length, res = d.jours.filter(j => j.type === "restes").length;
+  const chers = plats.map(j => recette(v, j.id)).filter(Boolean).map(r => ({ r, c: coutRecette(r, pm, g.coef) })).sort((a, b) => b.c - a.c).slice(0, 3);
+  const ecart = reel - g.objectif, fini = fin < todayISO();
+  const court = iso => iso.slice(8, 10) + "/" + iso.slice(5, 7);
+  let conseil = "";
+  if (reel > 0 && ecart > 0) conseil = `La semaine est à ${eur(reel)}, soit ${eur(ecart)} au-dessus de l'objectif de ${eur(g.objectif)}. Pas de souci : ${Math.max(0, g.objectif - ecart) > 30 ? "pour compenser, vise environ " + eur(g.objectif - ecart) + " la semaine prochaine (menus moins chers, placard)." : "le budget du mois (Courses) absorbe l'écart."}`;
+  else if (reel > 0) conseil = `${eur(-ecart)} sous l'objectif de ${eur(g.objectif)} 👍`;
+  return `<div class="card" style="margin-top:14px"><b>📊 Bilan de la semaine${fini ? "" : " (en cours)"}</b>
+    <div class="l" style="display:flex;justify-content:space-between;margin-top:8px"><span>Liste estimée</span><b>${eur(L.total)}</b></div>
+    <div class="l" style="display:flex;justify-content:space-between"><span>Dépensé en courses (${court(deb)} au ${court(fin)})</span><b style="color:${ecart > 0 ? "var(--warn)" : "var(--acc)"}">${eur(reel)}</b></div>
+    <div class="hint">${plats.length} plat(s) au menu${res ? ", " + res + " soir(s) de restes" : ""}${rep ? ", " + rep + " reporté(s)" : ""}.${chers.length ? " Les plus chers : " + chers.map(x => esc(x.r.nom) + " (" + eur(x.c) + ")").join(", ") + "." : ""}</div>
+    ${conseil ? `<div class="hint" style="margin-top:6px">${conseil}</div>` : ""}</div>`;
+}
+// ---------- « J'ai fini les courses » : ticket comparé à la liste ----------
+function motsLib(s) { return norm(s).replace(/[^a-z0-9]+/g, " ").trim().split(" ").filter(w => w && !/^(de|du|des|la|le|les|au|aux|a|et|d|l|en)$/.test(w)); }
+function correspond(lib, mots) {
+  const m = motsLib(lib); if (!m.length) return 0;
+  const ok = w => m.some(x => w.length <= 3 ? x === w : x.indexOf(w) === 0);
+  let best = 0;
+  for (const a of String(mots || "").split("|").map(x => x.trim()).filter(Boolean)) {
+    if (a[0] === "-") { if (ok(norm(a.slice(1)).trim())) return 0; continue; }
+    const ws = motsLib(a); if (ws.length && ws.every(ok)) best = Math.max(best, ws.length * 100 + ws.join("").length);
+  }
+  return best;
+}
+function libSansQte(l) { return String(l).trim().replace(/^\d{1,2}\s*(x|×)?\s+/i, "").replace(/\s+(x|×|\*)\s*\d{1,2}$/i, ""); }
+function finCoursesComparer(t) {
+  const v = computeView(), sem = S.finCourses, L = construireListe(v, sem, semData(v, sem).jours), pm = prodMap(v);
+  S.finCourses = null;
+  const prods = (R(v).produits || []).filter(p => !estPlacard(p));
+  const trouves = {}, hors = [];
+  (t.lignes || []).filter(l => l.mont > 0).forEach(l => {
+    let best = null, sc = 0;
+    prods.forEach(p => { const x = correspond(libSansQte(l.lib), p.k || p.n); if (x > sc) { sc = x; best = p; } });
+    if (best && L.lignes.some(x => x.produit === best.n)) (trouves[best.n] = trouves[best.n] || []).push(l);
+    else hors.push(l);
+  });
+  const attendus = L.lignes.filter(l => !l.placard && l.etat !== "maison");
+  const manquent = attendus.filter(l => !trouves[l.produit] && l.etat !== "achete");
+  const tot = Number(t.total) || (t.lignes || []).reduce((s, l) => s + l.mont, 0), horsTot = hors.reduce((s, l) => s + l.mont, 0), g = reg(v);
+  S.rf = { ticket: t, sem, trouves: Object.keys(trouves) };
+  openSheet(`<h3>🛒 Courses terminées</h3>
+    <div class="ctot" style="box-shadow:none;padding:0;margin:8px 0">
+      <div class="l"><span>Ticket ${esc(t.magasin || "")}</span><b>${eur(tot)}</b></div>
+      <div class="l"><span>Liste estimée</span><b>${eur(L.total)}</b></div>
+      <div class="l"><span>Écart</span><b style="color:${tot - L.total > 0 ? "var(--warn)" : "var(--acc)"}">${tot - L.total >= 0 ? "+" : ""}${eur(tot - L.total)}</b></div></div>
+    <div class="hint">${tot > g.objectif ? "Au-dessus de l'objectif de " + eur(g.objectif) + (horsTot > 0 ? ", dont " + eur(horsTot) + " hors liste" : "") + ". Pas grave : c'est noté dans le bilan." : "🎯 Dans l'objectif de " + eur(g.objectif) + "."}</div>
+    <div class="sth">✓ Trouvés sur le ticket (${Object.keys(trouves).length})</div>
+    <ul class="ings">${Object.keys(trouves).map(n => { const ls = trouves[n], paye = ls.reduce((s, l) => s + l.mont, 0), est = (L.lignes.find(x => x.produit === n) || {}).prix || 0; return `<li>${esc(n)}<span>${eur(paye)} <span style="color:${paye > est + .05 ? "var(--warn)" : "var(--acc)"}">(prévu ${eur(est)})</span></span></li>`; }).join("") || "<li>Aucun<span></span></li>"}</ul>
+    ${hors.length ? `<div class="sth">➕ Hors liste (${eur(horsTot)})</div><ul class="ings">${hors.map(l => `<li>${esc(l.lib)}<span>${eur(l.mont)}</span></li>`).join("")}</ul>` : ""}
+    ${manquent.length ? `<div class="sth">❓ Pas vus sur le ticket (${manquent.length})</div><div class="hint">${manquent.map(l => esc(l.produit)).join(" · ")} : oubliés, déjà à la maison, ou nom différent sur le ticket.</div>` : ""}
+    <button class="btn" data-rr="finsave">Cocher les articles trouvés et enregistrer le ticket</button>
+    <div class="hint">L'écran suivant est celui d'un ticket habituel (catégorie Courses) : la dépense est comptée une seule fois, et les prix sont appris.</div>`);
+}
+function finCoursesEnregistrer() {
+  const x = S.rf; if (!x || !x.ticket) return;
+  const v = computeView(), d = semData(v, x.sem);
+  x.trouves.forEach(n => { if ((d.etats || {})[n] !== "achete") enqueue("repascoche", { semaine: x.sem, produit: n, etat: "achete" }); });
+  openTicket(x.ticket);
+  S.form.cat = "Courses"; S.form.auto = true;
+  document.querySelectorAll("[data-tcat]").forEach(b => b.classList.toggle("on", b.dataset.tcat === "Courses"));
+}
+
+// ---------- 😴 mode flemme : une base simple + une sauce rapide, dosée selon les quantités (+10 %) ----------
+const BASES = [
+  { k: "pates", n: "Pâtes", u: "g", def: 400, par: 100, f: true, cuis: "Pâtes : 10 min dans l'eau bouillante salée." },
+  { k: "riz", n: "Riz", u: "g", def: 320, par: 80, f: true, cuis: "Riz : 11 min dans l'eau bouillante salée." },
+  { k: "semoule", n: "Semoule", u: "g", def: 320, par: 80, f: true, cuis: "Semoule : même volume d'eau bouillante salée, couvrir 5 min." },
+  { k: "gnocchis", n: "Gnocchis", u: "g", def: 1000, par: 250, f: true, cuis: "Gnocchis : 8 min à la poêle avec un filet d'huile." },
+  { k: "steak", n: "Steaks hachés", u: "pièces", def: 4, par: 1, cuis: "Steaks : 3 à 4 min par face à la poêle." },
+  { k: "poulet", n: "Poulet", u: "g", def: 600, par: 150, cuis: "Poulet en dés : 6 à 8 min à la poêle bien chaude." },
+  { k: "dinde", n: "Dinde", u: "g", def: 600, par: 150, cuis: "Dinde en lanières : 6 à 8 min à la poêle." },
+  { k: "poisson", n: "Poisson", u: "g", def: 600, par: 150, cuis: "Poisson : 8 à 10 min à la poêle ou à la vapeur (Varoma 20 min)." },
+  { k: "oeufs", n: "Œufs", u: "pièces", def: 8, par: 2, cuis: "Œufs : omelette ou au plat, 4 min." }
+];
+const SAUCES = [
+  { id: "s1", n: "Crème-moutarde", t: 5, ok: "poulet dinde steak pates riz", ings: [["Crème fraîche liquide", 50, "ml"], ["Moutarde", .5, "c. à soupe"]], et: ["Dans la poêle de la viande (ou une petite casserole), verser la crème et la moutarde.", "3 à 4 min à feu doux en remuant, saler, poivrer."] },
+  { id: "s2", n: "Tomate express", t: 10, ok: "pates riz semoule gnocchis poisson steak poulet oeufs", ings: [["Tomates concassées", 100, "g"], ["Ail", .5, "gousse"], ["Huile d'olive", .5, "c. à soupe"], ["Herbes de Provence", .25, "c. à café"]], et: ["Faire revenir l'ail haché 1 min dans l'huile.", "Ajouter les tomates et les herbes, saler, laisser réduire 8 min."] },
+  { id: "s3", n: "Crème ail et fines herbes", t: 5, ok: "pates gnocchis poulet dinde poisson", ings: [["Crème fraîche liquide", 50, "ml"], ["Ail", .5, "gousse"], ["Herbes de Provence", .25, "c. à café"]], et: ["Faire chauffer la crème avec l'ail haché et les herbes.", "3 min à feu doux, saler, poivrer."] },
+  { id: "s4", n: "Curry-coco", t: 8, ok: "poulet dinde poisson riz semoule", ings: [["Lait de coco", 80, "ml"], ["Curry en poudre", .5, "c. à café"], ["Oignons", 15, "g"]], et: ["Faire revenir l'oignon émincé 2 min avec le curry.", "Verser le lait de coco, laisser épaissir 5 min."] },
+  { id: "s5", n: "Beurre citron", t: 3, ok: "poisson poulet riz pates semoule", ings: [["Beurre doux", 10, "g"], ["Citron", .25, "citron"]], et: ["Faire fondre le beurre à feu doux, ajouter le jus de citron, saler, poivrer."] },
+  { id: "s6", n: "Soja-miel", t: 3, ok: "poulet dinde steak riz", ings: [["Sauce soja", 1, "c. à soupe"], ["Miel", .5, "c. à soupe"], ["Ail", .25, "gousse"]], et: ["Mélanger soja, miel et ail haché.", "Verser sur la viande en fin de cuisson, laisser caraméliser 2 min."] },
+  { id: "s7", n: "Crème-parmesan", t: 5, ok: "pates gnocchis poulet", ings: [["Crème fraîche liquide", 50, "ml"], ["Parmesan râpé", 15, "g"]], et: ["Chauffer la crème sans bouillir, ajouter le parmesan, poivrer.", "Mélanger aux pâtes hors du feu."] },
+  { id: "s8", n: "Sauce au poivre", t: 5, ok: "steak poulet dinde", ings: [["Crème fraîche liquide", 50, "ml"], ["Bouillon cube", .25, "cube"]], et: ["Après la viande, verser 2 c. à soupe d'eau et le bouillon émietté dans la poêle, gratter les sucs.", "Ajouter la crème et beaucoup de poivre, 3 min."] },
+  { id: "s9", n: "Pesto-crème", t: 3, ok: "pates gnocchis poulet", ings: [["Pesto", 25, "g"], ["Crème fraîche liquide", 30, "ml"]], et: ["Mélanger le pesto et la crème, chauffer 2 min à feu doux (ou directement sur les pâtes chaudes)."] },
+  { id: "s10", n: "Rosée (tomate-crème)", t: 8, ok: "pates gnocchis poulet riz", ings: [["Tomates concassées", 60, "g"], ["Crème fraîche liquide", 30, "ml"], ["Ail", .25, "gousse"]], et: ["Faire revenir l'ail 1 min, ajouter les tomates, 5 min.", "Ajouter la crème, 2 min, saler, poivrer."] },
+  { id: "s11", n: "Sauce fromagère (Thermomix)", t: 8, ok: "pates gnocchis riz", ings: [["Lait demi-écrémé", 80, "ml"], ["Gruyère râpé", 25, "g"], ["Farine", 6, "g"], ["Beurre doux", 6, "g"]], et: ["TM6 : lait, farine, beurre, sel, poivre : 6 min / 90 °C / vitesse 4.", "Ajouter le gruyère : 1 min / vitesse 3."] },
+  { id: "s12", n: "Paprika-crème", t: 7, ok: "poulet dinde steak riz", ings: [["Crème fraîche liquide", 50, "ml"], ["Paprika", .5, "c. à café"], ["Oignons", 15, "g"]], et: ["Faire revenir l'oignon émincé 2 min avec le paprika.", "Ajouter la crème, 3 min à feu doux."] }
+];
+function frac(x) {
+  const e = Math.floor(x), r = Math.round((x - e) * 4) / 4, f = { 0: "", .25: "¼", .5: "½", .75: "¾", 1: "" }[r];
+  const ent = r === 1 ? e + 1 : e;
+  return (ent ? ent : "") + (f || "") || "¼";
+}
+function qteSauce(q, u) {
+  if (u === "ml" || u === "g") { const x = Math.max(5, Math.round(q / 5) * 5); return x + " " + u; }
+  return frac(q) + " " + u + (q > 1.25 && /gousse|citron|cube/.test(u) ? "s" : "");
+}
+function viewFlemme(v) {
+  const F = S.rp.fl || (S.rp.fl = { b: {}, s: "" }), ev = evites(v);
+  let h = `<div class="card"><b>😴 Pas envie de cuisiner ?</b><div class="hint">Choisis ce que tu fais cuire (pâtes, steaks, poulet…) et en quelle quantité : l'appli te donne une sauce rapide, dosée pour tout napper, avec 10 % de marge.</div>
+    <label>Ce que tu prépares</label><div class="tchips">${BASES.map(b => `<button class="cat ${F.b[b.k] ? "on" : ""}" data-rfb="${b.k}">${esc(b.n)}</button>`).join("")}</div>`;
+  BASES.filter(b => F.b[b.k]).forEach(b => {
+    h += `<div class="row" style="padding:8px 0"><div class="rt"><b>${esc(b.n)}</b><span>${b.u === "pièces" ? "nombre" : "grammes (cru)"}</span></div><input type="text" inputmode="decimal" data-rfq="${b.k}" value="${F.b[b.k]}" style="width:110px;text-align:right" autocomplete="off"></div>`;
+  });
+  h += `</div>`;
+  const choisis = BASES.filter(b => F.b[b.k]);
+  if (!choisis.length) return h;
+  const pf = choisis.filter(b => b.f).reduce((s, b) => s + (num(F.b[b.k]) || 0) / b.par, 0);
+  const pp = choisis.filter(b => !b.f).reduce((s, b) => s + (num(F.b[b.k]) || 0) / b.par, 0);
+  const portions = Math.max(pf, pp, 1);
+  const keys = choisis.map(b => b.k);
+  const dispo = SAUCES.filter(sc => keys.some(k => sc.ok.split(" ").includes(k)) && !sc.ings.some(i => ev.has(i[0])));
+  h += `<h2>Quelle sauce ? <span style="font-weight:500;text-transform:none;letter-spacing:0">(${String(Math.round(portions * 10) / 10).replace(".", ",")} portion${portions > 1 ? "s" : ""})</span></h2><div class="tchips">${dispo.map(sc => `<button class="cat ${F.s === sc.id ? "on" : ""}" data-rfs="${sc.id}">${esc(sc.n)} · ${sc.t} min</button>`).join("")}</div>`;
+  const sc = dispo.find(x => x.id === F.s);
+  if (sc) {
+    const k = portions * 1.1;
+    h += `<div class="card" style="margin-top:12px"><b>${esc(sc.n)}</b><div class="hint">Pour ${String(Math.round(portions * 10) / 10).replace(".", ",")} portion(s) + 10 % · prête en ${sc.t} min</div>
+      <ul class="ings" style="margin-top:6px">${sc.ings.map(([n, q, u]) => `<li>${esc(n)}<span>${qteSauce(q * k, u)}</span></li>`).join("")}<li>Sel et poivre<span>au goût</span></li></ul>
+      <div class="sth">Étapes</div><ol class="steps">${choisis.map((b, i) => `<li data-rstep="fl_b${i}">${esc(b.cuis)}</li>`).join("")}${sc.et.map((e, i) => `<li data-rstep="fl_s${i}">${esc(e)}</li>`).join("")}</ol>
+      <div class="hint">Les étapes en parallèle : la base cuit pendant que la sauce se prépare.</div></div>`;
+  }
+  return h;
+}
+async function openPhotos(id, recherche) {
+  const v = computeView(), r = recette(v, id); if (!r) return;
+  if (!navigator.onLine) { toast("Il faut du réseau pour chercher des photos"); return; }
+  openSheet(`<h3>Photo : ${esc(r.nom)}</h3><div class="spin"></div>`);
+  try {
+    const res = await call("repasphotos", { recette: id, recherche: recherche || "" }, 40000);
+    if (!res.ok) throw new Error(res.error);
+    S.rf = { photos: res.photos.photos, recette: id };
+    openSheet(`<h3>Photo : ${esc(r.nom)}</h3><div class="hint">Touche la bonne photo. Elle sera gardée pour toujours (plus de remplacement automatique).</div>
+      <div class="two" style="margin:8px 0"><input type="text" id="rPhq" value="${esc(res.photos.recherche)}" autocomplete="off"><button class="btn sec" style="margin:0" data-rr="photoq">🔎 Chercher</button></div>
+      ${res.photos.photos.length ? `<div class="rgrid">${res.photos.photos.map((p, k) => `<button class="rcard" data-rphk="${k}"><div class="ph"><img src="${esc(p.url)}" alt="" loading="lazy"></div><div class="t"><span>${esc(p.titre.slice(0, 60))}</span></div></button>`).join("")}</div>` : `<div class="empty">Aucune photo libre trouvée. Essaie une autre recherche (en anglais, ça marche mieux : « chicken curry »).</div>`}
+      <button class="btn sec" data-rr="photonone">Pas de photo (vignette colorée)</button>`);
+  } catch (e) { closeSheet(); toast("⚠ " + (e.name === "AbortError" ? "trop long, réessaie" : e.message)); }
+}
+
 // ---------- événements Repas ----------
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-rprix],[data-rapp],[data-rgapp],[data-rgev],[data-rr],[data-rsub],[data-rwk],[data-rck],[data-rmaison],[data-rdel],[data-rfilt],[data-rti],[data-rsoir],[data-rprep],[data-rcuis],[data-rpick],[data-radd],[data-rary],[data-rinc],[data-rign],[data-rstep]");
+  const t = e.target.closest("[data-rpim],[data-rfb],[data-rfs],[data-rtmax],[data-rphk],[data-rprix],[data-rapp],[data-rgapp],[data-rgev],[data-rr],[data-rsub],[data-rwk],[data-rck],[data-rmaison],[data-rdel],[data-rfilt],[data-rti],[data-rsoir],[data-rprep],[data-rcuis],[data-rpick],[data-radd],[data-rary],[data-rinc],[data-rign],[data-rstep]");
   if (!t) return;
   const v = computeView(), d = t.dataset;
   if (d.rsub) { S.rp.sub = d.rsub; saveRp(); if (S.tab !== "repas") S.tab = "repas"; closeSheet(); render(); window.scrollTo(0, 0); if (d.rsub === "courses") pollCourses(); return; }
   if (d.rwk !== undefined) { S.rp.wk = Number(d.rwk); S.rp.gen = null; saveRp(); render(); return; }
   if (d.rstep) { S.rp.done[d.rstep] = !S.rp.done[d.rstep]; t.classList.toggle("done", !!S.rp.done[d.rstep]); return; }
+  if (d.rpim) { S.rp.gen.pimente = d.rpim; render(); return; }
+  if (d.rfb) { const F = S.rp.fl, b = BASES.find(x => x.k === d.rfb); if (F.b[d.rfb]) delete F.b[d.rfb]; else F.b[d.rfb] = b.def; render(); return; }
+  if (d.rfs) { S.rp.fl.s = S.rp.fl.s === d.rfs ? "" : d.rfs; render(); return; }
+  if (d.rtmax !== undefined) { openDeck(Number(d.rtmax)); return; }
+  if (d.rphk !== undefined) { const p = S.rf.photos[Number(d.rphk)]; enqueue("repasphotochoix", { recette: S.rf.recette, url: p.url, credit: p.credit, page: p.page }); closeSheet(); toast("🖼 Photo enregistrée"); return; }
   if (d.rprix) { e.stopPropagation(); openPrix(d.rprix); return; }
   if (d.rapp) { S.rp.gen.appareil = d.rapp; render(); return; }
   if (d.rgapp) { S.rf.appareil = d.rgapp; document.querySelectorAll("[data-rgapp]").forEach(b => b.classList.toggle("on", b === t)); return; }
@@ -1637,7 +1839,13 @@ document.addEventListener("click", e => {
     if (!o.soirs.length) { toast("Choisis au moins un soir"); return; }
     const jours = genererSemaine(v, sem, o); S.rp.gen = null; enregistrerSemaine(v, sem, jours); toast("✨ Semaine générée");
   }
-  else if (a === "regenerer") { if (!confirm("Remplacer tous les plats de la semaine ? Les cases déjà cochées sont gardées.")) return; const soirs = semData(v, sem).jours.filter(j => j.type !== "libre").map(j => (dOf(j.date).getDay() + 6) % 7); enregistrerSemaine(v, sem, genererSemaine(v, sem, { soirs: soirs.length ? soirs : [0, 1, 2, 3, 4] })); toast("🔀 Nouvelle semaine"); }
+  else if (a === "regenerer") {
+    if (!confirm("Remplacer les plats de la semaine ? Les plats reportés et les cases déjà cochées sont gardés.")) return;
+    const fixes = semData(v, sem).jours.filter(j => j.type === "reprise" || j.type === "reporte");
+    const pris = new Set(fixes.map(j => (dOf(j.date).getDay() + 6) % 7));
+    const soirs = [...new Set([0, 1, 2, 3, 4].concat(semData(v, sem).jours.filter(j => j.type !== "libre").map(j => (dOf(j.date).getDay() + 6) % 7)))].filter(k => !pris.has(k));
+    enregistrerSemaine(v, sem, fixes.concat(genererSemaine(v, sem, { soirs }))); toast("🔀 Nouvelle semaine");
+  }
   else if (a === "fiche") openFiche(d.id, S.deck && $("#swc") ? {} : null);
   else if (a === "go") { S.rp.done = {}; openFiche(d.id, { cuisine: true, portions: (ceSoir(v).j || {}).portions || 4 }); }
   else if (a === "pasenvie") openDeck();
@@ -1658,6 +1866,12 @@ document.addEventListener("click", e => {
   else if (a === "regsave") saveReglages();
   else if (a === "idee") idee();
   else if (a === "prixsave") savePrix();
+  else if (a === "pasfait") { if (confirm("Pas fait ce soir-là ? Le plat passe à la semaine suivante, sans racheter ses ingrédients.")) pasFait(Number(d.i)); }
+  else if (a === "fincourses") { S.finCourses = sem; $("#scanFile").click(); }
+  else if (a === "finsave") finCoursesEnregistrer();
+  else if (a === "photochoix") openPhotos(d.id);
+  else if (a === "photoq") openPhotos(S.rf.recette, $("#rPhq").value);
+  else if (a === "photonone") { enqueue("repasphotochoix", { recette: S.rf.recette, aucune: true }); closeSheet(); toast("Vignette colorée gardée"); }
   else if (a === "tous") { S.rp.tous = !S.rp.tous; render(); }
   else if (a === "nonplat") { const r = recette(v, d.id); if (r && confirm("Ne plus proposer « " + r.nom + " » ? (réactivable dans Recettes)")) { enqueue("repasactif", { recette: d.id, actif: false }); closeSheet(); toast("👎 Plat retiré des propositions"); } }
   else if (a === "reactiver") { const r = recette(v, d.id); if (r && confirm("Proposer à nouveau « " + r.nom + " » ?")) enqueue("repasactif", { recette: d.id, actif: true }); }
@@ -1665,6 +1879,8 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("input", e => {
   if (e.target.id === "rQ") { S.rp.q = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#rQ"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
+  if (e.target.dataset && e.target.dataset.rfq) { S.rp.fl.b[e.target.dataset.rfq] = e.target.value; const pos = e.target.selectionStart, k = e.target.dataset.rfq; render(); const q = document.querySelector(`[data-rfq="${k}"]`); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
+  if ((e.target.id === "rPpaye" || e.target.id === "rPpoids") && $("#rPcalc")) { const pp = prixDepuisPaye(); $("#rPcalc").textContent = pp ? "→ " + f2(pp.kilo) + " €/kg (" + f2(pp.lot) + " € par lot du tableau)" : ""; }
   if (e.target.id === "rPq" || e.target.id === "rAq") { const q = norm(e.target.value); document.querySelectorAll(e.target.id === "rPq" ? "#rPl .row" : "#rAl .row").forEach(r => { r.style.display = r.dataset.n.includes(q) ? "" : "none"; }); }
 });
 setInterval(pollCourses, 8000);
@@ -1735,7 +1951,7 @@ document.addEventListener("click", e => {
     S.form.cat = t.dataset.cat; S.form.manualCat = true; updateAuto(); return;
   }
   if (t.id === "fFuelBtn") { openFuel(); return; }
-  if (t.id === "scanBtn") { $("#scanFile").click(); return; }
+  if (t.id === "scanBtn") { S.finCourses = null; $("#scanFile").click(); return; }
   if (t.id === "tSave") { saveTicket(); return; }
   if (t.dataset.tcat) { S.form.cat = t.dataset.tcat; document.querySelectorAll("#tCats .cat").forEach(b => b.classList.toggle("on", b.dataset.tcat === S.form.cat)); return; }
   if (t.id === "vBack") { openAdd({ cat: "Véhicule", manualCat: true }); return; }
@@ -1788,7 +2004,7 @@ document.addEventListener("keydown", e => {
   const b = $("#sheet .btn:not(.sec)"); if (b) { e.preventDefault(); b.click(); }
 });
 document.addEventListener("change", e => {
-  if (e.target.id === "scanFile") { const f = e.target.files && e.target.files[0]; e.target.value = ""; scanTicket(f); }
+  if (e.target.id === "scanFile") { const f = e.target.files && e.target.files[0]; e.target.value = ""; if (!f) S.finCourses = null; scanTicket(f); }
 });
 
 async function saveCfgFromForm() {

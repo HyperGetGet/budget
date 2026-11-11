@@ -88,7 +88,7 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 .tile span{display:block;font-size:30px;margin-bottom:6px}.tile small{display:block;font-weight:400;color:var(--mut);font-size:11px;margin-top:3px}
 .tile.soon{opacity:.6}
 .amz{display:flex;gap:6px;align-items:center}.amz .col{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--mut);width:44px}
-.pill.bad{background:var(--bad);color:#fff}.pill.ok{background:var(--acc);color:#fff}.pill.warn{background:var(--warn);color:#fff}
+.row.done{opacity:.55}.am small{display:block;font-size:10px;font-weight:500;color:var(--mut)}.pill.bad{background:var(--bad);color:#fff}.pill.ok{background:var(--acc);color:#fff}.pill.warn{background:var(--warn);color:#fff}
 .soc{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}.soc:last-child{border-bottom:0}
 .soc .rt b{white-space:normal}
 .empty{text-align:center;color:var(--mut);padding:30px 10px;line-height:1.5}
@@ -114,7 +114,7 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 
 <script>
 "use strict";
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.4.1";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -482,14 +482,15 @@ const daysSince = iso => Math.max(0, Math.round((new Date(todayISO()) - new Date
 function soinCalc(s) {
   const recu = s.recu.secu + s.recu.mut + s.recu.autre;
   s.reste = r2(s.mont - recu);
-  s.statut = s.reste <= 0.005 ? "solde" : ((s.attSecu === 0 && s.attMut === 0 && recu === 0) ? "nonremb" : (recu > 0 ? "partiel" : "attente"));
+  const attOk = s.attSecu !== null && s.attMut !== null && s.attSecu !== undefined && s.attMut !== undefined;
+  s.statut = s.reste <= 0.005 ? "solde" : ((s.attSecu === 0 && s.attMut === 0 && recu === 0) ? "nonremb" : ((attOk && recu > 0 && recu >= s.attSecu + s.attMut - 0.005) ? "clos" : (recu > 0 ? "partiel" : "attente")));
   s.jours = (s.statut === "attente" || s.statut === "partiel") ? daysSince(s.date) : null;
   return s;
 }
 function soinPending(s) { return s.statut === "attente" || s.statut === "partiel"; }
 function soinARecevoir(s) {
   if (!soinPending(s)) return 0;
-  if (s.attSecu === null && s.attMut === null) return s.reste;
+  if (s.attSecu === null || s.attMut === null) return s.reste;
   return Math.max(0, r2((s.attSecu || 0) + (s.attMut || 0) - s.recu.secu - s.recu.mut - s.recu.autre));
 }
 function soinApply(v, p, id) {
@@ -518,6 +519,7 @@ function addModeChips(cur) {
 }
 function soinsCard(v) {
   const so = v.soins; if (!so) return "";
+  so.liste.forEach(soinCalc);
   const att = so.liste.filter(soinPending); if (!att.length) return "";
   const tot = att.reduce((t, x) => t + soinARecevoir(x), 0), old = Math.max(...att.map(x => x.jours || 0));
   return `<div class="card" data-act="goso" style="cursor:pointer"><div style="font-size:13px;color:var(--mut)">🩺 Soins en attente de remboursement</div>
@@ -527,6 +529,7 @@ function viewSoins(v) {
   let h = `<button class="linkbtn" data-act="goplus">← Plus</button>`;
   const so = v.soins;
   if (!so) return h + `<div class="empty">Cette section demande le script v20 dans le Sheet.<br>Mets-le à jour puis appuie sur ⟳.</div>`;
+  so.liste.forEach(soinCalc);
   const all = so.liste, att = all.filter(soinPending);
   const aRec = att.reduce((t, x) => t + soinARecevoir(x), 0);
   const recu = all.reduce((t, x) => t + x.recu.secu + x.recu.mut + x.recu.autre, 0);
@@ -537,17 +540,20 @@ function viewSoins(v) {
     <div class="sub">à récupérer · ${att.length} soin(s) en attente${att.length ? " · plus ancien : " + old + " j" : ""}</div></div>
     <div class="chips"><div class="chip"><b>${eur(avance)}</b><span>Avancé</span></div><div class="chip"><b>${eur(recu)}</b><span>Déjà remboursé</span></div><div class="chip"><b>${eur(net)}</b><span>Reste à charge estimé</span></div></div>
     <div class="two"><button class="btn" style="margin:0" data-act="soinnew">+ Nouveau soin</button><button class="btn sec" style="margin:0" data-act="entreenew">↩ Remboursement reçu</button></div>
-    <div class="who" style="margin-top:12px"><button type="button" class="cat ${S.soFilter !== "tous" ? "on" : ""}" data-filt="att">À suivre</button><button type="button" class="cat ${S.soFilter === "tous" ? "on" : ""}" data-filt="tous">Tous</button></div>`;
-  const liste = (S.soFilter === "tous" ? all.slice().sort((a, b) => b.date.localeCompare(a.date)) : att.slice().sort((a, b) => a.date.localeCompare(b.date)));
-  if (!liste.length) return h + `<div class="empty">${all.length ? "Rien en attente : tout est remboursé ou clos." : "Aucun soin enregistré.<br>Appuie sur « Nouveau soin »."}</div>`;
+    <div class="who" style="margin-top:12px"><button type="button" class="cat ${S.soFilter === "att" ? "on" : ""}" data-filt="att">En cours (${att.length})</button><button type="button" class="cat ${S.soFilter === "clos" ? "on" : ""}" data-filt="clos">Terminés (${all.length - att.length})</button><button type="button" class="cat ${S.soFilter === "tous" ? "on" : ""}" data-filt="tous">Tous</button></div>`;
+  const fin = all.filter(x => !soinPending(x));
+  const liste = S.soFilter === "tous" ? att.slice().sort((a, b) => a.date.localeCompare(b.date)).concat(fin.slice().sort((a, b) => b.date.localeCompare(a.date)))
+    : (S.soFilter === "clos" ? fin.slice().sort((a, b) => b.date.localeCompare(a.date)) : att.slice().sort((a, b) => a.date.localeCompare(b.date)));
+  if (!liste.length) return h + `<div class="empty">${all.length ? (S.soFilter === "clos" ? "Aucun soin terminé pour l'instant." : "Rien en cours : tout est terminé. Va voir l'onglet « Terminés ».") : "Aucun soin enregistré.<br>Appuie sur « Nouveau soin »."}</div>`;
   h += `<div class="card" style="padding:4px 14px">` + liste.map(x => {
     const rec = x.recu.secu + x.recu.mut + x.recu.autre;
-    const st = { attente: ["en attente", "warn"], partiel: ["partiel", "warn"], solde: ["soldé", "ok"], nonremb: ["non remboursable", ""] }[x.statut];
+    const st = { attente: ["en attente", "warn"], partiel: ["partiel", "warn"], solde: ["terminé · tout remboursé", "ok"], clos: ["terminé", "ok"], nonremb: ["terminé · non remboursable", ""] }[x.statut];
     const late = x.jours !== null && x.jours >= 30;
-    return `<div class="row ${x.pending ? "pend" : ""}" data-act="soinrow" data-id="${esc(x.id)}"><div class="ic">🩺</div>
-      <div class="rt"><b>${esc(x.lib)}</b><span>${esc(fmtDay(x.date))} · ${esc(x.pour)} · avancé ${eur(x.mont)} · reçu ${eur(rec)}</span>
+    const done = !soinPending(x);
+    return `<div class="row ${x.pending ? "pend" : ""} ${done ? "done" : ""}" data-act="soinrow" data-id="${esc(x.id)}"><div class="ic">🩺</div>
+      <div class="rt"><b>${esc(x.lib)}</b><span>${esc(fmtDay(x.date))} · ${esc(x.pour)} · avancé ${eur(x.mont)} · remboursé ${eur(rec)}${done ? " · reste à charge " + eur(x.reste) : ""}</span>
       <span style="display:block;margin-top:3px"><span class="pill ${st[1]}" style="margin-left:0">${st[0]}</span>${x.jours !== null ? `<span class="pill ${late ? "bad" : ""}">${late ? "⏰ " : ""}${x.jours} j</span>` : ""}</span></div>
-      <div class="am">${x.statut === "solde" ? "✔" : eur(x.reste)}</div></div>`;
+      <div class="am">${done ? (x.reste > 0.005 ? eur(x.reste) + "<small>reste à charge</small>" : "✔") : eur(soinARecevoir(x)) + "<small>à récupérer</small>"}</div></div>`;
   }).join("") + `</div>`;
   return h;
 }
@@ -581,7 +587,7 @@ function openSoinDetail(id) {
   openSheet(`<h3>🩺 ${esc(s.lib)}</h3>
     <div class="hint" style="font-size:14px;line-height:1.6">${esc(fmtDay(s.date))} · ${esc(s.pour)} · payé par ${esc(s.payePar)}<br>
     Avancé : <b>${eur(s.mont)}</b><br>Attendu : Sécu ${s.attSecu === null ? "?" : eur(s.attSecu)} · mutuelle ${s.attMut === null ? "?" : eur(s.attMut)}<br>
-    Reçu : Sécu ${eur(rec.secu)} · mutuelle ${eur(rec.mut)} · autre ${eur(rec.autre)}<br>Reste à charge à ce jour : <b>${eur(s.reste)}</b>${s.jours !== null ? "<br>En attente depuis " + s.jours + " jours" : ""}</div>
+    Reçu : Sécu ${eur(rec.secu)} · mutuelle ${eur(rec.mut)} · autre ${eur(rec.autre)}<br>${soinPending(s) ? "Reste à charge à ce jour" : "<b>Terminé</b> · reste à charge définitif"} : <b>${eur(s.reste)}</b>${s.jours !== null ? "<br>En attente depuis " + s.jours + " jours" : ""}</div>
     ${soinPending(s) ? `<button class="btn" id="dRemb">↩ Enregistrer un remboursement</button>` : ""}
     <button class="btn sec red" id="dDel" style="color:#fff">Supprimer ce soin</button>`);
 }

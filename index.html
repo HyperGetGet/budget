@@ -193,7 +193,7 @@ select{font-family:inherit;width:100%;font-size:16px;padding:10px;border-radius:
 
 <script>
 "use strict";
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.6.1";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -1024,7 +1024,7 @@ function openSolde() {
   openSheet(`<h3>Solde réel du compte commun</h3>
     <div class="hint">Saisis le solde affiché par ta banque maintenant. Le solde théorique repart de ce chiffre.</div>
     <label>Solde réel (€)</label><input type="text" id="sMont" inputmode="decimal" value="${esc(v ? String(v.previsionnel.soldeReel).replace(".", ",") : "")}" autocomplete="off">
-    <button class="btn" id="sSave">Enregistrer</button>`);
+    <button class="btn" id="soldeSave">Enregistrer</button>`);
   setTimeout(() => { const t = $("#sMont"); if (t) { t.focus(); t.select(); } }, 250);
 }
 function updateAuto() {
@@ -1090,7 +1090,11 @@ const minOf = s => { const m = String(s || "20:55").match(/(\d{1,2})\D?(\d{2})/)
 
 // ---------- données ----------
 const R = v => (v && v.repas) || { installe: false };
-const reg = v => Object.assign({ alim: 70, total: 100, objectif: 70, prepaMax: 20, cuissonMax: 30, heure: "20:55", jourCourses: "samedi", coef: 1 }, R(v).reglages || {});
+const reg = v => Object.assign({ alim: 70, total: 100, objectif: 70, prepaMax: 20, cuissonMax: 30, heure: "20:55", jourCourses: "samedi", coef: 1, eviter: "", appareil: "mixte" }, R(v).reglages || {});
+const evites = v => new Set(String(reg(v).eviter || "").split("|").map(x => x.trim()).filter(Boolean));
+const okGouts = (v, r) => { const e = evites(v); return !r.ings.some(i => e.has(i[0])); };
+const proposables = v => actives(v).filter(r => okGouts(v, r));
+const prefAppareil = (v, r, pref) => { pref = pref || reg(v).appareil; return !pref || pref === "mixte" || norm(r.appareil).includes(norm(pref)); };
 function prodMap(v) { const m = {}; (R(v).produits || []).forEach(p => { m[p.n] = p; }); return m; }
 const recette = (v, id) => (R(v).recettes || []).find(r => r.id === id);
 const actives = v => (R(v).recettes || []).filter(r => r.actif);
@@ -1136,7 +1140,7 @@ function construireListe(v, sem, jours) {
     else { lots = Math.max(1, Math.ceil(q / p.pas - 1e-6)); prix = lots * p.prix; achat = p.m === "vrac" ? fmtQte(lots * p.pas, p.u) : lots + " × " + (p.c || fmtQte(p.pas, p.u)); }
     const kilo = (p.u === "g" || p.u === "ml") && p.pas > 0 ? p.prix / p.pas * 1000 : null;
     lignes.push({ produit: n, rayon: p.r || "Divers", achat, besoin: fmtQte(q, p.u), prix: Math.round(prix * 100) / 100, kilo: kilo ? Math.round(kilo * 100) / 100 : null,
-      source: p.appris ? "ticket " + (p.mag || "") + (p.date ? " du " + p.date.slice(8, 10) + "/" + p.date.slice(5, 7) : "") : "estimé", maison: estMaison(p), etat: data.etats[n] || "" });
+      source: p.appris && p.mag === "saisie manuelle" ? "prix saisi" : p.appris ? "ticket " + (p.mag || "") + (p.date ? " du " + p.date.slice(8, 10) + "/" + p.date.slice(5, 7) : "") : "estimé", maison: estMaison(p), etat: data.etats[n] || "" });
   });
   (data.manuels || []).forEach(m => {
     const p = pm[m.lib];
@@ -1154,11 +1158,12 @@ const coutAlim = (v, sem, jours) => construireListe(v, sem, jours).alim;
 // ---------- générateur de semaine ----------
 function genererSemaine(v, sem, o) {
   const g = reg(v);
-  o = Object.assign({ budget: g.alim, prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, soirs: [0, 1, 2, 3, 4] }, o || {});
+  o = Object.assign({ budget: g.alim, prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, soirs: [0, 1, 2, 3, 4], appareil: g.appareil }, o || {});
   const dates = o.soirs.slice().sort().map(k => addDays(sem, k));
   if (!dates.length) return [];
-  let cands = actives(v).filter(r => r.prepa <= o.prepaMax && r.cuisson <= o.cuissonMax);
-  if (cands.length < dates.length) cands = actives(v).filter(r => r.prepa <= o.prepaMax);
+  let cands = proposables(v).filter(r => r.prepa <= o.prepaMax && r.cuisson <= o.cuissonMax);
+  if (cands.length < dates.length) cands = proposables(v).filter(r => r.prepa <= o.prepaMax);
+  if (cands.length < dates.length) cands = proposables(v);
   if (cands.length < dates.length) cands = actives(v);
   const avant = new Set(semData(v, addDays(sem, -7)).jours.map(j => j.id));
   let best = null;
@@ -1174,7 +1179,7 @@ function genererSemaine(v, sem, o) {
     if (pick.length < dates.length) continue;
     const jours = dates.map((d, i) => ({ date: d, id: pick[i].id, nom: pick[i].nom, portions: 4, type: "cuisine" }));
     const c = coutAlim(v, sem, jours);
-    const score = Math.max(0, c - o.budget) * 25 + c * .4 + pick.filter(r => avant.has(r.id)).length * 3 + Math.random() * 2;
+    const score = Math.max(0, c - o.budget) * 25 + c * .4 + pick.filter(r => avant.has(r.id)).length * 3 + pick.filter(r => !prefAppareil(v, r, o.appareil)).length * 15 + Math.random() * 2;
     if (!best || score < best.score) best = { score, jours };
   }
   return best ? best.jours : dates.map((d, i) => ({ date: d, id: cands[i % cands.length].id, nom: cands[i % cands.length].nom, portions: 4, type: "cuisine" }));
@@ -1199,6 +1204,8 @@ function repasApply(v, op) {
     else x.manuels.push({ lib: p.lib, rayon: p.rayon, prix: p.prix, etat: "" });
   } else if (op.type === "repasmot") { v.repas.inconnus = (v.repas.inconnus || []).filter(i => i.lib !== p.lib); }
   else if (op.type === "repasreglage") { v.repas.reglages = Object.assign({}, v.repas.reglages, { [p.cle]: p.valeur }); }
+  else if (op.type === "repasprix") { const x = (v.repas.produits || []).find(q => q.n === p.produit); if (x) Object.assign(x, { prix: p.prix, appris: true, mag: "saisie manuelle", date: todayISO() }); }
+  else if (op.type === "repasactif") { const x = (v.repas.recettes || []).find(q => q.id === p.recette); if (x) x.actif = p.actif; }
 }
 function fusionCourses(c) {
   if (!c || !S.base || !S.base.repas || !S.base.repas.semaines) return false;
@@ -1257,11 +1264,12 @@ function viewMenus(v) {
   const sem = semaineOff(S.rp.wk), d = semData(v, sem), g = reg(v), pm = prodMap(v);
   let h = (S.rp.wk === 0 ? tonightCard(v, true) : "") + weekChips() + `<h2 style="margin-top:4px">Semaine ${esc(libSemaine(sem))}</h2>`;
   if (!d.jours.length) {
-    const o = S.rp.gen || (S.rp.gen = { soirs: [0, 1, 2, 3, 4], prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, budget: g.alim });
+    const o = S.rp.gen || (S.rp.gen = { soirs: [0, 1, 2, 3, 4], prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, budget: g.alim, appareil: g.appareil || "mixte" });
     return h + `<div class="card"><b>✨ Générer ma semaine</b>
       <label>Soirs à cuisiner</label><div class="tchips">${["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((n, i) => `<button class="cat ${o.soirs.includes(i) ? "on" : ""}" data-rsoir="${i}">${n}</button>`).join("")}</div>
       <label>Préparation (sans appareil) maximum</label><div class="tchips">${[10, 15, 20].map(m => `<button class="cat ${o.prepaMax === m ? "on" : ""}" data-rprep="${m}">${m} min</button>`).join("")}</div>
       <label>Cuisson maximum</label><div class="tchips">${[20, 25, 30, 35].map(m => `<button class="cat ${o.cuissonMax === m ? "on" : ""}" data-rcuis="${m}">${m} min</button>`).join("")}</div>
+      <label>Appareils</label><div class="tchips">${[["mixte", "Mixte"], ["Thermomix", "Thermomix"], ["Four", "Four"], ["Plaques", "Plaques"]].map(([k, n]) => `<button class="cat ${o.appareil === k ? "on" : ""}" data-rapp="${k}">${n}</button>`).join("")}</div>
       <label>Budget alimentaire de la semaine (€)</label><input type="number" inputmode="decimal" id="rBud" value="${o.budget}">
       <button class="btn" data-rr="generer">Générer les menus</button>
       <div class="hint">Recettes variées (pas deux fois la même viande d'affilée), ingrédients partagés entre les plats pour ne rien jeter, 4 portions adultes par soir (dîner + boîtes du lendemain).</div></div>` + reglagesCard(v);
@@ -1272,22 +1280,23 @@ function viewMenus(v) {
   const today = todayISO();
   d.jours.slice().sort((a, b) => a.date < b.date ? -1 : 1).forEach(j => {
     const i = d.jours.indexOf(j), r = recette(v, j.id);
-    const lab = `<div class="dl">${esc(jourLong(j.date))}${j.date === today ? " · ce soir" : ""}</div>`;
-    if (j.type === "libre") { h += `<div class="dayc ${j.date === today ? "today" : ""}"><div class="ph">🍕</div><div class="rt">${lab}<b>Soir libre</b><div class="acts"><button data-rr="changer" data-i="${i}">Choisir un plat</button></div></div></div>`; return; }
+    const lab = `<div class="dl">${esc(jourLong(j.date))}${j.date === today ? " · ce soir" : ""}${r && !okGouts(v, r) ? " · ⚠ contient un ingrédient évité" : ""}</div>`;
+    if (j.type === "libre") { h += `<div class="dayc ${j.date === today ? "today" : ""}"><div class="ph">🍕</div><div class="rt">${lab}<b>Pas de repas prévu</b><div class="acts"><button data-rr="changer" data-i="${i}">Choisir un plat</button></div></div></div>`; return; }
     if (j.type === "restes") { h += `<div class="dayc ${j.date === today ? "today" : ""}"><div class="ph">🥡</div><div class="rt">${lab}<b>Restes : ${esc(r ? r.nom : j.nom)}</b><span class="hint">Rien à cuisiner</span></div></div>`; return; }
     if (!r) { h += `<div class="dayc"><div class="ph">❓</div><div class="rt">${lab}<b>${esc(j.nom || "Recette introuvable")}</b><div class="acts"><button data-rr="changer" data-i="${i}">Changer</button></div></div></div>`; return; }
     const cp = coutRecette(r, pm, reg(v).coef) / 4;
     h += `<div class="dayc ${j.date === today ? "today" : ""}"><div data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${photoHtml(r)}</div>
       <div class="rt">${lab}<b data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${esc(r.nom)}</b><span>⏱ ${tempsTotal(r)} min (prépa ${r.prepa}) · ${eur(cp)} / part${j.portions > 4 ? " · ×2" : ""}</span>
-      <div class="acts"><button data-rr="doubler" data-i="${i}" class="${j.portions > 4 ? "on" : ""}">${j.portions > 4 ? "×2 ✓" : "Doubler"}</button><button data-rr="changer" data-i="${i}">Changer</button><button data-rr="libre" data-i="${i}">Libre</button></div></div></div>`;
+      <div class="acts"><button data-rr="doubler" data-i="${i}" class="${j.portions > 4 ? "on" : ""}">${j.portions > 4 ? "×2 ✓" : "Doubler"}</button><button data-rr="changer" data-i="${i}">Changer</button><button data-rr="libre" data-i="${i}">🗑 Retirer</button></div></div></div>`;
   });
-  h += `<div class="two" style="margin-top:6px"><button class="btn sec" style="margin:0" data-rr="regenerer">🔀 Régénérer</button><button class="btn sec" style="margin:0" data-rsub="courses">🛒 Voir la liste</button></div>`;
+  h += `<div class="two" style="margin-top:6px"><button class="btn sec" style="margin:0" data-rr="regenerer">🔀 Régénérer</button><button class="btn sec" style="margin:0" data-rsub="courses">🛒 Voir la liste</button></div>
+    <button class="linkbtn" data-rr="effacer" style="color:var(--bad)">🗑 Effacer les menus de cette semaine</button>`;
   return h + reglagesCard(v);
 }
 function reglagesCard(v) {
   const g = reg(v);
   return `<div class="card" style="margin-top:14px" data-rr="reglages"><div style="display:flex;justify-content:space-between"><b>⚙️ Réglages repas</b><span class="linkbtn" style="padding:0">Modifier</span></div>
-    <div class="hint">Alimentaire ${eur(g.alim)} · caddie ${eur(g.total)} (objectif ${eur(g.objectif)}) · prépa ≤ ${g.prepaMax} min · cuisson ≤ ${g.cuissonMax} min à ${esc(g.heure)} · portions ×${String(g.coef).replace(".", ",")} · courses le ${esc(g.jourCourses)}</div></div>`;
+    <div class="hint">Alimentaire ${eur(g.alim)} · caddie ${eur(g.total)} (objectif ${eur(g.objectif)}) · prépa ≤ ${g.prepaMax} min · cuisson ≤ ${g.cuissonMax} min à ${esc(g.heure)} · portions ×${String(g.coef).replace(".", ",")} · appareil : ${esc(g.appareil)} · courses le ${esc(g.jourCourses)}${evites(v).size ? " · on évite : " + esc([...evites(v)].join(", ")) : ""}</div></div>`;
 }
 function dateCourses(v, sem) {
   const j = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"].indexOf(String(reg(v).jourCourses).toLowerCase());
@@ -1299,7 +1308,9 @@ function viewCourses(v) {
   const sem = semaineOff(S.rp.wk), d = semData(v, sem), g = reg(v), L = construireListe(v, sem, d.jours);
   let h = weekChips();
   const dc = dateCourses(v, sem);
-  h += `<div class="ctot"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--mut)">Semaine ${esc(libSemaine(sem))} · courses ${dc < todayISO() ? "faites le" : "prévues le"} ${esc(dOf(dc).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }))}</span><span class="live">${S.queue.length ? "⏳ envoi…" : "● en direct"}</span></div>
+  h += `<div class="ctot"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--mut)">Semaine ${esc(libSemaine(sem))}</span><span class="live">${S.queue.length ? "⏳ envoi…" : "● en direct"}</span></div>
+    ${reelCourses(v, sem)}
+    <div class="l" style="margin-top:10px;font-size:12px;color:var(--mut)"><span>LISTE ESTIMÉE</span></div>
     <div class="l"><span>🥕 Alimentaire</span><b style="color:${L.alim > g.alim ? "var(--bad)" : "inherit"}">${eur(L.alim)} / ${eur(g.alim)}</b></div>${pctBar(L.alim, g.alim)}
     <div class="l"><span>🧻 Hygiène & maison</span><b>${eur(L.maison)}</b></div>
     <div class="l"><span>🛒 Total du caddie</span><b style="color:${L.total > g.total ? "var(--bad)" : L.total > g.objectif ? "var(--warn)" : "var(--acc)"}">${eur(L.total)}</b></div>
@@ -1317,25 +1328,27 @@ function viewCourses(v) {
     h += `<div class="rayon"><span>${esc(ray === RAYON_PLACARD ? "À vérifier au placard" : ray)}</span><span>${reste ? reste + " à prendre" : "✓"}</span></div><div class="card" style="padding:2px 14px">`;
     items.forEach(l => {
       h += `<div class="citem ${l.etat}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}"><div class="ck">${l.etat === "achete" ? "✓" : l.etat === "maison" ? "🏠" : ""}</div>
-        <div class="rt"><b>${esc(l.produit)}</b><span>${l.placard ? "normalement à la maison" : esc(l.achat) + (l.besoin ? " · il faut " + esc(l.besoin) : "") + (l.kilo ? " · " + f2(l.kilo) + " €/kg" : "") + (l.source === "estimé" ? " · prix estimé" : "")}</span></div>
-        ${l.placard ? "" : `<div class="am">${eur(l.prix)}</div>`}
+        <div class="rt"><b>${esc(l.produit)}</b><span>${l.placard ? "normalement à la maison" : esc(l.achat) + (l.besoin ? " · il faut " + esc(l.besoin) : "") + (l.kilo ? " · " + f2(l.kilo) + " €/kg" : "") + (l.source && !l.manuel ? " · " + esc(l.source === "estimé" ? "prix estimé" : l.source) : "")}</span></div>
+        ${l.placard ? "" : l.manuel ? `<div class="am">${eur(l.prix)}</div>` : `<div class="am" data-rprix="${esc(l.produit)}" style="text-decoration:underline dotted;text-underline-offset:3px">${eur(l.prix)}</div>`}
         ${l.manuel ? `<button class="mini" data-rdel="${esc(l.produit)}" aria-label="Retirer">✕</button>` : l.placard ? "" : `<button class="mini" data-rmaison="${esc(l.produit)}" aria-label="Déjà à la maison">🏠</button>`}</div>`;
     });
     h += `</div>`;
   });
-  return h + `<div class="hint" style="margin:10px 4px">Touche un article quand il est dans le caddie (il se coche aussi chez l'autre). 🏠 = déjà à la maison, il sort du total.</div>`;
+  return h + `<div class="hint" style="margin:10px 4px">Touche un article quand il est dans le caddie (il se coche aussi chez l'autre). 🏠 = déjà à la maison, il sort du total. Touche un prix pour le corriger : il sera retenu pour les prochaines listes.</div>`;
 }
 function viewRecettes(v) {
   const pm = prodMap(v), q = norm(S.rp.q || ""), f = S.rp.filt || "";
   const prots = [...new Set(actives(v).map(r => r.proteine))].filter(Boolean);
-  let list = actives(v).filter(r => (!q || norm(r.nom + " " + r.ings.map(i => i[0]).join(" ")).includes(q)) && (!f || (f === "rapide" ? tempsTotal(r) <= 25 : r.proteine === f)));
+  const nbEv = actives(v).filter(r => !okGouts(v, r)).length;
+  let list = (S.rp.tous ? actives(v) : proposables(v)).filter(r => (!q || norm(r.nom + " " + r.ings.map(i => i[0]).join(" ")).includes(q)) && (!f || (f === "rapide" ? tempsTotal(r) <= 25 : r.proteine === f)));
   list.sort((a, b) => tempsTotal(a) - tempsTotal(b));
   let h = `<input type="text" id="rQ" placeholder="🔎 Chercher une recette ou un ingrédient" value="${esc(S.rp.q || "")}" autocomplete="off" style="margin-bottom:10px">
     <div class="tchips" style="margin-bottom:12px"><button class="cat ${!f ? "on" : ""}" data-rfilt="">Tout</button><button class="cat ${f === "rapide" ? "on" : ""}" data-rfilt="rapide">⚡ ≤ 25 min</button>${prots.map(p => `<button class="cat ${f === p ? "on" : ""}" data-rfilt="${esc(p)}">${PROT_IC[p] || ""} ${esc(p)}</button>`).join("")}</div>`;
   if (!list.length) return h + `<div class="empty">Aucune recette ne correspond.</div>`;
   h += `<div class="rgrid">` + list.map(r => `<button class="rcard" data-rr="fiche" data-id="${r.id}">${photoHtml(r)}<div class="t">${esc(r.nom)}<span>⏱ ${tempsTotal(r)} min · ${eur(coutRecette(r, pm, reg(v).coef) / 4)} / part</span></div></button>`).join("") + `</div>`;
+  if (nbEv) h += `<button class="linkbtn" data-rr="tous">${S.rp.tous ? "Masquer" : "Afficher"} les ${nbEv} recette(s) avec un ingrédient évité</button>`;
   const off = (R(v).recettes || []).filter(r => !r.actif);
-  if (off.length) h += `<div class="hint" style="margin:14px 4px">${off.length} plat(s) désactivé(s) dans l'onglet Plats (trop longs) : ${off.map(r => esc(r.nom)).join(" · ")}.</div>`;
+  if (off.length) h += `<h2>Plats non proposés (${off.length})</h2><div class="card" style="padding:4px 14px">` + off.map(r => `<div class="row" data-rr="reactiver" data-id="${r.id}" style="cursor:pointer"><div class="rt"><b style="white-space:normal">${esc(r.nom)}</b><span>${/^A\d/.test(r.id) ? "ancien plat (trop long)" : "retiré par vous"} · toucher pour le proposer à nouveau</span></div></div>`).join("") + `</div>`;
   return h;
 }
 // fond de tiroir : recettes classées selon ce qu'on a sous la main
@@ -1354,7 +1367,7 @@ function viewTiroir(v) {
   });
   h += `</div>`;
   if (!sel.size) return h;
-  const res = actives(v).map(r => tiroirScore(v, r, sel)).filter(x => x.avec.length).sort((a, b) => b.avec.length - a.avec.length || a.manque.length - b.manque.length || tempsTotal(a.r) - tempsTotal(b.r)).slice(0, 8);
+  const res = proposables(v).map(r => tiroirScore(v, r, sel)).filter(x => x.avec.length).sort((a, b) => b.avec.length - a.avec.length || a.manque.length - b.manque.length || tempsTotal(a.r) - tempsTotal(b.r)).slice(0, 8);
   h += `<h2>Ce que tu peux faire</h2>`;
   h += res.length ? `<div class="card" style="padding:4px 14px">` + res.map(x => `<div class="row" data-rr="fiche" data-id="${x.r.id}" style="cursor:pointer">${photoHtml(x.r).replace('class="ph ', 'style="width:52px;height:52px;border-radius:12px;flex:none;font-size:22px" class="ph ')}<div class="rt"><b style="white-space:normal">${esc(x.r.nom)}</b><span>${x.manque.length ? "il manque : " + esc(x.manque.join(", ")) : "✓ tu as tout"} · ${tempsTotal(x.r)} min</span></div></div>`).join("") + `</div>`
     : `<div class="empty">Aucune recette du catalogue avec ces ingrédients.</div>`;
@@ -1379,7 +1392,7 @@ function openFiche(id, ctx) {
     <div class="sth">⚡ À partir de ${esc(hm(h0))} : cuisson <span>heures creuses</span></div><ol class="steps" style="counter-reset:st ${r.prep.length}">${r.cuis.map((s, k) => step(s, "c" + k)).join("")}${step("Servir 2 portions et mettre le reste en boîtes hermétiques dès que c'est tiède, au frigo.", "z")}</ol>
     ${r.astuce ? `<div class="alert" style="margin-top:12px">💡 ${esc(r.astuce)}</div>` : ""}
     ${ctx && ctx.choisir ? `<button class="btn" data-rr="choisirici" data-id="${r.id}">Mettre ce plat ${esc(ctx.choisirLib || "")}</button>` : ""}
-    <button class="btn sec" data-rr="photo" data-id="${r.id}">🖼 Autre photo</button>
+    <div class="two"><button class="btn sec" data-rr="photo" data-id="${r.id}">🖼 Autre photo</button><button class="btn sec" data-rr="nonplat" data-id="${r.id}">👎 Ne plus proposer</button></div>
     ${r.credit ? `<div class="credit">${esc(r.credit)}${r.page ? ` · <a href="${esc(r.page)}" target="_blank" rel="noopener">source</a>` : ""}</div>` : ""}`);
   if (ctx && ctx.cuisine && navigator.wakeLock) { navigator.wakeLock.request("screen").then(l => { S.wake = l; }).catch(() => {}); }
 }
@@ -1393,7 +1406,7 @@ function propositions(v) {
   });
   const achete = new Set(Object.keys(semData(v, c.sem).etats || {}));
   besoins(v, c.jours) && Object.keys(besoins(v, c.jours)).forEach(n => achete.add(n));
-  const reste = actives(v).filter(r => !vus.has(r.id) && r.id !== courant).map(r => tiroirScore(v, r, achete));
+  const reste = proposables(v).filter(r => !vus.has(r.id) && r.id !== courant).map(r => tiroirScore(v, r, achete));
   reste.filter(x => !x.manque.length).sort(() => Math.random() - .5).forEach(x => { vus.add(x.r.id); out.push({ r: x.r, tag: "Faisable avec tes courses", cls: "ok" }); });
   reste.filter(x => x.manque.length).sort((a, b) => a.manque.length - b.manque.length).slice(0, 12).forEach(x => out.push({ r: x.r, tag: "Il manque : " + x.manque.join(", "), cls: "warn" }));
   return out;
@@ -1451,9 +1464,9 @@ function deckOui() { const x = S.deck.list[S.deck.i]; if (x) choisirCeSoir(x.r.i
 function openPicker(titre, onPick) {
   const v = computeView(), pm = prodMap(v), g = reg(v);
   S.pick = onPick;
-  const list = actives(v).slice().sort((a, b) => tempsTotal(a) - tempsTotal(b));
+  const list = actives(v).slice().sort((a, b) => okGouts(v, b) - okGouts(v, a) || tempsTotal(a) - tempsTotal(b));
   openSheet(`<h3>${esc(titre)}</h3><input type="text" id="rPq" placeholder="🔎 Chercher" autocomplete="off"><div class="pick" id="rPl" style="margin-top:8px">
-    ${list.map(r => `<div class="row" data-rpick="${r.id}" data-n="${esc(norm(r.nom))}">${photoHtml(r)}<div class="rt"><b style="white-space:normal">${esc(r.nom)}</b><span>⏱ ${tempsTotal(r)} min · ${eur(coutRecette(r, pm, g.coef) / 4)} / part</span></div></div>`).join("")}</div>`);
+    ${list.map(r => `<div class="row" data-rpick="${r.id}" data-n="${esc(norm(r.nom))}">${photoHtml(r)}<div class="rt"><b style="white-space:normal">${esc(r.nom)}</b><span>⏱ ${tempsTotal(r)} min · ${eur(coutRecette(r, pm, g.coef) / 4)} / part${okGouts(v, r) ? "" : " · ⚠ ingrédient évité"}</span></div></div>`).join("")}</div>`);
 }
 function modifierJour(i, fn) {
   const v = computeView(), sem = semaineOff(S.rp.wk), jours = semData(v, sem).jours.map(j => Object.assign({}, j));
@@ -1508,15 +1521,22 @@ function openInconnus() {
 }
 function openReglages() {
   const v = computeView(), g = reg(v);
+  S.rf = { eviter: evites(v), appareil: g.appareil || "mixte" };
   const champ = (k, lab, type) => `<label>${lab}</label><input type="${type || "text"}" ${type === "number" ? 'inputmode="decimal" step="any"' : ""} id="rg_${k}" value="${esc(String(g[k]).replace(".", type === "number" ? "." : ","))}" autocomplete="off">`;
   openSheet(`<h3>⚙️ Réglages repas</h3>${champ("alim", "Budget alimentaire (€ / semaine)", "number")}${champ("total", "Plafond du caddie complet (€ / semaine)", "number")}${champ("objectif", "Objectif tout compris (€ / semaine)", "number")}
     <div class="two"><div>${champ("prepaMax", "Prépa max (min)", "number")}</div><div>${champ("cuissonMax", "Cuisson max (min)", "number")}</div></div>
     <div class="two"><div>${champ("heure", "Début de cuisson")}</div><div>${champ("coef", "Taille des portions", "number")}</div></div>
     <div class="hint">Portions : 1 = adulte normal, 1,2 = 20 % plus copieux (quantités et budget suivent).</div>
-    ${champ("jourCourses", "Jour des courses")}<button class="btn" data-rr="regsave">Enregistrer</button>`);
+    ${champ("jourCourses", "Jour des courses")}
+    <label>Appareil préféré pour les menus générés</label><div class="tchips">${[["mixte", "Mixte"], ["Thermomix", "Thermomix"], ["Four", "Four"], ["Plaques", "Plaques"]].map(([k, n]) => `<button class="cat ${g.appareil === k ? "on" : ""}" data-rgapp="${k}">${n}</button>`).join("")}</div>
+    <label>On n'aime pas (ces recettes ne seront plus proposées)</label><div class="tchips">${(R(v).produits || []).filter(p => !estPlacard(p) && !estMaison(p) && (R(v).recettes || []).some(r => r.ings.some(i => i[0] === p.n))).map(p => `<button class="cat ${S.rf.eviter.has(p.n) ? "on" : ""}" data-rgev="${esc(p.n)}">${esc(p.n.replace(/ surgelés?$/, ""))}</button>`).join("")}</div>
+    <button class="btn" data-rr="regsave">Enregistrer</button>`);
 }
 function saveReglages() {
   const v = computeView(), g = reg(v); let n = 0;
+  const ev = [...S.rf.eviter].join("|");
+  if (ev !== String(g.eviter || "")) { enqueue("repasreglage", { cle: "eviter", valeur: ev }); n++; }
+  if (S.rf.appareil !== g.appareil) { enqueue("repasreglage", { cle: "appareil", valeur: S.rf.appareil }); n++; }
   ["alim", "total", "objectif", "prepaMax", "cuissonMax", "coef", "heure", "jourCourses"].forEach(k => {
     const el = $("#rg_" + k); if (!el) return;
     let val = el.value.trim(); if (typeof g[k] === "number") { val = num(val); if (val === null || val <= 0) return; }
@@ -1549,14 +1569,48 @@ async function idee() {
   } catch (e) { closeSheet(); toast("⚠ " + (e.name === "AbortError" ? "Gemini met trop de temps" : e.message)); }
 }
 
+// dépenses « Courses » réellement saisies (journal du compte commun) sur la semaine de courses : du jour des courses au jour d'avant le suivant
+function reelCourses(v, sem) {
+  const deb = dateCourses(v, sem), fin = addDays(deb, 6);
+  const L = (v.journal || []).filter(j => j.cat === "Courses" && j.date >= deb && j.date <= fin && !j.ldds);
+  const tot = L.reduce((s, j) => s + j.mont, 0), g = reg(v);
+  const court = iso => iso.slice(8, 10) + "/" + iso.slice(5, 7);
+  return `<div class="l"><span>💳 Déjà dépensé du ${court(deb)} au ${court(fin)}</span><b style="color:${tot > g.objectif ? "var(--bad)" : "inherit"}">${eur(tot)}</b></div>
+    <div class="hint">${L.length ? L.slice().reverse().map(j => esc(j.lib) + " " + court(j.date) + " (" + eur(j.mont) + ")").join(" · ") : "Aucune dépense « Courses » saisie sur cette période."}</div>`;
+}
+function openPrix(nom) {
+  const v = computeView(), p = prodMap(v)[nom]; if (!p) return;
+  const auKilo = p.m === "vrac" && (p.u === "g" || p.u === "ml");
+  S.rf = { prix: nom, auKilo };
+  const cur = auKilo ? p.prix / p.pas * 1000 : p.prix;
+  openSheet(`<h3>Prix de ${esc(nom)}</h3>
+    <div class="hint">${p.appris ? (p.mag === "saisie manuelle" ? "Prix saisi à la main" : "Appris sur un ticket " + esc(p.mag || "")) + (p.date ? " le " + esc(p.date.split("-").reverse().join("/")) : "") : "Prix estimé (aucun ticket pour l'instant)"}.</div>
+    <label>${auKilo ? "Prix au kilo (€/" + (p.u === "ml" ? "L" : "kg") + ")" : "Prix pour : " + esc(p.c || fmtQte(p.pas, p.u)) + " (€)"}</label>
+    <input type="text" id="rPx" inputmode="decimal" value="${esc(f2(cur))}" autocomplete="off">
+    <button class="btn" data-rr="prixsave">Enregistrer ce prix</button>
+    <div class="hint">Il sert tout de suite pour les listes. Un ticket plus récent le remplacera automatiquement.</div>`);
+  setTimeout(() => { const t = $("#rPx"); if (t) { t.focus(); t.select(); } }, 250);
+}
+function savePrix() {
+  const v = computeView(), p = prodMap(v)[S.rf.prix], x = num($("#rPx").value);
+  if (!p || !(x > 0)) { toast("Indique un prix"); return; }
+  const lot = Math.round((S.rf.auKilo ? x * p.pas / 1000 : x) * 100) / 100;
+  enqueue("repasprix", { produit: p.n, prix: lot });
+  closeSheet(); toast("✔ Prix enregistré : " + p.n);
+}
+
 // ---------- événements Repas ----------
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-rr],[data-rsub],[data-rwk],[data-rck],[data-rmaison],[data-rdel],[data-rfilt],[data-rti],[data-rsoir],[data-rprep],[data-rcuis],[data-rpick],[data-radd],[data-rary],[data-rinc],[data-rign],[data-rstep]");
+  const t = e.target.closest("[data-rprix],[data-rapp],[data-rgapp],[data-rgev],[data-rr],[data-rsub],[data-rwk],[data-rck],[data-rmaison],[data-rdel],[data-rfilt],[data-rti],[data-rsoir],[data-rprep],[data-rcuis],[data-rpick],[data-radd],[data-rary],[data-rinc],[data-rign],[data-rstep]");
   if (!t) return;
   const v = computeView(), d = t.dataset;
   if (d.rsub) { S.rp.sub = d.rsub; saveRp(); if (S.tab !== "repas") S.tab = "repas"; closeSheet(); render(); window.scrollTo(0, 0); if (d.rsub === "courses") pollCourses(); return; }
   if (d.rwk !== undefined) { S.rp.wk = Number(d.rwk); S.rp.gen = null; saveRp(); render(); return; }
   if (d.rstep) { S.rp.done[d.rstep] = !S.rp.done[d.rstep]; t.classList.toggle("done", !!S.rp.done[d.rstep]); return; }
+  if (d.rprix) { e.stopPropagation(); openPrix(d.rprix); return; }
+  if (d.rapp) { S.rp.gen.appareil = d.rapp; render(); return; }
+  if (d.rgapp) { S.rf.appareil = d.rgapp; document.querySelectorAll("[data-rgapp]").forEach(b => b.classList.toggle("on", b === t)); return; }
+  if (d.rgev) { S.rf.eviter.has(d.rgev) ? S.rf.eviter.delete(d.rgev) : S.rf.eviter.add(d.rgev); t.classList.toggle("on", S.rf.eviter.has(d.rgev)); return; }
   if (d.rmaison) { e.stopPropagation(); const sem = semaineOff(S.rp.wk), cur = semData(v, sem).etats[d.rmaison]; enqueue("repascoche", { semaine: sem, produit: d.rmaison, etat: cur === "maison" ? "" : "maison" }); return; }
   if (d.rdel) { e.stopPropagation(); if (confirm("Retirer « " + d.rdel + " » de la liste ?")) enqueue("repasajout", { semaine: semaineOff(S.rp.wk), lib: d.rdel, suppr: true }); return; }
   if (d.rck) {
@@ -1603,6 +1657,11 @@ document.addEventListener("click", e => {
   else if (a === "reglages") openReglages();
   else if (a === "regsave") saveReglages();
   else if (a === "idee") idee();
+  else if (a === "prixsave") savePrix();
+  else if (a === "tous") { S.rp.tous = !S.rp.tous; render(); }
+  else if (a === "nonplat") { const r = recette(v, d.id); if (r && confirm("Ne plus proposer « " + r.nom + " » ? (réactivable dans Recettes)")) { enqueue("repasactif", { recette: d.id, actif: false }); closeSheet(); toast("👎 Plat retiré des propositions"); } }
+  else if (a === "reactiver") { const r = recette(v, d.id); if (r && confirm("Proposer à nouveau « " + r.nom + " » ?")) enqueue("repasactif", { recette: d.id, actif: true }); }
+  else if (a === "effacer") { if (confirm("Effacer tous les menus de la semaine " + libSemaine(sem) + " ? La liste calculée est vidée ; tes ajouts manuels sont gardés.")) { enqueue("repasmenu", { semaine: sem, jours: [], lignes: [] }); toast("🗑 Menus effacés"); } }
 });
 document.addEventListener("input", e => {
   if (e.target.id === "rQ") { S.rp.q = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#rQ"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
@@ -1693,7 +1752,7 @@ document.addEventListener("click", e => {
   if (t.id === "cfgSave") { saveCfgFromForm(); return; }
   if (t.id === "cfgReload") { reloadApp(); return; }
   if (t.dataset.act === "solde") { openSolde(); return; }
-  if (t.id === "sSave") {
+  if (t.id === "soldeSave") {
     const m = parseFloat(String($("#sMont").value).replace(/\s/g, "").replace(",", "."));
     if (isNaN(m)) { toast("Indique un montant"); return; }
     enqueue("solde", { mont: Math.round(m * 100) / 100 }); closeSheet(); toast("✔ Solde réel mis à jour"); return;
@@ -1724,6 +1783,10 @@ document.addEventListener("input", e => {
   if (fk) { S.form[fk] = e.target.value; updateFuelCalc(); }
 });
 
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || !e.target.closest || !e.target.closest("#sheet") || e.target.tagName !== "INPUT") return;
+  const b = $("#sheet .btn:not(.sec)"); if (b) { e.preventDefault(); b.click(); }
+});
 document.addEventListener("change", e => {
   if (e.target.id === "scanFile") { const f = e.target.files && e.target.files[0]; e.target.value = ""; scanTicket(f); }
 });

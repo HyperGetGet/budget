@@ -114,7 +114,7 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 
 <script>
 "use strict";
-const APP_VERSION = "1.4.1";
+const APP_VERSION = "1.5.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -228,6 +228,7 @@ function applyOp(v, op) {
       shift(v, p.cat, m, false, 1);
     }
   } else if (op.type === "soin") { soinApply(v, p, op.id);
+  } else if (op.type === "soinmaj") { const s = v.soins && v.soins.liste.find(x => x.id === p.soinId); if (s) { s.etape = p.etape; s.note = p.note; soinCalc(s); }
   } else if (op.type === "soindel") { if (v.soins) v.soins.liste = v.soins.liste.filter(x => x.id !== p.soinId);
   } else if (op.type === "entree") { entreeApply(v, p);
   } else if (op.type === "amazon") { amzApply(v, p);
@@ -476,6 +477,9 @@ function openAmzJour(bloc) {
 
 // ---------- soins et entrées d'argent ----------
 const ENTREE_CATS = [["Soin", "🩺"], ["Remboursement", "↩️"], ["Salaire", "💼"], ["Courses", "🛒"], ["Animaux", "🐾"], ["Bébé", "🍼"], ["Loisirs", "🎉"], ["Autre", "📦"]];
+const ETAPES = [["adeclarer", "1 · À déclarer", "Aucune démarche faite"], ["demande", "2 · Demandé", "Démarche faite, j'attends"], ["rembourse", "3 · Remboursé", "Reçu en partie ou en totalité"], ["clos", "4 · Clos", "Dossier fini, reste à charge définitif"]];
+const etapeDef = s => (s.statut === "solde" || s.statut === "clos" || s.statut === "nonremb") ? "clos" : ((s.recu.secu + s.recu.mut + s.recu.autre) > 0 ? "rembourse" : "adeclarer");
+const etapeOf = s => s.etape || etapeDef(s);
 const ORGS = [["secu", "Sécu"], ["mut", "Mutuelle"], ["autre", "Autre"]];
 const r2 = x => Math.round(x * 100) / 100;
 const daysSince = iso => Math.max(0, Math.round((new Date(todayISO()) - new Date(iso)) / 86400000));
@@ -484,6 +488,7 @@ function soinCalc(s) {
   s.reste = r2(s.mont - recu);
   const attOk = s.attSecu !== null && s.attMut !== null && s.attSecu !== undefined && s.attMut !== undefined;
   s.statut = s.reste <= 0.005 ? "solde" : ((s.attSecu === 0 && s.attMut === 0 && recu === 0) ? "nonremb" : ((attOk && recu > 0 && recu >= s.attSecu + s.attMut - 0.005) ? "clos" : (recu > 0 ? "partiel" : "attente")));
+  if (s.etape === "clos" && (s.statut === "attente" || s.statut === "partiel")) s.statut = "clos";
   s.jours = (s.statut === "attente" || s.statut === "partiel") ? daysSince(s.date) : null;
   return s;
 }
@@ -552,7 +557,7 @@ function viewSoins(v) {
     const done = !soinPending(x);
     return `<div class="row ${x.pending ? "pend" : ""} ${done ? "done" : ""}" data-act="soinrow" data-id="${esc(x.id)}"><div class="ic">🩺</div>
       <div class="rt"><b>${esc(x.lib)}</b><span>${esc(fmtDay(x.date))} · ${esc(x.pour)} · avancé ${eur(x.mont)} · remboursé ${eur(rec)}${done ? " · reste à charge " + eur(x.reste) : ""}</span>
-      <span style="display:block;margin-top:3px"><span class="pill ${st[1]}" style="margin-left:0">${st[0]}</span>${x.jours !== null ? `<span class="pill ${late ? "bad" : ""}">${late ? "⏰ " : ""}${x.jours} j</span>` : ""}</span></div>
+      ${x.note ? `<span style="display:block;margin-top:3px;font-size:12px;color:var(--mut);white-space:pre-line">📝 ${esc(x.note.length > 90 ? x.note.slice(0, 90) + "…" : x.note)}</span>` : ""}<span style="display:block;margin-top:3px"><span class="pill ${{ adeclarer: "warn", demande: "", rembourse: "ok", clos: "ok" }[etapeOf(x)]}" style="margin-left:0">${esc(ETAPES.find(e => e[0] === etapeOf(x))[1])}</span>${x.jours !== null ? `<span class="pill ${late ? "bad" : ""}">${late ? "⏰ " : ""}${x.jours} j</span>` : ""}</span></div>
       <div class="am">${done ? (x.reste > 0.005 ? eur(x.reste) + "<small>reste à charge</small>" : "✔") : eur(soinARecevoir(x)) + "<small>à récupérer</small>"}</div></div>`;
   }).join("") + `</div>`;
   return h;
@@ -583,12 +588,18 @@ function saveSoin() {
 function openSoinDetail(id) {
   const v = computeView(); const s = v.soins && v.soins.liste.find(x => x.id === id); if (!s) return;
   const rec = s.recu;
-  S.form = { vmode: "soind", id };
+  S.form = { vmode: "soind", id, etape: etapeOf(s), note: s.note || "" };
   openSheet(`<h3>🩺 ${esc(s.lib)}</h3>
     <div class="hint" style="font-size:14px;line-height:1.6">${esc(fmtDay(s.date))} · ${esc(s.pour)} · payé par ${esc(s.payePar)}<br>
     Avancé : <b>${eur(s.mont)}</b><br>Attendu : Sécu ${s.attSecu === null ? "?" : eur(s.attSecu)} · mutuelle ${s.attMut === null ? "?" : eur(s.attMut)}<br>
     Reçu : Sécu ${eur(rec.secu)} · mutuelle ${eur(rec.mut)} · autre ${eur(rec.autre)}<br>${soinPending(s) ? "Reste à charge à ce jour" : "<b>Terminé</b> · reste à charge définitif"} : <b>${eur(s.reste)}</b>${s.jours !== null ? "<br>En attente depuis " + s.jours + " jours" : ""}</div>
-    ${soinPending(s) ? `<button class="btn" id="dRemb">↩ Enregistrer un remboursement</button>` : ""}
+    <label>Où en est ce soin ?</label>
+    <div class="cats" id="dEtapes">${ETAPES.map(e => `<button type="button" class="cat ${S.form.etape === e[0] ? "on" : ""}" data-detape="${e[0]}">${esc(e[1])}</button>`).join("")}</div>
+    <div class="hint" id="dEtHint">${esc(ETAPES.find(e => e[0] === S.form.etape)[2])}</div>
+    <label>Notes (démarches faites, à faire, interlocuteur…)</label>
+    <textarea id="dNote" rows="4" style="width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--chip);color:var(--ink);font:inherit">${esc(s.note || "")}</textarea>
+    <button class="btn" id="dSaveNote">Enregistrer le suivi</button>
+    ${soinPending(s) ? `<button class="btn sec" id="dRemb">↩ Enregistrer un remboursement</button>` : ""}
     <button class="btn sec red" id="dDel" style="color:#fff">Supprimer ce soin</button>`);
 }
 function openEntree(pre) {
@@ -986,6 +997,8 @@ document.addEventListener("click", e => {
   if (t.dataset.eso) { toggleESoin(t.dataset.eso); return; }
   if (t.id === "sSave") { saveSoin(); return; }
   if (t.id === "eSave") { saveEntree(); return; }
+  if (t.dataset.detape) { S.form.etape = t.dataset.detape; document.querySelectorAll("#dEtapes .cat").forEach(b => b.classList.toggle("on", b.dataset.detape === S.form.etape)); const h = $("#dEtHint"); if (h) h.textContent = ETAPES.find(e => e[0] === S.form.etape)[2]; return; }
+  if (t.id === "dSaveNote") { enqueue("soinmaj", { soinId: S.form.id, etape: S.form.etape, note: (S.form.note || "").trim() }); closeSheet(); toast("✔ Suivi enregistré"); return; }
   if (t.id === "dRemb") { const id = S.form.id; openEntree({ cat: "Soin" }); toggleESoin(id); return; }
   if (t.id === "dDel") {
     if (!confirm("Supprimer ce soin du suivi (et de l'onglet Soins du Sheet) ?")) return;
@@ -1067,7 +1080,8 @@ document.addEventListener("click", e => { if (e.target.id === "ov") closeSheet()
   if (e.target.id === "sNR") { S.form.nonremb = !S.form.nonremb; e.target.classList.toggle("on", S.form.nonremb); ["sS", "sA"].forEach(i => { const x = $("#" + i); if (x) { x.disabled = S.form.nonremb; if (S.form.nonremb) x.value = ""; } }); }
   if (e.target.id === "sDep") { S.form.depense = !S.form.depense; e.target.classList.toggle("on", S.form.depense); } });
 document.addEventListener("input", e => {
-  if (!S.form || S.form.vmode === "amz" || S.form.vmode === "amzj" || S.form.vmode === "soind") return;
+  if (S.form && S.form.vmode === "soind") { if (e.target.id === "dNote") S.form.note = e.target.value; return; }
+  if (!S.form || S.form.vmode === "amz" || S.form.vmode === "amzj") return;
   if (S.form.vmode === "soin" || S.form.vmode === "entree") { handleFormInput(e); return; }
   if (e.target.id === "fText") { S.form.text = e.target.value; updateAuto(); }
   if (e.target.id === "fMont") S.form.mont = e.target.value;

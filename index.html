@@ -170,12 +170,20 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 select{font-family:inherit;width:100%;font-size:16px;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .tchips{display:flex;flex-wrap:wrap;gap:6px}
 .tchips .cat{padding:7px 11px;font-size:13px}
+/* ---------- v1.7.0 : profils, congés ---------- */
+#prof{font-weight:800;font-size:15px;margin-right:6px}
+.kpis{display:grid;gap:8px;margin-bottom:12px}
+.kpi{background:var(--card);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+.kpi b{display:block;font-size:20px}
+.kpi span{font-size:11px;color:var(--mut);line-height:1.35;display:block;margin-top:2px}
+details summary::-webkit-details-marker{color:var(--mut)}
+.btn[disabled]{opacity:.45;pointer-events:none}
 </style>
 </head>
 <body>
 <header>
   <h1>Budget Familial</h1>
-  <div class="hr"><span id="sync">…</span><button class="ib" id="refresh" aria-label="Actualiser">⟳</button></div>
+  <div class="hr"><button class="ib" id="prof" aria-label="Profil">G</button><span id="sync">…</span><button class="ib" id="refresh" aria-label="Actualiser">⟳</button></div>
 </header>
 <main id="view"></main>
 <button id="fab" aria-label="Ajouter une dépense">+</button>
@@ -193,7 +201,7 @@ select{font-family:inherit;width:100%;font-size:16px;padding:10px;border-radius:
 
 <script>
 "use strict";
-const APP_VERSION = "1.6.3";
+const APP_VERSION = "1.7.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -388,6 +396,7 @@ async function flush() {
       if (r.ok) {
         S.queue.shift(); saveQueue();
         if (r.courses) { fusionCourses(r.courses); }
+        else if (r.conges) { S.cg = { data: r.conges, at: Date.now() }; LS.set("bf.cg", S.cg); }
         else { lourd = true; if (S.queue.length === 0 && r.state) { S.base = r.state; saveBase(); } }
         S.offline = false; S.error = "";
       } else if (r.error === "clé invalide" || /code de l'appli/.test(r.error)) {
@@ -499,8 +508,9 @@ function viewPlus() {
   return `<h2>Plus</h2><div class="tiles">` +
     T("📦", "Amazon P&amp;É", "abonnements du mois", "goamz") +
     T("🩺", "Soins et mutuelle", "suivi des remboursements", "goso") +
-    T("🏖️", "Congés", "bientôt", "soon", 'data-n="Congés"') +
-    T("📈", "Bourse", "bientôt", "soon", 'data-n="Bourse"') +
+    (estG() ? T("🏖️", "Congés", "compteurs, poser, ponts", "goconges") : "") +
+    T("👶", "Garde de Léo", "qui garde, calendrier", "gogarde") +
+    T("📈", estG() ? "Bourse" : "Ma bourse", "bientôt (v1.8)", "gobourse") +
     T("🍽️", "Menus et courses", "recettes, liste partagée", "", 'data-rr="gorepas"') +
     T("⚙️", "Réglages", "connexion, mise à jour", "goreg") + `</div>`;
 }
@@ -788,7 +798,7 @@ function viewHome(v) {
   if (S.who !== "Commun") return viewPerso(v);
   const t = v.totaux, pv = v.previsionnel;
   const neg = t.soldeTheorique < 0;
-  let h = whoBar() + `<div class="hero" data-act="solde" style="cursor:pointer"><small>Solde théorique aujourd'hui</small>
+  let h = bandeauScript() + whoBar() + `<div class="hero" data-act="solde" style="cursor:pointer"><small>Solde théorique aujourd'hui</small>
     <div class="big ${neg ? "neg" : ""}">${eur(t.soldeTheorique)}</div>
     <div class="sub">Plus bas prévu : ${esc(pv.plusBas)} · ${esc(pv.plusBasDate)}</div>
     <div class="sub" style="margin-top:6px;opacity:.75">Solde réel saisi : ${eur(pv.soldeReel)} · touche pour le mettre à jour</div></div>`;
@@ -796,7 +806,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += tonightCard(v, true) + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += tonightCard(v, true) + accueilPerso() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -867,14 +877,16 @@ function viewReglages() {
 function render() {
   const v = computeView();
   const el = $("#view");
-  const grpPlus = ["plus", "amazon", "soins", "reglages"].includes(S.tab);
+  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde"].includes(S.tab);
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
   $("#fab").style.display = (grpPlus || S.tab === "repas") ? "none" : "block";
   if (S.tab === "plus") { el.innerHTML = viewPlus(); return; }
   if (S.tab === "reglages") { if (!el.querySelector("#cfgSave")) el.innerHTML = viewReglages(); return; }
   if (!configured()) { S.tab = "reglages"; el.innerHTML = viewReglages(); toast("Configure d'abord la connexion"); return; }
   if (!v) { el.innerHTML = `<div class="empty">${S.loading ? "Chargement…" : "Pas encore de données.<br>Vérifie la connexion puis appuie sur ⟳."}</div>`; return; }
-  if (S.tab === "repas") { el.innerHTML = viewRepas(v); return; }
+  if (S.tab === "repas") { el.innerHTML = bandeauScript() + viewRepas(v); return; }
+  if (S.tab === "conges") { el.innerHTML = viewConges(); return; }
+  if (S.tab === "garde") { el.innerHTML = viewGarde(); return; }
   el.innerHTML = S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : S.tab === "amazon" ? viewAmazon(v) : S.tab === "soins" ? viewSoins(v) : viewAnnuels(v);
 }
 
@@ -1142,11 +1154,12 @@ function construireListe(v, sem, jours) {
     const p = pm[n] || { n, r: "Divers", m: "pack", u: "", pas: 1, c: "", prix: 0 }, q = need[n];
     if (estPlacard(p)) { lignes.push({ produit: n, rayon: RAYON_PLACARD, placard: true, achat: "", prix: 0, etat: data.etats[n] || "" }); return; }
     let achat, prix, lots;
-    if (p.m === "vrac" && (p.u === "g" || p.u === "ml")) { const qq = Math.ceil(q / 50) * 50; achat = "≈ " + fmtQte(qq, p.u); prix = qq / p.pas * p.prix; }
-    else { lots = Math.max(1, Math.ceil(q / p.pas - 1e-6)); prix = lots * p.prix; achat = p.m === "vrac" ? fmtQte(lots * p.pas, p.u) : lots + " × " + (p.c || fmtQte(p.pas, p.u)); }
+    const choix = Number((data.qte || {})[n]) || 0;
+    if (p.m === "vrac" && (p.u === "g" || p.u === "ml")) { const qq = choix || Math.ceil(q / 50) * 50; achat = (choix ? "" : "≈ ") + fmtQte(qq, p.u); prix = qq / p.pas * p.prix; }
+    else { lots = choix || Math.max(1, Math.ceil(q / p.pas - 1e-6)); prix = lots * p.prix; achat = p.m === "vrac" ? fmtQte(lots * p.pas, p.u) : lots + " × " + (p.c || fmtQte(p.pas, p.u)); }
     const kilo = (p.u === "g" || p.u === "ml") && p.pas > 0 ? p.prix / p.pas * 1000 : null;
     lignes.push({ produit: n, rayon: p.r || "Divers", achat, besoin: fmtQte(q, p.u), prix: Math.round(prix * 100) / 100, kilo: kilo ? Math.round(kilo * 100) / 100 : null,
-      source: p.appris && p.mag === "saisie manuelle" ? "prix saisi" : p.appris ? "ticket " + (p.mag || "") + (p.date ? " du " + p.date.slice(8, 10) + "/" + p.date.slice(5, 7) : "") : "estimé", maison: estMaison(p), etat: data.etats[n] || "" });
+      choisi: !!choix, source: p.appris && p.mag === "saisie manuelle" ? "prix saisi" : p.appris ? "ticket " + (p.mag || "") + (p.date ? " du " + p.date.slice(8, 10) + "/" + p.date.slice(5, 7) : "") : "estimé", maison: estMaison(p), etat: data.etats[n] || "" });
   });
   (data.manuels || []).forEach(m => {
     const p = pm[m.lib];
@@ -1216,6 +1229,8 @@ function repasApply(v, op) {
     else x.manuels.push({ lib: p.lib, rayon: p.rayon, prix: p.prix, etat: "" });
   } else if (op.type === "repasmot") { v.repas.inconnus = (v.repas.inconnus || []).filter(i => i.lib !== p.lib); }
   else if (op.type === "repasreglage") { v.repas.reglages = Object.assign({}, v.repas.reglages, { [p.cle]: p.valeur }); }
+  else if (op.type === "repasqte") { const x = w(p.semaine); x.qte = x.qte || {}; if (Number(p.qte) > 0) x.qte[p.produit] = Number(p.qte); else delete x.qte[p.produit]; }
+  else if (op.type === "repasproduit") { const x = (v.repas.produits || []).find(q => q.n === p.produit); if (x) { if (p.pas > 0) { x.pas = p.pas; x.c = p.cond || x.c; } if (p.prix > 0) Object.assign(x, { prix: p.prix, appris: true, mag: "saisie manuelle", date: todayISO() }); } }
   else if (op.type === "repasprix") { const x = (v.repas.produits || []).find(q => q.n === p.produit); if (x) Object.assign(x, { prix: p.prix, appris: true, mag: "saisie manuelle", date: todayISO() }); }
   else if (op.type === "repasphotochoix") { const x = (v.repas.recettes || []).find(q => q.id === p.recette); if (x) Object.assign(x, { photo: p.aucune ? "" : p.url, credit: p.aucune ? "" : p.credit, page: p.aucune ? "" : p.page, photoChoisie: true }); }
   else if (op.type === "repasactif") { const x = (v.repas.recettes || []).find(q => q.id === p.recette); if (x) x.actif = p.actif; }
@@ -1328,6 +1343,7 @@ function viewCourses(v) {
   const dc = dateCourses(v, sem);
   h += `<div class="ctot"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--mut)">Semaine ${esc(libSemaine(sem))}</span><span class="live">${S.queue.length ? "⏳ envoi…" : "● en direct"}</span></div>
     ${reelCourses(v, sem)}
+    ${conseilCourses(S.rp.wk >= 1 ? sem : addDays(sem, 7))}
     <div class="l" style="margin-top:10px;font-size:12px;color:var(--mut)"><span>LISTE ESTIMÉE</span></div>
     <div class="l"><span>🥕 Alimentaire</span><b style="color:${L.alim > g.alim ? "var(--bad)" : "inherit"}">${eur(L.alim)} / ${eur(g.alim)}</b></div>${pctBar(L.alim, g.alim)}
     <div class="l"><span>🧻 Hygiène & maison</span><b>${eur(L.maison)}</b></div>
@@ -1346,14 +1362,14 @@ function viewCourses(v) {
     h += `<div class="rayon"><span>${esc(ray === RAYON_PLACARD ? "À vérifier au placard" : ray)}</span><span>${reste ? reste + " à prendre" : "✓"}</span></div><div class="card" style="padding:2px 14px">`;
     items.forEach(l => {
       h += `<div class="citem ${l.etat}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}"><div class="ck">${l.etat === "achete" ? "✓" : l.etat === "maison" ? "🏠" : ""}</div>
-        <div class="rt"><b>${esc(l.produit)}</b><span>${l.placard ? "normalement à la maison" : esc(l.achat) + (l.besoin ? " · il faut " + esc(l.besoin) : "") + (l.kilo ? " · " + f2(l.kilo) + " €/kg" : "") + (l.source && !l.manuel ? " · " + esc(l.source === "estimé" ? "prix estimé" : l.source) : "")}</span></div>
+        <div class="rt"><b>${esc(l.produit)}</b><span>${l.placard ? "normalement à la maison" : esc(l.achat) + (l.choisi ? " (choisi)" : "") + (l.besoin ? " · il faut " + esc(l.besoin) : "") + (l.kilo ? " · " + f2(l.kilo) + " €/kg" : "") + (l.source && !l.manuel ? " · " + esc(l.source === "estimé" ? "prix estimé" : l.source) : "")}</span></div>
         ${l.placard ? "" : l.manuel ? `<div class="am">${eur(l.prix)}</div>` : `<div class="am" data-rprix="${esc(l.produit)}" style="text-decoration:underline dotted;text-underline-offset:3px">${eur(l.prix)}</div>`}
         ${l.manuel ? `<button class="mini" data-rdel="${esc(l.produit)}" aria-label="Retirer">✕</button>` : l.placard ? "" : `<button class="mini" data-rmaison="${esc(l.produit)}" aria-label="Déjà à la maison">🏠</button>`}</div>`;
     });
     h += `</div>`;
   });
   h += `<button class="btn" data-rr="fincourses" style="margin-top:16px">✅ J'ai fini les courses : scanner le ticket</button><div class="hint" style="text-align:center">Photo ou PDF du ticket : la dépense est enregistrée une seule fois, et comparée à la liste.</div>`;
-  return h + `<div class="hint" style="margin:10px 4px">Touche un article quand il est dans le caddie (il se coche aussi chez l'autre). 🏠 = déjà à la maison, il sort du total. Touche un prix pour le corriger : il sera retenu pour les prochaines listes.</div>`;
+  return h + `<div class="hint" style="margin:10px 4px">Touche un article quand il est dans le caddie (il se coche aussi chez l'autre). 🏠 = déjà à la maison, il sort du total. Touche un prix pour modifier la quantité, la contenance (bouteille de 2 L…) ou le prix : contenance et prix sont retenus pour les prochaines listes.</div>`;
 }
 function viewRecettes(v) {
   const pm = prodMap(v), q = norm(S.rp.q || ""), f = S.rp.filt || "";
@@ -1599,6 +1615,54 @@ function reelCourses(v, sem) {
   return `<div class="l"><span>💳 Déjà dépensé du ${court(deb)} au ${court(fin)}</span><b style="color:${tot > g.objectif ? "var(--bad)" : "inherit"}">${eur(tot)}</b></div>
     <div class="hint">${L.length ? L.slice().reverse().map(j => esc(j.lib) + " " + court(j.date) + " (" + eur(j.mont) + ")").join(" · ") : "Aucune dépense « Courses » saisie sur cette période."}</div>`;
 }
+// ---------- modifier un article de la liste : quantité (cette semaine), contenance et prix (retenus) ----------
+function parseContenance(s, u) {
+  const t = norm(String(s || "")).replace(",", "."), m = t.match(/(\d+(?:\.\d+)?)\s*(kg|g|l|cl|ml|pieces?|pcs?|x)?/);
+  if (!m) return 0;
+  const n = parseFloat(m[1]), k = { kg: 1000, g: 1, l: 1000, cl: 10, ml: 1 }[m[2]];
+  if (u === "g" || u === "ml") return k ? n * k : (n < 20 ? n * 1000 : n);
+  return n;
+}
+function openArticle(nom) {
+  const v = computeView(), p = prodMap(v)[nom]; if (!p) return;
+  const sem = semaineOff(S.rp.wk), L = construireListe(v, sem, semData(v, sem).jours), l = L.lignes.find(x => x.produit === nom) || {};
+  const poids = p.u === "g" || p.u === "ml", vrac = p.m === "vrac" && poids, uk = p.u === "ml" ? "L" : "kg";
+  const lots = vrac ? 0 : Math.round(l.prix / (p.prix || 1)) || 1;
+  const qv = vrac ? Math.round(l.prix / (p.prix || 1) * p.pas) : 0;
+  S.rf = { art: nom, vrac, poids, sem };
+  openSheet(`<h3>${esc(nom)}</h3>
+    <div class="hint">${p.appris ? (p.mag === "saisie manuelle" ? "Prix saisi à la main" : "Prix appris sur un ticket " + esc(p.mag || "")) + (p.date ? " le " + esc(p.date.split("-").reverse().join("/")) : "") : "Prix estimé (aucun ticket pour l'instant)"} · il faut ${esc(l.besoin || "?")} cette semaine.</div>
+    ${vrac ? `<label>Quantité à acheter cette semaine (${esc(p.u)})</label><input type="text" id="aQ" inputmode="decimal" value="${qv}" autocomplete="off">`
+      : `<label>Nombre à acheter cette semaine</label><div class="two"><input type="text" id="aQ" inputmode="numeric" value="${lots}" autocomplete="off"><div class="tchips" style="align-items:center">${[-1, 1].map(k => `<button class="cat" data-rqk="${k}" style="font-size:18px;padding:6px 16px">${k > 0 ? "+" : "−"}</button>`).join("")}</div></div>`}
+    ${vrac ? "" : `<label>Contenance ${poids ? "(ex. 2 L, 500 g)" : "(nombre de pièces)"}</label><input type="text" id="aC" value="${esc(poids ? fmtQte(p.pas, p.u) : String(p.pas))}" autocomplete="off">`}
+    <div class="two"><div><label>Prix ${vrac ? "pour 100 " + esc(p.u) : "de la contenance"} (€)</label><input type="text" id="aP" inputmode="decimal" value="${esc(f2(p.prix))}" autocomplete="off"></div>
+    ${poids ? `<div><label>Prix au ${uk} (€)</label><input type="text" id="aK" inputmode="decimal" value="${esc(f2(p.prix / p.pas * 1000))}" autocomplete="off"></div>` : ""}</div>
+    <div class="hint" id="aCalc">${poids ? "Change 2 valeurs sur 3 (contenance, prix, prix au " + uk + ") : la troisième se calcule." : ""}</div>
+    <button class="btn" data-rr="artsave">Enregistrer</button>
+    <div class="hint">La quantité ne vaut que pour cette semaine. La contenance et le prix sont retenus pour les prochaines listes (un ticket plus récent les met à jour).</div>`);
+  S.rf.dernier = [];
+}
+// 2 valeurs sur 3 : la dernière modifiée est recalculée en fonction des deux autres
+function articleCalc(id) {
+  const x = S.rf; if (!x || !x.poids) return;
+  x.dernier = x.dernier.filter(k => k !== id).concat(id).slice(-2);
+  const p = prodMap(computeView())[x.art], c = x.vrac ? p.pas : parseContenance(($("#aC") || {}).value, p.u), pr = num($("#aP").value), k = num($("#aK").value);
+  const cible = ["aC", "aP", "aK"].filter(z => !x.dernier.includes(z) && (z !== "aC" || !x.vrac))[0];
+  if (cible === "aK" && c > 0 && pr > 0) $("#aK").value = f2(pr / c * 1000);
+  else if (cible === "aP" && c > 0 && k > 0) $("#aP").value = f2(k * c / 1000);
+  else if (cible === "aC" && pr > 0 && k > 0 && $("#aC")) $("#aC").value = fmtQte(pr / k * 1000, p.u);
+}
+function saveArticle() {
+  const x = S.rf, v = computeView(), p = prodMap(v)[x.art]; if (!p) return;
+  const L = construireListe(v, x.sem, semData(v, x.sem).jours), l = L.lignes.find(y => y.produit === x.art) || {};
+  const q = num($("#aQ").value) || 0, pas = x.vrac ? p.pas : (x.poids ? parseContenance($("#aC").value, p.u) : num($("#aC").value) || p.pas), prix = num($("#aP").value) || 0;
+  let n = 0;
+  const avant = x.vrac ? Math.round(l.prix / (p.prix || 1) * p.pas) : Math.round(l.prix / (p.prix || 1)) || 1;
+  if (q > 0 && Math.abs(q - avant) > 1e-6) { enqueue("repasqte", { semaine: x.sem, produit: x.art, qte: q, rayon: p.r }); n++; }
+  const cond = pas !== p.pas ? (x.poids ? (p.c && /bouteille|brique|paquet|sachet|boîte|pot|barquette|filet/i.test(p.c) ? p.c.replace(/\d+([,.]\d+)?\s*(kg|g|l|cl|ml|L)\b/i, fmtQte(pas, p.u)) : fmtQte(pas, p.u)) : pas + " pièces") : p.c;
+  if ((pas > 0 && Math.abs(pas - p.pas) > 1e-6) || (prix > 0 && Math.abs(prix - p.prix) > .004)) { enqueue("repasproduit", { produit: x.art, pas: pas !== p.pas ? pas : 0, cond, prix: Math.round(prix * 100) / 100 }); n++; }
+  closeSheet(); toast(n ? "✔ " + x.art + " mis à jour" : "Rien de changé");
+}
 function openPrix(nom) {
   const v = computeView(), p = prodMap(v)[nom]; if (!p) return;
   const auKilo = p.m === "vrac" && (p.u === "g" || p.u === "ml");
@@ -1798,18 +1862,19 @@ async function openPhotos(id, recherche) {
 
 // ---------- événements Repas ----------
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-rpim],[data-rfb],[data-rfs],[data-rtmax],[data-rphk],[data-rprix],[data-rapp],[data-rgapp],[data-rgev],[data-rr],[data-rsub],[data-rwk],[data-rck],[data-rmaison],[data-rdel],[data-rfilt],[data-rti],[data-rsoir],[data-rprep],[data-rcuis],[data-rpick],[data-radd],[data-rary],[data-rinc],[data-rign],[data-rstep]");
+  const t = e.target.closest("[data-rqk],[data-rpim],[data-rfb],[data-rfs],[data-rtmax],[data-rphk],[data-rprix],[data-rapp],[data-rgapp],[data-rgev],[data-rr],[data-rsub],[data-rwk],[data-rck],[data-rmaison],[data-rdel],[data-rfilt],[data-rti],[data-rsoir],[data-rprep],[data-rcuis],[data-rpick],[data-radd],[data-rary],[data-rinc],[data-rign],[data-rstep]");
   if (!t) return;
   const v = computeView(), d = t.dataset;
   if (d.rsub) { S.rp.sub = d.rsub; saveRp(); if (S.tab !== "repas") S.tab = "repas"; closeSheet(); render(); window.scrollTo(0, 0); if (d.rsub === "courses") pollCourses(); return; }
   if (d.rwk !== undefined) { S.rp.wk = Number(d.rwk); S.rp.gen = null; saveRp(); render(); return; }
   if (d.rstep) { S.rp.done[d.rstep] = !S.rp.done[d.rstep]; t.classList.toggle("done", !!S.rp.done[d.rstep]); return; }
   if (d.rpim) { S.rp.gen.pimente = d.rpim; render(); return; }
+  if (d.rqk) { const el = $("#aQ"); el.value = Math.max(1, (num(el.value) || 0) + Number(d.rqk)); return; }
   if (d.rfb) { const F = S.rp.fl, b = BASES.find(x => x.k === d.rfb); if (F.b[d.rfb]) delete F.b[d.rfb]; else F.b[d.rfb] = b.def; render(); return; }
   if (d.rfs) { S.rp.fl.s = S.rp.fl.s === d.rfs ? "" : d.rfs; render(); return; }
   if (d.rtmax !== undefined) { openDeck(Number(d.rtmax)); return; }
   if (d.rphk !== undefined) { const p = S.rf.photos[Number(d.rphk)]; enqueue("repasphotochoix", { recette: S.rf.recette, url: p.url, credit: p.credit, page: p.page }); closeSheet(); toast("🖼 Photo enregistrée"); return; }
-  if (d.rprix) { e.stopPropagation(); openPrix(d.rprix); return; }
+  if (d.rprix) { e.stopPropagation(); openArticle(d.rprix); return; }
   if (d.rapp) { S.rp.gen.appareil = d.rapp; render(); return; }
   if (d.rgapp) { S.rf.appareil = d.rgapp; document.querySelectorAll("[data-rgapp]").forEach(b => b.classList.toggle("on", b === t)); return; }
   if (d.rgev) { S.rf.eviter.has(d.rgev) ? S.rf.eviter.delete(d.rgev) : S.rf.eviter.add(d.rgev); t.classList.toggle("on", S.rf.eviter.has(d.rgev)); return; }
@@ -1866,6 +1931,7 @@ document.addEventListener("click", e => {
   else if (a === "regsave") saveReglages();
   else if (a === "idee") idee();
   else if (a === "prixsave") savePrix();
+  else if (a === "artsave") saveArticle();
   else if (a === "pasfait") { if (confirm("Pas fait ce soir-là ? Le plat passe à la semaine suivante, sans racheter ses ingrédients.")) pasFait(Number(d.i)); }
   else if (a === "fincourses") { S.finCourses = sem; $("#scanFile").click(); }
   else if (a === "finsave") finCoursesEnregistrer();
@@ -1880,10 +1946,256 @@ document.addEventListener("click", e => {
 document.addEventListener("input", e => {
   if (e.target.id === "rQ") { S.rp.q = e.target.value; const pos = e.target.selectionStart; render(); const q = $("#rQ"); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
   if (e.target.dataset && e.target.dataset.rfq) { S.rp.fl.b[e.target.dataset.rfq] = e.target.value; const pos = e.target.selectionStart, k = e.target.dataset.rfq; render(); const q = document.querySelector(`[data-rfq="${k}"]`); if (q) { q.focus(); q.setSelectionRange(pos, pos); } }
+  if (["aC", "aP", "aK"].includes(e.target.id)) articleCalc(e.target.id);
   if ((e.target.id === "rPpaye" || e.target.id === "rPpoids") && $("#rPcalc")) { const pp = prixDepuisPaye(); $("#rPcalc").textContent = pp ? "→ " + f2(pp.kilo) + " €/kg (" + f2(pp.lot) + " € par lot du tableau)" : ""; }
   if (e.target.id === "rPq" || e.target.id === "rAq") { const q = norm(e.target.value); document.querySelectorAll(e.target.id === "rPq" ? "#rPl .row" : "#rAl .row").forEach(r => { r.style.display = r.dataset.n.includes(q) ? "" : "none"; }); }
 });
 setInterval(pollCourses, 8000);
+
+
+// =====================================================================
+// v1.7.0 : PROFILS (Gaétan = tout, Mathilde = sa version), CONGÉS, GARDE DE LÉO, PONTS, JOUR DES COURSES
+// =====================================================================
+const SCRIPT_ATTENDU = 24;
+S.prof = LS.get("bf.prof", "G");
+S.cg = LS.get("bf.cg", null);            // { data, at } : copie locale du fichier congés (lu par le script, cache 10 min)
+S.gardeVue = "14";
+const estG = () => S.prof !== "M";
+function setProf(p) { S.prof = p; LS.set("bf.prof", p); majProf(); if (!estG() && S.tab === "conges") S.tab = "home"; render(); }
+function majProf() { const b = $("#prof"); if (b) { b.textContent = estG() ? "G" : "M"; b.style.background = estG() ? "#2f6fd6" : "#c2457a"; } }
+
+// ---------- bandeau « script pas à jour » ----------
+function bandeauScript() {
+  if (!S.base) return "";
+  const sv = Number(S.base.scriptVersion) || 0;
+  if (sv >= SCRIPT_ATTENDU) return "";
+  return `<div class="alert warn" style="margin-bottom:12px">⚠ Le script du Sheet n'est pas à jour${sv ? " (version " + sv + ")" : ""}. Dans Apps Script : <b>Déployer → Gérer les déploiements → ✏️ → Nouvelle version → Déployer</b>, puis Réglages → Recharger.</div>`;
+}
+
+// ---------- données congés (+ opérations en attente appliquées par-dessus) ----------
+function cgData() {
+  if (!S.cg || !S.cg.data) return null;
+  const d = JSON.parse(JSON.stringify(S.cg.data));
+  S.queue.forEach(op => {
+    const p = op.payload;
+    if (op.type === "congepose") d.demandes.push({ row: 0, du: p.du, au: p.au, compteur: p.compteur, jours: joursOuvres(p.du, p.au, d), etat: p.etat, statut: p.etat, prevenir: p.prevenir, annule: false, note: p.note || "", controle: "envoi…", attente: true });
+    else if (op.type === "congemod") { const x = d.demandes.find(y => y.du === p.du && y.au === p.au && y.compteur === p.compteur); if (x) { if (p.annuler) { x.annule = true; x.statut = "Annulé"; } if (p.etat) { x.etat = p.etat; x.statut = p.etat; } if (p.prevenir === true || p.prevenir === false) x.prevenir = p.prevenir; x.attente = true; } }
+    else if (op.type === "pontetat") { if (p.etat) d.ponts_etat[p.occ] = p.etat; else delete d.ponts_etat[p.occ]; }
+  });
+  return d;
+}
+async function chargerConges(force) {
+  if (!configured() || !navigator.onLine) return;
+  if (!force && S.cg && Date.now() - S.cg.at < 10 * 60000) return;
+  if (chargerConges.busy) return; chargerConges.busy = true;
+  try {
+    const r = await call("conges", { force: !!force }, 40000);
+    if (r.ok) { S.cg = { data: r.conges, at: Date.now() }; LS.set("bf.cg", S.cg); S.cgErreur = ""; }
+    else S.cgErreur = r.error || "lecture impossible";
+  } catch (e) { S.cgErreur = e.name === "AbortError" ? "le fichier congés met trop de temps à répondre" : e.message; }
+  chargerConges.busy = false;
+  if (["home", "conges", "garde", "repas"].includes(S.tab) && !$("#sheet").classList.contains("open")) render();
+}
+const libre = s => /repos|cong|féri|feri/i.test(String(s || ""));
+function joursOuvres(du, au, d) {
+  const fer = new Set(((d || cgData() || {}).feries || []).map(f => f[0]));
+  let n = 0;
+  for (let x = du; x <= au; x = addDays(x, 1)) { const w = dOf(x).getDay(); if (w && w !== 6 && !fer.has(x)) n++; if (n > 400) break; }
+  return n;
+}
+const courtD = iso => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) : "";
+const longD = iso => dOf(iso).toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" });
+
+// ---------- compteur conseillé ----------
+function conseilCompteur(d, du, au) {
+  const an = du.slice(0, 4), mois = Number(du.slice(5, 7)), horsPeriode = mois <= 4 || mois >= 11;
+  const ok = (d.compteurs || []).filter(c => c.unite === "jours" && c.reste > 0 && (!/\d{4}$/.test(c.n) || c.n.slice(-4) <= an) && (!c.limite || au <= c.limite));
+  const score = c => {
+    const hp = (d.hp || []).find(h => h.n === c.n);
+    if (horsPeriode && c.n === "CA " + an && hp && /encore/i.test(hp.palier)) return { s: 0, r: "hors période : compte pour tes HP (" + hp.palier.toLowerCase() + ")" };
+    if (/^ARTT/.test(c.n) && c.limite && c.limite.slice(0, 4) === an) return { s: 1, r: "non reportables : perdus au " + courtD(c.limite) + "/" + c.limite.slice(0, 4) + " (sauf CET)" };
+    if (c.n === "CET") return { s: 9, r: "à garder pour un long voyage" };
+    return { s: 2 + (c.limite ? Number(c.limite.replace(/-/g, "")) / 1e8 : 5), r: c.limite ? "à poser avant le " + courtD(c.limite) + "/" + c.limite.slice(0, 4) : "" };
+  };
+  return ok.map(c => Object.assign({ c }, score(c))).sort((a, b) => a.s - b.s);
+}
+
+// ---------- ponts du mois et du mois suivant ----------
+function pontsAVenir(d) {
+  const today = todayISO(), m0 = today.slice(0, 7), m1 = addDays(m0 + "-28", 7).slice(0, 7);
+  const poses = (d.demandes || []).filter(x => !x.annule);
+  return (d.ponts || []).filter(p => p.au >= today && (p.du.slice(0, 7) === m0 || p.du.slice(0, 7) === m1)).map(p => {
+    const fait = d.ponts_etat[p.occ] === "fait" || poses.some(x => x.du <= p.au && x.au >= p.du);
+    return Object.assign({}, p, { fait, refus: d.ponts_etat[p.occ] === "non", quand: p.du.slice(0, 7) === m0 ? "Ce mois-ci" : "Le mois prochain" });
+  }).filter(p => !p.refus);
+}
+function pontHtml(p, compact) {
+  return `<div class="row" style="align-items:flex-start;${p.fait ? "opacity:.6" : ""}"><div class="rt"><b style="white-space:normal">${p.fait ? "✓ " : ""}${esc(p.occ)}</b>
+    <span>Poser ${p.jours} j du ${longD(p.du)} au ${longD(p.au)} → <b>${p.repos} jours de repos</b>${p.hp ? " · hors période" : ""}${p.compteur ? " · " + esc(p.compteur) : ""}</span>
+    ${!compact && p.remarque ? `<span>${esc(p.remarque)}</span>` : ""}
+    ${p.fait ? `<span>Déjà posé ou fait.</span>` : `<div class="acts"><button data-cgpont="${esc(p.occ)}">🏖 Poser</button><button data-cgfait="${esc(p.occ)}">C'est fait</button><button data-cgnon="${esc(p.occ)}">Pas intéressé</button></div>`}</div></div>`;
+}
+function pontsCard(d) {
+  const L = pontsAVenir(d).filter(p => !p.fait);
+  if (!L.length) return "";
+  const g = {}; L.forEach(p => { (g[p.quand] = g[p.quand] || []).push(p); });
+  return `<div class="card"><b>🌉 Ponts à poser</b>${Object.keys(g).map(q => `<div class="sth">${q}</div>` + g[q].slice(0, 3).map(p => pontHtml(p, true)).join("")).join("")}</div>`;
+}
+
+// ---------- garde de Léo ----------
+const QUI_COL = { "Nounou": "#8a94a6", "Mathilde": "#c2457a", "Gaétan": "#2f6fd6", "Vous deux": "#0e9f6e" };
+function gardeJours(d, n) {
+  const today = todayISO();
+  const L = (d.garde || []).filter(g => g[0] >= today).map(g => ({ date: g[0], mathilde: g[1], gaetan: g[2], nounou: g[3], commun: g[4], qui: g[5], pont: g[6], temps: g[7] }));
+  return n ? L.slice(0, n) : L;
+}
+function quiBadge(q) { const c = QUI_COL[q] || "#8a94a6"; return `<span style="background:${c};color:#fff;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap">${esc(q || "?")}</span>`; }
+function gardeCard(d) {
+  const L = gardeJours(d, 3); if (!L.length) return "";
+  return `<div class="card" data-act="gogarde" style="cursor:pointer"><div style="display:flex;justify-content:space-between"><b>👶 Garde de Léo</b><span class="linkbtn" style="padding:0">Voir le calendrier</span></div>
+    ${L.map((g, i) => `<div class="row" style="padding:6px 0"><div class="rt"><b>${i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : esc(longD(g.date))}</b><span>Mathilde : ${esc(g.mathilde)} · Gaétan : ${esc(g.gaetan)}</span></div>${quiBadge(g.qui)}</div>`).join("")}</div>`;
+}
+function viewGarde() {
+  const d = cgData();
+  if (!d) { chargerConges(); return `<h2>👶 Garde de Léo</h2>${S.cgErreur ? `<div class="alert bad">${esc(S.cgErreur)}</div>` : `<div class="spin"></div>`}`; }
+  const n = S.gardeVue === "14" ? 14 : S.gardeVue === "mois" ? 35 : 0;
+  const L = gardeJours(d, n);
+  let h = `<h2>👶 Garde de Léo</h2><div class="tchips" style="margin-bottom:10px">${[["14", "14 jours"], ["mois", "5 semaines"], ["tout", "Tout"]].map(([k, t]) => `<button class="cat ${S.gardeVue === k ? "on" : ""}" data-gvue="${k}">${t}</button>`).join("")}</div>`;
+  let sem = "";
+  L.forEach(g => {
+    const s = lundiDe(dOf(g.date));
+    if (s !== sem) { if (sem) h += `</div>`; sem = s; h += `<div class="rayon"><span>Semaine ${esc(libSemaine(s))}</span></div><div class="card" style="padding:2px 14px">`; }
+    h += `<div class="row" style="padding:8px 0"><div class="rt"><b>${esc(longD(g.date))}${g.date === todayISO() ? " · aujourd'hui" : ""}</b><span>Mathilde : ${esc(g.mathilde)} · Gaétan : ${esc(g.gaetan)}${g.nounou ? " · nounou " + esc(g.nounou.toLowerCase()) : ""}</span>${estG() && g.temps ? `<span>💡 ${esc(g.temps)}</span>` : ""}</div>${quiBadge(g.qui)}</div>`;
+  });
+  if (sem) h += `</div>`;
+  return h + `<div class="hint" style="margin:10px 4px">Calculé par ton fichier « Gestion des congés » (planning de Mathilde, tes congés, la nounou). Lu le ${esc(new Date(d.lu).toLocaleString("fr-FR"))}.</div><button class="linkbtn" data-cgmaj="1">🔄 Actualiser</button>`;
+}
+
+// ---------- conseil : quel jour faire les courses ----------
+function conseilCourses(semCible) {
+  const d = cgData(); if (!d) return "";
+  const today = todayISO(), deb = addDays(semCible, -7) > today ? addDays(semCible, -7) : today, fin = addDays(semCible, -1);
+  const J = gardeJours(d, 0).filter(g => g.date >= deb && g.date <= fin);
+  if (!J.length) return "";
+  const deux = J.filter(g => libre(g.mathilde) && libre(g.gaetan)).pop();
+  const mat = J.filter(g => libre(g.mathilde) && !libre(g.gaetan)).pop();
+  const gae = J.filter(g => libre(g.gaetan) && !libre(g.mathilde)).pop();
+  let t = "";
+  if (deux) t = `📅 <b>${esc(longD(deux.date))}</b> : vous êtes tous les deux en repos, courses à deux (magasin ou drive).`;
+  else if (mat) t = `📅 <b>${esc(longD(mat.date))}</b> : Mathilde est en repos, seule avec Léo : <b>drive conseillé</b>.`;
+  else if (gae) t = `📅 <b>${esc(longD(gae.date))}</b> : Gaétan est en repos : drive ou magasin.`;
+  if (!t) return "";
+  const autres = [mat, gae].filter(x => x && x !== deux && x.date !== (deux || {}).date);
+  return `<div class="hint" style="margin-top:8px">${t}${deux && autres.length ? " Sinon : " + autres.map(x => esc(longD(x.date)) + (x === mat ? " (Mathilde, drive)" : " (Gaétan)")).join(", ") + "." : ""}</div>`;
+}
+
+// ---------- écran Congés (profil Gaétan) ----------
+function viewConges() {
+  if (!estG()) return `<div class="empty">Cette partie est réservée au profil Gaétan.</div>`;
+  const d = cgData();
+  if (!d) { chargerConges(); return `<h2>🏖️ Congés</h2>${S.cgErreur ? `<div class="alert bad">⚠ ${esc(S.cgErreur)}${/autoris|permission|Exception/i.test(S.cgErreur) ? "<br>Dans Apps Script, lance une fois la fonction <b>autoriserCongesEtAgenda</b> (▶ Exécuter) et accepte les autorisations." : ""}</div>` : `<div class="spin"></div><div class="hint" style="text-align:center">Lecture du fichier « Gestion des congés »…</div>`}`; }
+  const today = todayISO();
+  let h = bandeauScript() + `<div class="hero"><small>Congés</small><div class="sub" style="font-size:14px;margin-top:4px">${esc(d.statut || "")}</div>
+    <div class="duo" style="margin-top:12px"><button class="btn" data-cgposer="${today}" style="margin:0">Aujourd'hui</button><button class="btn sec" data-cgposer="${addDays(today, 1)}" style="margin:0">Demain</button></div>
+    <button class="btn sec" data-cgposer="" style="margin-top:8px">📅 Choisir les dates</button></div>`;
+  h += `<h2>Mes compteurs</h2><div class="kpis" style="grid-template-columns:repeat(3,1fr)">` + d.compteurs.filter(c => c.reste > 0 || c.prevu > 0).map(c =>
+    `<div class="kpi"><b>${String(Math.round(c.reste * 100) / 100).replace(".", ",")}${c.unite === "heures" ? " h" : " j"}</b><span>${esc(c.n)}${c.limite ? "<br>avant le " + courtD(c.limite) + "/" + c.limite.slice(2, 4) : ""}${c.prevu ? "<br>dont " + c.prevu + " prévus" : ""}</span></div>`).join("") + `</div>`;
+  const prochains = d.demandes.filter(x => x.au >= today && !x.annule).sort((a, b) => a.du < b.du ? -1 : 1);
+  h += `<h2>Mes congés à venir</h2>` + (prochains.length ? `<div class="card" style="padding:4px 14px">` + prochains.map(x => `<div class="row" data-cgdem="${esc(x.du + "|" + x.au + "|" + x.compteur)}" style="cursor:pointer"><div class="rt"><b>${esc(longD(x.du))}${x.au !== x.du ? " → " + esc(longD(x.au)) : ""}</b><span>${esc(x.compteur)} · ${x.jours} j${x.note ? " · " + esc(x.note) : ""}${x.prevenir ? " · Mathilde prévenue" : ""}</span></div><span class="tag" style="font-size:12px;border-radius:99px;padding:4px 10px;background:${x.statut === "Validé" ? "#0e9f6e22" : x.statut === "Demandé" ? "#d98a0022" : "var(--chip)"}">${x.attente ? "⏳ " : ""}${esc(x.statut)}</span></div>`).join("") + `</div>` : `<div class="empty">Aucun congé à venir.</div>`);
+  h += pontsCard(d);
+  h += `<h2>Ce que tu dois faire</h2><div class="card" style="padding:4px 14px">` + d.pilote.map(x => `<details class="row" style="display:block;padding:10px 0"><summary style="font-weight:600;cursor:pointer">${esc(x.titre)}</summary><div class="hint" style="margin-top:6px;font-size:13px;line-height:1.45">${esc(x.texte)}</div></details>`).join("") + `</div>`;
+  const tous = (d.ponts || []).filter(p => p.au >= today);
+  if (tous.length) h += `<details class="card"><summary style="font-weight:600;cursor:pointer">Tous les ponts à venir (${tous.length})</summary>${tous.map(p => pontHtml(Object.assign({}, p, { fait: (d.demandes || []).some(x => !x.annule && x.du <= p.au && x.au >= p.du) }), false)).join("")}</details>`;
+  return h + `<div class="hint" style="margin:10px 4px">Lu dans « Gestion des congés » le ${esc(new Date(d.lu).toLocaleString("fr-FR"))}. Les règles et les calculs restent ceux de ton tableau.</div><button class="linkbtn" data-cgmaj="1">🔄 Actualiser</button>`;
+}
+
+// ---------- poser un congé ----------
+function openPoser(du, au, compteur) {
+  const d = cgData(); if (!d) { toast("Données congés pas encore chargées"); chargerConges(true); return; }
+  S.rf = { cg: true, du: du || todayISO(), au: au || du || todayISO(), compteur: compteur || "", etat: "Prévu", prevenir: false, choisir: !du };
+  renderPoser();
+}
+function renderPoser() {
+  const x = S.rf, d = cgData();
+  if (x.au < x.du) x.au = x.du;
+  const j = joursOuvres(x.du, x.au, d), cons = conseilCompteur(d, x.du, x.au);
+  if (!x.compteur || !cons.some(c => c.c.n === x.compteur)) x.compteur = cons.length ? cons[0].c.n : "";
+  const sel = cons.find(c => c.c.n === x.compteur), apres = sel ? sel.c.reste - j : null;
+  openSheet(`<h3>🏖 Poser un congé</h3>
+    <div class="two"><div><label>Du</label><input type="date" id="cgDu" value="${esc(x.du)}"></div><div><label>Au</label><input type="date" id="cgAu" value="${esc(x.au)}"></div></div>
+    <div class="hint">${j} jour(s) ouvré(s) à poser (sans week-ends ni fériés)${j === 0 ? " : rien à poser sur ces dates." : "."}</div>
+    <label>Compteur ${sel ? `<span class="hint">· conseillé : ${esc(cons[0].c.n)}</span>` : ""}</label>
+    <div class="tchips">${cons.map(c => `<button class="cat ${c.c.n === x.compteur ? "on" : ""}" data-cgcpt="${esc(c.c.n)}">${esc(c.c.n)} · ${String(c.c.reste).replace(".", ",")} j</button>`).join("") || `<span class="hint">Aucun compteur disponible pour ces dates.</span>`}</div>
+    ${sel ? `<div class="hint">${esc(sel.r)}${apres !== null ? " · reste après : " + String(Math.round(apres * 100) / 100).replace(".", ",") + " j" : ""}${apres < 0 ? " ⚠ solde insuffisant" : ""}</div>` : ""}
+    <label>État</label><div class="tchips">${["Prévu", "Demandé", "Validé"].map(e => `<button class="cat ${x.etat === e ? "on" : ""}" data-cgetat="${e}">${e}</button>`).join("")}</div>
+    <div class="hint">Prévu = noté seulement · Demandé = saisi dans ton logiciel · Validé = accordé.</div>
+    <label class="row" style="padding:10px 0;cursor:pointer"><div class="rt"><b>Prévenir Mathilde</b><span>invitation dans son agenda + mail</span></div><div class="tg ${x.prevenir ? "on" : ""}" data-cgprev="1"></div></label>
+    <label>Note (facultatif)</label><input type="text" id="cgNote" value="${esc(x.note || "")}" placeholder="Pont, grève, rendez-vous…" autocomplete="off">
+    <button class="btn" data-cgsave="1" ${j === 0 || !x.compteur ? "disabled" : ""}>Poser ${j} jour(s) en ${esc(x.compteur || "?")}</button>
+    <div class="hint">Écrit dans l'onglet « Demandes » de ton fichier congés, puis ajouté à ton agenda. Si ton tableau refuse (solde, date limite…), rien n'est gardé et tu as le message.</div>`);
+}
+function savePoser() {
+  const x = S.rf, d = cgData(), j = joursOuvres(x.du, x.au, d);
+  if (!j || !x.compteur) return;
+  x.note = ($("#cgNote") || {}).value || "";
+  enqueue("congepose", { du: x.du, au: x.au, compteur: x.compteur, etat: x.etat, prevenir: x.prevenir, note: x.note.trim() });
+  closeSheet(); toast("🏖 Congé envoyé : " + j + " j en " + x.compteur);
+}
+function openDemande(cle) {
+  const d = cgData(); if (!d) return;
+  const [du, au, compteur] = cle.split("|"), x = d.demandes.find(y => y.du === du && y.au === au && y.compteur === compteur); if (!x) return;
+  S.rf = { dem: x };
+  openSheet(`<h3>${esc(longD(du))}${au !== du ? " → " + esc(longD(au)) : ""}</h3><div class="hint">${esc(compteur)} · ${x.jours} j · contrôle : ${esc(x.controle)}${x.note ? " · " + esc(x.note) : ""}</div>
+    <label>État</label><div class="tchips">${["Prévu", "Demandé", "Validé"].map(e => `<button class="cat ${x.etat === e ? "on" : ""}" data-cgmetat="${e}">${e}</button>`).join("")}</div>
+    <label class="row" style="padding:10px 0;cursor:pointer"><div class="rt"><b>Prévenir Mathilde</b><span>invitation + mail</span></div><div class="tg ${x.prevenir ? "on" : ""}" data-cgmprev="1"></div></label>
+    <button class="btn sec" data-cgannule="1" style="color:var(--bad)">Annuler ce congé</button>
+    <div class="hint">Annuler coche « Annulé » dans ton tableau et retire l'événement de l'agenda${x.prevenir ? " (Mathilde reçoit un mail)" : ""}.</div>`);
+}
+function modDemande(extra) {
+  const x = S.rf.dem;
+  enqueue("congemod", Object.assign({ row: x.row, du: x.du, au: x.au, compteur: x.compteur }, extra));
+}
+
+// ---------- accueil personnalisé ----------
+function accueilPerso() {
+  const d = cgData();
+  if (!d) { chargerConges(); return ""; }
+  chargerConges();
+  return (estG() ? pontsCard(d) : "") + gardeCard(d);
+}
+
+// ---------- événements ----------
+document.addEventListener("click", e => {
+  const t = e.target.closest("#prof,[data-prof],[data-cgposer],[data-cgcpt],[data-cgetat],[data-cgprev],[data-cgsave],[data-cgdem],[data-cgmetat],[data-cgmprev],[data-cgannule],[data-cgpont],[data-cgfait],[data-cgnon],[data-cgmaj],[data-gvue],[data-act=goconges],[data-act=gogarde],[data-act=gobourse]");
+  if (!t) return;
+  const dd = t.dataset;
+  if (t.id === "prof") { openSheet(`<h3>Ce téléphone est celui de…</h3><div class="hint">Gaétan voit tout (administrateur). Mathilde a sa version : budget, repas, garde de Léo.</div><div class="duo" style="margin-top:14px"><button class="btn ${estG() ? "" : "sec"}" data-prof="G" style="margin:0">Gaétan</button><button class="btn ${estG() ? "sec" : ""}" data-prof="M" style="margin:0">Mathilde</button></div>`); return; }
+  if (dd.prof) { setProf(dd.prof); closeSheet(); toast(estG() ? "Profil Gaétan : tout est visible" : "Profil Mathilde"); return; }
+  if (dd.act === "goconges") { S.tab = "conges"; render(); window.scrollTo(0, 0); chargerConges(); return; }
+  if (dd.act === "gogarde") { S.tab = "garde"; render(); window.scrollTo(0, 0); chargerConges(); return; }
+  if (dd.act === "gobourse") { toast(estG() ? "La bourse arrive en v1.8" : "Ta bourse arrivera dans une prochaine version"); return; }
+  if (dd.cgmaj) { toast("🔄 Lecture du fichier congés…"); chargerConges(true); return; }
+  if (dd.gvue) { S.gardeVue = dd.gvue; render(); return; }
+  if (dd.cgposer !== undefined) { openPoser(dd.cgposer); return; }
+  if (dd.cgcpt) { S.rf.compteur = dd.cgcpt; renderPoser(); return; }
+  if (dd.cgetat) { S.rf.etat = dd.cgetat; renderPoser(); return; }
+  if (dd.cgprev) { e.preventDefault(); S.rf.prevenir = !S.rf.prevenir; S.rf.note = ($("#cgNote") || {}).value; renderPoser(); return; }
+  if (dd.cgsave) { savePoser(); return; }
+  if (dd.cgdem) { openDemande(dd.cgdem); return; }
+  if (dd.cgmetat) { modDemande({ etat: dd.cgmetat }); closeSheet(); toast("✔ " + dd.cgmetat); return; }
+  if (dd.cgmprev) { e.preventDefault(); modDemande({ prevenir: !S.rf.dem.prevenir }); closeSheet(); toast(S.rf.dem.prevenir ? "Mathilde ne sera plus prévenue" : "Mathilde est prévenue"); return; }
+  if (dd.cgannule) { if (confirm("Annuler ce congé ?")) { modDemande({ annuler: true }); closeSheet(); toast("Congé annulé"); } return; }
+  if (dd.cgpont) { const p = (cgData().ponts || []).find(x => x.occ === dd.cgpont); if (p) openPoser(p.du, p.au, String(p.compteur).split(" ou ")[0]); return; }
+  if (dd.cgfait) { enqueue("pontetat", { occ: dd.cgfait, etat: "fait" }); toast("✓ Pont noté comme fait"); return; }
+  if (dd.cgnon) { enqueue("pontetat", { occ: dd.cgnon, etat: "non" }); toast("Pont masqué"); return; }
+});
+document.addEventListener("change", e => {
+  if ((e.target.id === "cgDu" || e.target.id === "cgAu") && S.rf && S.rf.cg) {
+    S.rf[e.target.id === "cgDu" ? "du" : "au"] = e.target.value || S.rf.du;
+    if (e.target.id === "cgDu" && S.rf.au < S.rf.du) S.rf.au = S.rf.du;
+    S.rf.note = ($("#cgNote") || {}).value; renderPoser();
+  }
+});
 
 // ---------- événements ----------
 document.addEventListener("click", e => {
@@ -2029,7 +2341,7 @@ async function reloadApp() {
     const p = new URLSearchParams(location.hash.slice(1));
     if (p.get("u") && p.get("k")) { S.cfg = { url: p.get("u"), key: p.get("k") }; saveCfg(); history.replaceState(null, "", location.pathname); toast("Connexion configurée"); }
   }
-  setSync(); render();
+  majProf(); setSync(); render();
   if (configured()) { S.queue.length ? flush() : refresh(true); }
   window.addEventListener("online", () => { S.offline = false; flush(); refresh(true); });
   window.addEventListener("offline", () => { S.offline = true; setSync(); });

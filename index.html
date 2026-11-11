@@ -178,6 +178,48 @@ select{font-family:inherit;width:100%;font-size:16px;padding:10px;border-radius:
 .kpi span{font-size:11px;color:var(--mut);line-height:1.35;display:block;margin-top:2px}
 details summary::-webkit-details-marker{color:var(--mut)}
 .btn[disabled]{opacity:.45;pointer-events:none}
+/* v1.8 : statistiques, note des courses, bourse, état de l'appli */
+.tline small.dans{display:block;font-size:11px;font-weight:600;color:var(--acc);margin-top:1px}
+.nsl{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:9px;font-weight:800;font-size:17px;vertical-align:middle}
+.nsl.pt{width:20px;height:20px;border-radius:6px;font-size:12px}
+.nscard{text-align:center}
+.nsbar{display:flex;justify-content:center;gap:3px;margin:6px 0 4px}
+.nsbar span{width:40px;height:40px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;opacity:.35;border-radius:8px}
+.nsbar span.on{opacity:1;width:56px;height:56px;font-size:28px;margin-top:-8px;box-shadow:0 3px 10px rgba(0,0,0,.25);border-radius:12px}
+.nsscore{font-size:13px;color:var(--mut);margin-bottom:6px}.nsscore b{font-size:22px;color:var(--ink)}
+.nscrit{display:flex;align-items:center;gap:10px;text-align:left;padding:8px 0;border-top:1px solid var(--line)}
+.nscrit>div:first-child{flex:1}.nscrit b{display:block;font-size:14px}.nscrit span{font-size:12px;color:var(--mut)}
+.pts{font-weight:700;font-size:14px;border-radius:9px;padding:4px 8px;background:var(--chip)}
+.pts.ok{color:#0b7f3f}.pts.moy{color:#b07800}.pts.bad{color:#d9382c}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.kpis div{background:var(--card);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow)}
+.kpis b{display:block;font-size:19px}.kpis span{font-size:12px;color:var(--mut)}
+.stack{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:4px 0 10px}
+.lg{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0}.lg i{width:12px;height:12px;border-radius:4px}.lg b{margin-left:auto;font-weight:600}
+.hbar{padding:5px 0}.hl{display:flex;justify-content:space-between;font-size:13px;margin-bottom:3px}.hl span{color:var(--mut)}
+.ht{height:9px;background:var(--chip);border-radius:6px;overflow:hidden}.ht i{display:block;height:100%;border-radius:6px}
+.cols{display:flex;align-items:flex-end;gap:3px;padding-top:4px}
+.col{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px}
+.col em{font-style:normal;color:var(--mut);font-size:9px;white-space:nowrap;letter-spacing:-.3px}
+.col small{color:var(--mut);white-space:nowrap;font-size:9.5px;text-align:center;line-height:1.15}.col small.mb{color:#e8590c;font-weight:600}
+.cb{width:100%;max-width:26px;display:flex;flex-direction:column;border-radius:5px 5px 2px 2px;overflow:hidden}.cb i{display:block}
+.cols.dow .col{min-width:0}.cols.dow .cb{max-width:30px}
+.card.mag,.card.pos{padding:12px 14px}
+.mh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}.mh span{color:var(--mut);font-size:13px}
+.mk{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px;color:var(--mut)}.mk b{display:block;font-size:15px;color:var(--ink)}
+.rk{width:24px;height:24px;border-radius:8px;background:var(--chip);display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+.am small{font-weight:400;color:var(--mut);font-size:11px}
+.cmp{padding:8px 0;border-bottom:1px solid var(--line)}.cmp:last-child{border:0}.cmp small{color:var(--mut);font-size:11px;margin-left:6px}
+.cmpl{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.cmpl span{background:var(--chip);border-radius:9px;padding:5px 8px;font-size:12px}.cmpl span.best{background:#d8f5e6;color:#075c37}
+.cmpl em{font-style:normal;color:#d9382c;font-size:11px}
+.card.dca{border:2px solid var(--blue)}.card.dca.fait{border-color:var(--acc)}
+.dcab{background:var(--chip);border-radius:14px;padding:10px 12px;margin:10px 0}
+.dcab .dck{display:flex;align-items:center;gap:8px;font-weight:600;margin:0 0 4px}.dcab input[type=checkbox]{width:20px;height:20px}
+.sante{font-weight:700;margin:8px 0 4px}.sante.ok{color:var(--acc)}.sante.bad{color:var(--bad)}.sante small{font-weight:400;color:var(--mut);margin-left:6px}
+details summary{cursor:pointer;font-size:13px;color:var(--blue);margin:8px 0}
+.avh{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;padding:0 0 4px;border-bottom:1px solid var(--line)}
+.alert.ok{background:#dcf5e8;color:#0b5a37}
 </style>
 </head>
 <body>
@@ -201,7 +243,7 @@ details summary::-webkit-details-marker{color:var(--mut)}
 
 <script>
 "use strict";
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.8.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -397,6 +439,7 @@ async function flush() {
         S.queue.shift(); saveQueue();
         if (r.courses) { fusionCourses(r.courses); }
         else if (r.conges) { S.cg = { data: r.conges, at: Date.now() }; LS.set("bf.cg", S.cg); }
+        else if (r.bourse) { S.bo = { data: r.bourse, at: Date.now() }; LS.set("bf.bo", S.bo); }
         else { lourd = true; if (S.queue.length === 0 && r.state) { S.base = r.state; saveBase(); } }
         S.offline = false; S.error = "";
       } else if (r.error === "clé invalide" || /code de l'appli/.test(r.error)) {
@@ -510,7 +553,8 @@ function viewPlus() {
     T("🩺", "Soins et mutuelle", "suivi des remboursements", "goso") +
     (estG() ? T("🏖️", "Congés", "compteurs, poser, ponts", "goconges") : "") +
     T("👶", "Garde de Léo", "qui garde, calendrier", "gogarde") +
-    T("📈", estG() ? "Bourse" : "Ma bourse", "bientôt (v1.8)", "gobourse") +
+    T("📊", "Statistiques", "courses, prix, note A à E", "gostats") +
+    (estG() ? T("📈", "Bourse", "PEA, CTO de Léo, DCA", "gobourse") : T("📈", "Ma bourse", "bientôt", "gobourse")) +
     T("🍽️", "Menus et courses", "recettes, liste partagée", "", 'data-rr="gorepas"') +
     T("⚙️", "Réglages", "connexion, mise à jour", "goreg") + `</div>`;
 }
@@ -806,7 +850,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += tonightCard(v, true) + accueilPerso() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += tonightCard(v, true) + accueilPerso() + accueilBourse() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -822,7 +866,7 @@ function viewHome(v) {
   }
   const next = (v.jours || []).filter(j => String(j.detail).trim() !== "").slice(0, 6);
   if (next.length) {
-    h += `<h2>À venir</h2><div class="card">` + next.map(j => `<div class="row"><div class="rt"><b>${esc(j.date)}</b><span>${esc(j.detail)}</span></div><div class="am">${esc(j.solde)}</div></div>`).join("") + `</div>`;
+    h += `<h2>À venir</h2><div class="card"><div class="avh"><span>Date · détail</span><span>Solde du jour</span></div>` + next.map(j => `<div class="row"><div class="rt"><b>${esc(j.date)}</b><span>${esc(j.detail)}</span></div><div class="am">${esc(j.solde)}</div></div>`).join("") + `</div>`;
   }
   if (pv.prochainesCourses) h += `<div class="chips"><div class="chip"><b>${esc(pv.prochainesCourses)}</b><span>Prochaines courses</span></div></div>`;
   h += fuelCard(v);
@@ -871,22 +915,25 @@ function viewReglages() {
     <div class="card"><b>État</b>
     <div class="hint">Version ${APP_VERSION} · ${S.queue.length} saisie(s) en attente · ${S.base ? "dernier chargement : " + new Date(S.base.genere).toLocaleString("fr-FR") : "aucune donnée chargée"}</div>
     <button class="btn sec" id="cfgReload">Recharger l'appli (mise à jour)</button></div>
+    <div class="card" id="santeBox"></div>
     <button class="linkbtn" data-act="goplus">← Plus</button>`;
 }
 
 function render() {
   const v = computeView();
   const el = $("#view");
-  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde"].includes(S.tab);
+  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse"].includes(S.tab);
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
   $("#fab").style.display = (grpPlus || S.tab === "repas") ? "none" : "block";
   if (S.tab === "plus") { el.innerHTML = viewPlus(); return; }
-  if (S.tab === "reglages") { if (!el.querySelector("#cfgSave")) el.innerHTML = viewReglages(); return; }
+  if (S.tab === "reglages") { if (!el.querySelector("#cfgSave")) { el.innerHTML = viewReglages(); setTimeout(chargerSante, 50); } return; }
   if (!configured()) { S.tab = "reglages"; el.innerHTML = viewReglages(); toast("Configure d'abord la connexion"); return; }
   if (!v) { el.innerHTML = `<div class="empty">${S.loading ? "Chargement…" : "Pas encore de données.<br>Vérifie la connexion puis appuie sur ⟳."}</div>`; return; }
   if (S.tab === "repas") { el.innerHTML = bandeauScript() + viewRepas(v); return; }
   if (S.tab === "conges") { el.innerHTML = viewConges(); return; }
   if (S.tab === "garde") { el.innerHTML = viewGarde(); return; }
+  if (S.tab === "stats") { el.innerHTML = bandeauScript() + viewStats(false); return; }
+  if (S.tab === "bourse") { el.innerHTML = bandeauScript() + viewBourse(); return; }
   el.innerHTML = S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : S.tab === "amazon" ? viewAmazon(v) : S.tab === "soins" ? viewSoins(v) : viewAnnuels(v);
 }
 
@@ -1098,7 +1145,16 @@ function libSemaine(sem) {
 }
 const jourLong = iso => { const d = dOf(iso); return JOURS[d.getDay()] + " " + d.getDate(); };
 function hm(min) { min = ((Math.round(min) % 1440) + 1440) % 1440; return Math.floor(min / 60) + "h" + pad(min % 60); }
-const minOf = s => { const m = String(s || "20:55").match(/(\d{1,2})\D?(\d{2})/); return m ? Number(m[1]) * 60 + Number(m[2]) : 20 * 60 + 55; };
+const minOf = s => {
+  const n = Number(s); if (s !== "" && !isNaN(n) && n > 0 && n < 1) return Math.round(n * 1440) % 1440; // fraction de journée (0,8715 = 20:55)
+  const m = String(s || "20:55").match(/^\s*(\d{1,2})\s*[:h]\s*(\d{2})/); return m && Number(m[1]) < 24 ? Number(m[1]) * 60 + Number(m[2]) : 20 * 60 + 55;
+};
+// « dans 1h12 » à côté d'une heure de la soirée (seulement si c'est plus tard aujourd'hui)
+function dans(min) {
+  const d = new Date(), now = d.getHours() * 60 + d.getMinutes(), x = Math.round(min) - now;
+  if (x <= 0 || x > 12 * 60) return "";
+  return "dans " + (x >= 60 ? Math.floor(x / 60) + "h" + pad(x % 60) : x + " min");
+}
 
 // ---------- données ----------
 const R = v => (v && v.repas) || { installe: false };
@@ -1277,12 +1333,13 @@ function viewRepas(v) {
       ${rp.erreur ? `<div class="alert bad" style="margin-top:10px">${esc(rp.erreur)}</div>` : ""}
       <button class="btn" data-rr="install">Installer</button><div class="hint">Il faut du réseau ; ça prend jusqu'à une minute.</div></div>`;
   }
-  const seg = [["menus", "Menus"], ["courses", "Courses"], ["recettes", "Recettes"], ["tiroir", "Tiroir"], ["flemme", "⚡ Flemme"]];
+  const seg = [["menus", "Menus"], ["courses", "Courses"], ["recettes", "Recettes"], ["tiroir", "Tiroir"], ["flemme", "⚡ Flemme"], ["stats", "📊"]];
   let h = `<div class="seg">${seg.map(([k, n]) => `<button data-rsub="${k}" class="${S.rp.sub === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
   if (S.rp.sub === "courses") return h + viewCourses(v);
   if (S.rp.sub === "recettes") return h + viewRecettes(v);
   if (S.rp.sub === "tiroir") return h + viewTiroir(v);
   if (S.rp.sub === "flemme") return h + viewFlemme(v);
+  if (S.rp.sub === "stats") return h + viewStats(true);
   return h + viewMenus(v);
 }
 function weekChips() {
@@ -1411,6 +1468,7 @@ function viewTiroir(v) {
 }
 
 // ---------- fiche recette / mode cuisine ----------
+const relTxt = (min, ctx) => { if (ctx && ctx.date && ctx.date !== todayISO()) return ""; const t = dans(min); return t ? `<small class="dans">${t}</small>` : ""; };
 function openFiche(id, ctx) {
   const v = computeView(), r = recette(v, id); if (!r) return;
   const g = reg(v), pm = prodMap(v), h0 = minOf(g.heure);
@@ -1420,7 +1478,7 @@ function openFiche(id, ctx) {
   const step = (s, k) => `<li class="${S.rp.done[id + k] ? "done" : ""}" data-rstep="${id + k}">${esc(s)}</li>`;
   openSheet(`${photoHtml(r, "fh")}
     <h3>${esc(r.nom)}</h3>
-    <div class="tline"><div>🔪 Prépa<b>${r.prepa} min</b>dès ${hm(h0 - r.prepa)}</div><div class="hc">⚡ Cuisson<b>${r.cuisson} min</b>à ${hm(h0)}</div><div>🍽 À table<b>${hm(h0 + r.cuisson)}</b>${tempsTotal(r)} min</div></div>
+    <div class="tline"><div>🔪 Prépa<b>${r.prepa} min</b>dès ${hm(h0 - r.prepa)}${relTxt(h0 - r.prepa, ctx)}</div><div class="hc">⚡ Cuisson<b>${r.cuisson} min</b>à ${hm(h0)}${relTxt(h0, ctx)}</div><div>🍽 À table<b>${hm(h0 + r.cuisson)}</b>${tempsTotal(r)} min en tout</div></div>
     <div class="hint" style="margin:-6px 0 8px">${esc(r.appareil || "")} · ${eur(coutRecette(r, pm, g.coef) / 4)} la part · ${portions} portions${portions > 4 ? " (dont restes pour demain)" : " (2 ce soir, 2 en boîtes)"}</div>
     <div class="sth">Ingrédients</div><ul class="ings">${ings}</ul>
     <div class="sth">🔪 Avant ${esc(hm(h0))} : préparation <span>sans appareil</span></div><ol class="steps">${r.prep.map((s, k) => step(s, "p" + k)).join("")}</ol>
@@ -1956,7 +2014,7 @@ setInterval(pollCourses, 8000);
 // =====================================================================
 // v1.7.0 : PROFILS (Gaétan = tout, Mathilde = sa version), CONGÉS, GARDE DE LÉO, PONTS, JOUR DES COURSES
 // =====================================================================
-const SCRIPT_ATTENDU = 24;
+const SCRIPT_ATTENDU = 25;
 S.prof = LS.get("bf.prof", "G");
 S.cg = LS.get("bf.cg", null);            // { data, at } : copie locale du fichier congés (lu par le script, cache 10 min)
 S.gardeVue = "14";
@@ -2173,7 +2231,7 @@ document.addEventListener("click", e => {
   if (dd.prof) { setProf(dd.prof); closeSheet(); toast(estG() ? "Profil Gaétan : tout est visible" : "Profil Mathilde"); return; }
   if (dd.act === "goconges") { S.tab = "conges"; render(); window.scrollTo(0, 0); chargerConges(); return; }
   if (dd.act === "gogarde") { S.tab = "garde"; render(); window.scrollTo(0, 0); chargerConges(); return; }
-  if (dd.act === "gobourse") { toast(estG() ? "La bourse arrive en v1.8" : "Ta bourse arrivera dans une prochaine version"); return; }
+  if (dd.act === "gobourse") { if (!estG()) { toast("Ta bourse arrivera dans une prochaine version"); return; } S.tab = "bourse"; render(); window.scrollTo(0, 0); chargerBourse(); return; }
   if (dd.cgmaj) { toast("🔄 Lecture du fichier congés…"); chargerConges(true); return; }
   if (dd.gvue) { S.gardeVue = dd.gvue; render(); return; }
   if (dd.cgposer !== undefined) { openPoser(dd.cgposer); return; }
@@ -2195,6 +2253,336 @@ document.addEventListener("change", e => {
     if (e.target.id === "cgDu" && S.rf.au < S.rf.du) S.rf.au = S.rf.du;
     S.rf.note = ($("#cgNote") || {}).value; renderPoser();
   }
+});
+
+
+// =====================================================================
+// v1.8.0 : STATISTIQUES DES COURSES (+ note A à E), BOURSE (DCA), ÉTAT DE L'APPLI, JOURNAL D'ERREURS
+// =====================================================================
+S.st = LS.get("bf.st", null);      // { data, at } : statistiques calculées par le script (cache 6 h côté script)
+S.stPer = LS.get("bf.stper", "12");
+S.stTop = "net";
+S.bo = LS.get("bf.bo", null);      // { data, at } : fichier des investissements
+S.sante = null;
+const STAT_MOIS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+const moisCourt = ym => STAT_MOIS[Number(ym.slice(5, 7)) - 1] + " " + ym.slice(2, 4);
+const moisLong = ym => { const n = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]; return n[Number(ym.slice(5, 7)) - 1] + " " + ym.slice(0, 4); };
+const dateCourte = iso => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(2, 4) : "";
+const pct = (a, b) => b > 0 ? Math.round(a / b * 100) : 0;
+const e0 = n => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Number(n) || 0);
+
+// ---------- journal d'erreurs : les plantages de l'appli sont notés dans le Sheet (onglet caché « Journal technique ») ----------
+let nbErrEnvoyees = 0;
+function signalerErreur(ou, msg) {
+  try {
+    if (!configured() || !navigator.onLine || nbErrEnvoyees >= 5) return;
+    nbErrEnvoyees++;
+    call("logerr", { ou: String(ou).slice(0, 80), msg: String(msg).slice(0, 400) + " · v" + APP_VERSION + " · " + (S.tab || "") }, 15000).catch(() => {});
+  } catch (e) {}
+}
+window.addEventListener("error", e => signalerErreur((e.filename || "").split("/").pop() + ":" + (e.lineno || ""), e.message || "erreur"));
+window.addEventListener("unhandledrejection", e => signalerErreur("promesse", (e.reason && (e.reason.message || e.reason)) || "rejet"));
+
+// ---------- chargement ----------
+async function chargerStats(force) {
+  if (!configured() || !navigator.onLine) return;
+  if (!force && S.st && Date.now() - S.st.at < 30 * 60000) return;
+  if (chargerStats.busy) return; chargerStats.busy = true;
+  try {
+    const r = await call("stats", { force: !!force }, 90000);
+    if (r.ok) { S.st = { data: r.stats, at: Date.now() }; LS.set("bf.st", S.st); S.stErreur = ""; }
+    else S.stErreur = r.error || "calcul impossible";
+  } catch (e) { S.stErreur = e.name === "AbortError" ? "le calcul prend trop de temps, réessaie dans une minute" : e.message; }
+  chargerStats.busy = false;
+  if ((S.tab === "stats" || (S.tab === "repas" && S.rp.sub === "stats")) && !$("#sheet").classList.contains("open")) render();
+}
+async function chargerBourse(force) {
+  if (!configured() || !navigator.onLine || !estG()) return;
+  if (!force && S.bo && Date.now() - S.bo.at < 10 * 60000) return;
+  if (chargerBourse.busy) return; chargerBourse.busy = true;
+  try {
+    const r = await call("bourse", { force: !!force }, 45000);
+    if (r.ok) { S.bo = { data: r.bourse, at: Date.now() }; LS.set("bf.bo", S.bo); S.boErreur = ""; }
+    else S.boErreur = r.error || "lecture impossible";
+  } catch (e) { S.boErreur = e.name === "AbortError" ? "le fichier des investissements met trop de temps à répondre" : e.message; }
+  chargerBourse.busy = false;
+  if (["home", "bourse"].includes(S.tab) && !$("#sheet").classList.contains("open")) render();
+}
+
+// ---------- note des courses (façon Nutri-Score) ----------
+// 100 points : grignotage et sodas (30), fruits et légumes (20), budget alimentaire par semaine (30), passages en magasin (20)
+const lim = (x, a, b) => Math.max(0, Math.min(1, (x - a) / (b - a)));
+function noteCourses(o) {
+  const food = o.alim + o.malbouffe + o.alcool;
+  if (!(food > 0)) return null;
+  const m = o.malbouffe / food * 100, f = o.fl / food * 100, sem = Math.max(o.semaines, 0.5);
+  const parSem = food / sem, ratio = parSem / (o.objectif || 70), vis = o.tickets / sem;
+  const crit = [
+    { nom: "Grignotage et sodas", pts: Math.round(30 * lim(35 - m, 0, 25)), max: 30, txt: `${Math.round(m)} % de ta dépense alimentaire`, conseil: "objectif : moins de 10 %" },
+    { nom: "Fruits et légumes", pts: Math.round(20 * lim(f, 2, 12)), max: 20, txt: `${Math.round(f)} % de ta dépense alimentaire`, conseil: "objectif : 12 % ou plus" },
+    { nom: "Budget nourriture", pts: Math.round(30 * lim(2 - ratio, 0, 1)), max: 30, txt: `${e0(parSem)} par semaine pour ${e0(o.objectif || 70)} prévus`, conseil: "objectif : rester sous ton budget" },
+    { nom: "Passages en magasin", pts: Math.round(20 * lim(3 - vis, 0, 2)), max: 20, txt: `${(Math.round(vis * 10) / 10).toString().replace(".", ",")} par semaine`, conseil: "objectif : 1 grosse course par semaine" }
+  ];
+  const score = crit.reduce((s, c) => s + c.pts, 0);
+  const lettre = score >= 80 ? "A" : score >= 65 ? "B" : score >= 50 ? "C" : score >= 35 ? "D" : "E";
+  return { score, lettre, crit };
+}
+// note d'un ticket seul : grignotage (60) et fruits et légumes (40)
+function noteTicket(t) {
+  if (!(t.net > 0)) return null;
+  const s = Math.round(60 * lim(35 - t.malbouffe, 0, 25) + 40 * lim(t.fl, 2, 12));
+  return s >= 80 ? "A" : s >= 65 ? "B" : s >= 50 ? "C" : s >= 35 ? "D" : "E";
+}
+const NS_COUL = { A: "#038141", B: "#85bb2f", C: "#fecb02", D: "#ee8100", E: "#e63e11" };
+const lettreHtml = (l, petit) => l ? `<span class="nsl ${petit ? "pt" : ""}" style="background:${NS_COUL[l]};color:${l === "C" ? "#3b3200" : "#fff"}">${l}</span>` : "";
+function barreNote(l) {
+  return `<div class="nsbar">${"ABCDE".split("").map(x => `<span class="${x === l ? "on" : ""}" style="background:${NS_COUL[x]}">${x}</span>`).join("")}</div>`;
+}
+function objectifSemaine() { try { return Number(reg(computeView()).alim) || 70; } catch (e) { return 70; } }
+function semainesDuMois(ym, dernierJour) {
+  const [y, m] = ym.split("-").map(Number), nb = new Date(y, m, 0).getDate();
+  const fin = dernierJour && dernierJour.slice(0, 7) === ym ? Number(dernierJour.slice(8, 10)) : nb;
+  return fin / 7;
+}
+
+// ---------- page Statistiques ----------
+function viewStats(dansRepas) {
+  const st = S.st && S.st.data;
+  chargerStats();
+  let h = dansRepas ? "" : `<button class="linkbtn" data-act="goplus">← Plus</button>`;
+  if (!st) return h + `<div class="empty">${S.stErreur ? "⚠ " + esc(S.stErreur) : "📊 Calcul des statistiques…<br><small>La première fois, ça peut prendre une demi-minute.</small>"}</div>`;
+  if (st.vide) return h + `<div class="empty">Pas encore d'achats dans l'onglet « Historique achats ».<br>Scanne un ticket de courses pour commencer.</div>`;
+  const per = st.periodes[S.stPer] || st.periodes.tout, obj = objectifSemaine();
+  const nomsPer = { "3": "3 mois", "6": "6 mois", "12": "12 mois", tout: "Tout" };
+  h += `<div class="hero"><small>📊 Tes courses · ${per.debut === per.fin ? moisLong(per.debut) : moisLong(per.debut) + " → " + moisLong(per.fin)}</small>
+    <div class="big">${e0(per.total)}</div><div class="sub">${per.tickets} tickets · ${per.articles} articles · ${e0(per.parMois)} par mois en moyenne</div></div>
+    <div class="wk">${Object.keys(nomsPer).filter(k => st.periodes[k]).map(k => `<button data-stper="${k}" class="${S.stPer === k ? "on" : ""}">${nomsPer[k]}</button>`).join("")}</div>`;
+  // note
+  const g = per.groupes;
+  const n = noteCourses({ alim: g.alim, malbouffe: g.malbouffe, alcool: g.alcool, fl: g.fl || 0, semaines: per.semaines, tickets: per.tickets, objectif: obj });
+  if (n) {
+    h += `<h2>Note de tes courses</h2><div class="card nscard">${barreNote(n.lettre)}<div class="nsscore"><b>${n.score}</b>/100</div>
+      ${n.crit.map(c => `<div class="nscrit"><div><b>${esc(c.nom)}</b><span>${esc(c.txt)} · ${esc(c.conseil)}</span></div><div class="pts ${c.pts >= c.max * .7 ? "ok" : c.pts >= c.max * .35 ? "moy" : "bad"}">${c.pts}/${c.max}</div></div>`).join("")}
+      <div class="hint">A dès 80 points, B dès 65, C dès 50, D dès 35. Budget comparé à ton objectif des menus (${e0(obj)} par semaine).</div></div>`;
+  }
+  // chiffres clés
+  const food = g.alim + g.malbouffe + g.alcool;
+  h += `<div class="kpis">
+    <div><b>${e0(per.parSemaine)}</b><span>par semaine, tout compris</span></div>
+    <div><b>${e0(food / per.semaines)}</b><span>par semaine pour manger</span></div>
+    <div><b>${eur(per.panier)}</b><span>panier moyen</span></div>
+    <div><b>${String(per.visitesSemaine).replace(".", ",")}</b><span>passages par semaine</span></div>
+    <div><b style="color:#e63e11">${pct(g.malbouffe, per.total)} %</b><span>grignotage et sodas · ${e0(g.malbouffe / per.mois)}/mois</span></div>
+    <div><b>${pct(g.nonalim, per.total)} %</b><span>hors alimentaire · ${e0(g.nonalim / per.mois)}/mois</span></div></div>`;
+  // où va l'argent
+  const parts = [["Alimentation", g.alim, "#2f9e6e"], ["Grignotage et sodas", g.malbouffe, "#e8590c"], ["Hors alimentaire", g.nonalim, "#5c7cfa"], ["Alcool", g.alcool, "#9c36b5"]].filter(x => x[1] > 0);
+  h += `<h2>Où va l'argent</h2><div class="card"><div class="stack">${parts.map(x => `<span style="width:${x[1] / per.total * 100}%;background:${x[2]}"></span>`).join("")}</div>
+    ${parts.map(x => `<div class="lg"><i style="background:${x[2]}"></i>${x[0]}<b>${e0(x[1])} · ${pct(x[1], per.total)} %</b></div>`).join("")}</div>`;
+  // catégories
+  const maxC = Math.max(...per.cats.map(c => c.net), 1);
+  const coulG = { alim: "#2f9e6e", malbouffe: "#e8590c", nonalim: "#5c7cfa", alcool: "#9c36b5" };
+  h += `<h2>Par catégorie</h2><div class="card">${per.cats.map(c => `<div class="hbar"><div class="hl">${esc(c.cat)}<span>${e0(c.net)} · ${pct(c.net, per.total)} %</span></div><div class="ht"><i style="width:${c.net / maxC * 100}%;background:${coulG[c.g] || "#999"}"></i></div></div>`).join("")}</div>`;
+  // mois par mois
+  const serie = st.serie.filter(m => m.m >= per.debut).slice(-14);
+  const maxM = Math.max(...serie.map(m => m.total), 1);
+  h += `<h2>Mois par mois</h2><div class="card"><div class="cols">${serie.map(m => {
+    const nm = noteCourses({ alim: m.alim, malbouffe: m.malbouffe, alcool: m.alcool, fl: m.fl || 0, semaines: semainesDuMois(m.m, st.dernier), tickets: m.tickets, objectif: obj });
+    return `<div class="col"><em>${Math.round(m.total)}</em><div class="cb" style="height:${Math.max(4, m.total / maxM * 120)}px">
+      <i style="flex:${m.nonalim + m.alcool};background:#5c7cfa"></i><i style="flex:${m.malbouffe};background:#e8590c"></i><i style="flex:${m.alim};background:#2f9e6e"></i></div>
+      ${nm ? lettreHtml(nm.lettre, true) : ""}<small>${STAT_MOIS[Number(m.m.slice(5, 7)) - 1].replace(".", "")}${m.m.slice(5, 7) === "01" ? "<br>" + m.m.slice(0, 4) : ""}</small><small class="mb">${pct(m.malbouffe, m.total)} %</small></div>`;
+  }).join("")}</div><div class="hint">Vert : alimentation · orange : grignotage et sodas (en % sous le mois) · bleu : hors alimentaire et alcool. Lettre : note du mois. Montants en euros.</div></div>`;
+  // magasins
+  const panier = {}; (st.panier || []).forEach(p => { panier[p.mag] = p; });
+  h += `<h2>Par magasin</h2>` + per.mags.map(m => `<div class="card mag"><div class="mh"><b>${esc(m.mag)}</b><span>${e0(m.net)} · ${pct(m.net, per.total)} %</span></div>
+    <div class="mk"><div><b>${m.tickets}</b>tickets</div><div><b>${eur(m.panier)}</b>panier moyen</div><div><b style="color:#e8590c">${pct(m.malbouffe, m.net)} %</b>grignotage</div>${panier[m.mag] ? `<div><b>${panier[m.mag].ecart > 0 ? "+" : ""}${String(panier[m.mag].ecart).replace(".", ",")} %</b>prix vs le moins cher</div>` : ""}</div></div>`).join("");
+  if ((st.panier || []).length > 1) {
+    const best = st.panier[0];
+    h += `<div class="alert ok">🏆 Sur ${best.n} produits vendus dans plusieurs magasins, <b>${esc(best.mag)}</b> est le moins cher en moyenne (12 derniers mois). L'écart reste faible : c'est surtout ce qu'on met dans le caddie qui compte.</div>`;
+  }
+  // tes classiques
+  h += `<h2>Tes classiques</h2><div class="card">${per.familles.slice(0, 14).map(f => `<div class="row"><div class="rt"><b>${esc(f.nom)}</b><span>dans ${f.t} ticket${f.t > 1 ? "s" : ""} sur ${per.tickets} (${pct(f.t, per.tickets)} %) · ${Object.keys(f.mag).sort((a, b) => f.mag[b] - f.mag[a]).map(x => esc(x)).join(", ")}</span></div><div class="am">${e0(f.net / per.mois)}<small>/mois</small></div></div>`).join("")}</div>`;
+  // top articles
+  const top = S.stTop === "freq" ? per.topFreq : per.topNet;
+  h += `<h2>Top articles</h2><div class="wk"><button data-sttop="net" class="${S.stTop !== "freq" ? "on" : ""}">💶 Les plus chers au total</button><button data-sttop="freq" class="${S.stTop === "freq" ? "on" : ""}">🔁 Les plus fréquents</button></div>
+    <div class="card">${top.map((a, i) => `<div class="row"><div class="rk">${i + 1}</div><div class="rt"><b>${esc(a.nom)}</b><span>${esc(a.mag)} · ${esc(a.cat)} · ${a.t} ticket${a.t > 1 ? "s" : ""} · ${String(Math.round(a.q * 10) / 10).replace(".", ",")} acheté${a.q > 1 ? "s" : ""}</span></div><div class="am">${eur(a.net)}</div></div>`).join("")}</div>`;
+  // comparaison des prix
+  if ((st.comparaison || []).length) {
+    const unite = u => u === "pièce" ? "l'unité" : "le " + (u === "L" ? "litre" : "kilo");
+    h += `<h2>Même produit, quel magasin ?</h2><div class="card">${st.comparaison.map(c => `<div class="cmp"><b>${esc(c.nom)}</b><small>prix ${unite(c.unite)}, 12 derniers mois</small>
+      <div class="cmpl">${c.mags.map((x, i) => `<span class="${i === 0 && c.mags.length > 1 && x.prix < c.mags[1].prix - 0.005 ? "best" : ""}">${esc(x.mag)} <b>${eur(x.prix)}</b>${i > 0 && x.ecart > 0 ? ` <em>+${String(x.ecart).replace(".", ",")} %</em>` : ""}</span>`).join("")}</div></div>`).join("")}</div>`;
+  }
+  // évolution des prix
+  const ev = st.evolution;
+  if (ev && ev.articles) {
+    const ligneEv = e => `<div class="row"><div class="rt"><b>${esc(e.nom)}</b><span>${esc(e.mag)} · ${eur(e.avant)} → ${eur(e.apres)} · ${e.n} achats du ${dateCourte(e.de)} au ${dateCourte(e.a)}</span></div><div class="am" style="color:${e.pct > 0 ? "#e63e11" : "#2f9e6e"}">${e.pct > 0 ? "+" : ""}${String(e.pct).replace(".", ",")} %</div></div>`;
+    h += `<h2>Évolution des prix</h2><div class="card"><div class="hint" style="margin:0 0 6px">Sur ${ev.articles} articles achetés souvent : ${ev.hausse} en hausse, ${ev.baisse} en baisse, ${ev.stables} stables (prix affiché, hors promos).</div>
+      ${ev.hausses.length ? `<div class="sth">📈 Les plus fortes hausses</div>${ev.hausses.slice(0, 8).map(ligneEv).join("")}` : ""}
+      ${ev.baisses.length ? `<div class="sth">📉 Les baisses</div>${ev.baisses.slice(0, 5).map(ligneEv).join("")}` : ""}</div>`;
+  }
+  // jours de courses
+  const jn = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"], maxD = Math.max(...per.dow, 1);
+  h += `<h2>Tes jours de courses</h2><div class="card"><div class="cols dow">${per.dow.map((x, i) => `<div class="col"><em>${x}</em><div class="cb" style="height:${Math.max(3, x / maxD * 70)}px"><i style="flex:1;background:#2f6fd6"></i></div><small>${jn[i]}</small></div>`).join("")}</div></div>`;
+  // plus gros tickets et derniers tickets
+  h += `<h2>Derniers tickets</h2><div class="card">${st.derniers.slice(0, 15).map(t => `<div class="row"><div class="rt"><b>${esc(t.mag)}${t.lieu ? " · " + esc(t.lieu) : ""}</b><span>${dateCourte(t.d)} · ${t.n} articles · ${t.malbouffe} % grignotage · ${t.fl || 0} % fruits et légumes</span></div><div class="am">${lettreHtml(noteTicket({ net: 1, malbouffe: t.malbouffe, fl: t.fl || 0 }), true)} ${eur(t.tot)}</div></div>`).join("")}</div>`;
+  if (per.gros && per.gros.length) h += `<div class="hint" style="margin:0 4px 10px">Plus gros tickets : ${per.gros.map(t => esc(t.mag) + " " + dateCourte(t.d) + " (" + e0(t.tot) + ")").join(" · ")}</div>`;
+  h += `<div class="hint" style="margin:6px 4px 14px">Calculé sur ${st.lignes} articles du ${dateCourte(st.premier)} au ${dateCourte(st.dernier)} (onglet « Historique achats »). Chaque ticket « Courses » scanné s'y ajoute tout seul.</div>
+    <button class="btn sec" data-stmaj="1">⟳ Recalculer maintenant</button>`;
+  return h;
+}
+
+// ---------- bourse ----------
+function boMoisCourant(d) { const ym = todayISO().slice(0, 7); return (d.mois || []).find(m => m.m === ym) || null; }
+function dcaCard(d, accueil) {
+  const m = boMoisCourant(d); if (!m || !(m.peaPrevu > 0)) return "";
+  const verse = m.peaVerse || 0, fait = verse >= m.peaPrevu - 0.5;
+  if (accueil && fait) return "";
+  if (accueil && Number(todayISO().slice(8, 10)) < 1) return "";
+  return `<div class="card dca ${fait ? "fait" : ""}" ${accueil ? 'data-act="gobourse" style="cursor:pointer"' : ""}><div class="row" style="border:0;padding:0"><div class="ic">${fait ? "✅" : "📈"}</div>
+    <div class="rt"><b>${fait ? "DCA de " + moisLong(m.m).split(" ")[0] + " fait" : "DCA de " + moisLong(m.m).split(" ")[0] + " à faire"}</b><span>${fait ? eur(verse) + " versés" + (m.peaAchete ? " · " + eur(m.peaAchete) + " investis" : "") : "prévu " + eur(m.peaPrevu) + (verse > 0 ? " · déjà " + eur(verse) + " versés" : "") + " sur le PEA"}</span></div>
+    ${fait || accueil ? "" : `<button class="btn" style="margin:0;width:auto;padding:8px 12px" data-bodca="1">J'ai fait mon DCA</button>`}</div></div>`;
+}
+function accueilBourse() {
+  if (!estG()) return "";
+  chargerBourse();
+  const d = S.bo && S.bo.data; if (!d) return "";
+  return dcaCard(d, true);
+}
+function viewBourse() {
+  let h = `<button class="linkbtn" data-act="goplus">← Plus</button>`;
+  if (!estG()) return h + `<div class="empty">Ta bourse arrivera dans une prochaine version.</div>`;
+  chargerBourse();
+  const d = S.bo && S.bo.data;
+  if (!d) return h + `<div class="empty">${S.boErreur ? "⚠ " + esc(S.boErreur) : "📈 Lecture du fichier des investissements…"}</div>`;
+  const val = d.positions.reduce((s, p) => s + p.valeur, 0), cout = d.positions.reduce((s, p) => s + p.cout, 0), pv = val - cout;
+  const esp = d.comptes.reduce((s, c) => s + c.especes, 0), verse = d.comptes.reduce((s, c) => s + c.total, 0);
+  h += `<div class="hero"><small>📈 Bourse · PEA et CTO de Léo</small><div class="big">${eur(val + esp)}</div>
+    <div class="sub">${pv >= 0 ? "+" : ""}${eur(pv)} (${pv >= 0 ? "+" : ""}${cout > 0 ? String(Math.round(pv / cout * 1000) / 10).replace(".", ",") : 0} %) · ${eur(verse)} versés · ${eur(esp)} d'espèces</div></div>`;
+  h += dcaCard(d, false);
+  h += `<button class="btn" data-bodca="1">✅ J'ai fait mon DCA</button>`;
+  h += `<h2>Positions</h2>` + d.positions.map(p => `<div class="card pos"><div class="mh"><b>${esc(p.titre)}</b><span>${esc(p.compte)}</span></div>
+    <div class="mk"><div><b>${String(p.parts).replace(".", ",")}</b>parts</div><div><b>${eur(p.pru)}</b>PRU</div><div><b>${eur(p.cours)}</b>cours</div><div><b>${eur(p.valeur)}</b>valeur</div>
+    <div><b style="color:${p.pv >= 0 ? "#2f9e6e" : "#e63e11"}">${p.pv >= 0 ? "+" : ""}${eur(p.pv)}</b>plus-value</div><div><b>${eur(p.frais)}</b>frais payés</div></div></div>`).join("");
+  h += `<h2>Comptes</h2><div class="card">${d.comptes.filter(c => c.total > 0 || c.especes > 0).map(c => `<div class="row"><div class="rt"><b>${esc(c.compte)}</b><span>${eur(c.total)} versés · ${eur(c.investi)} investis · ${eur(c.especes)} d'espèces${c.reste != null ? " · reste " + e0(c.reste) + " avant le plafond" : ""}</span></div></div>`).join("")}</div>`;
+  const ym = todayISO().slice(0, 7), mois = d.mois.filter(m => m.m >= addMois(ym, -3)).slice(0, 8);
+  h += `<h2>Plan mois par mois</h2><div class="card">${mois.map(m => {
+    const ok = m.peaVerse != null && m.peaVerse >= m.peaPrevu - 0.5, futur = m.m > ym;
+    return `<div class="row"><div class="ic">${futur ? "🗓️" : ok ? "✅" : m.peaVerse ? "🟠" : "⏳"}</div><div class="rt"><b>${moisLong(m.m)}</b><span>PEA ${eur(m.peaPrevu)} prévu${m.peaVerse != null ? " · " + eur(m.peaVerse) + " versé" : ""}${m.ctoPrevu ? " · CTO " + eur(m.ctoPrevu) + " prévu" + (m.ctoVerse ? ", " + eur(m.ctoVerse) + " versé" : "") : ""}</span></div></div>`;
+  }).join("")}</div>`;
+  h += `<h2>Dernières opérations</h2><div class="card">${d.ops.slice(0, 12).map(o => `<div class="row"><div class="ic">${o.op === "Versement" ? "💶" : o.op === "Achat" ? "🛒" : "↔️"}</div><div class="rt"><b>${esc(o.op)} · ${esc(o.compte)}</b><span>${dateCourte(o.d)}${o.op === "Achat" ? " · " + String(o.parts).replace(".", ",") + " × " + eur(o.prix) + (o.frais ? " + " + eur(o.frais) + " de frais" : " · sans frais") : ""}${o.rem ? " · " + esc(o.rem) : ""}</span></div><div class="am">${eur(o.op === "Achat" ? o.cout || o.parts * o.prix + o.frais : o.verse)}</div></div>`).join("")}</div>
+    <div class="hint" style="margin:6px 4px">Tout vient du « Journal des opérations » de ton fichier des investissements. Le cours est celui de Google Finance (léger décalage possible).</div>
+    <button class="btn sec" data-bomaj="1">⟳ Relire le fichier</button>`;
+  return h;
+}
+const addMois = (ym, k) => { let y = Number(ym.slice(0, 4)), m = Number(ym.slice(5, 7)) - 1 + k; while (m < 0) { m += 12; y--; } while (m > 11) { m -= 12; y++; } return y + "-" + pad(m + 1); };
+
+// fenêtre « J'ai fait mon DCA » : versement et/ou achat, frais calculés (0 jusqu'à 500 €, 0,35 % au-delà)
+function fraisOrdre(montant) { return montant > 500 ? Math.round(montant * 0.0035 * 100) / 100 : 0; }
+function openDca() {
+  const d = S.bo && S.bo.data; if (!d) { toast("Fichier des investissements pas encore lu"); return; }
+  const m = boMoisCourant(d) || { peaPrevu: 500, peaVerse: 0 };
+  const titre = (d.positions.find(p => p.compte === "PEA Gaëtan") || {}).titre || "BNPP S&P 500 (ESE)";
+  const cours = (d.positions.find(p => p.compte === "PEA Gaëtan") || {}).cours || 0;
+  const reste = Math.max(0, (m.peaPrevu || 0) - (m.peaVerse || 0));
+  S.dca = { compte: "PEA Gaëtan", qui: "Gaëtan", avecVerse: reste > 0, avecAchat: true, dateVerse: todayISO(), verse: reste ? String(reste).replace(".", ",") : "", dateAchat: todayISO(), titre, parts: "", prix: cours ? String(cours).replace(".", ",") : "", frais: "", fraisMain: false };
+  renderDca();
+}
+function dcaCalc() {
+  const x = S.dca, num = s => parseFloat(String(s || "").replace(/\s/g, "").replace(",", ".")) || 0;
+  const parts = num(x.parts), prix = num(x.prix), ordre = Math.round(parts * prix * 100) / 100;
+  const frais = x.fraisMain ? num(x.frais) : fraisOrdre(ordre);
+  const d = S.bo.data, c = d.comptes.find(y => y.compte === x.compte) || { especes: 0 };
+  const dispo = Math.round(((c.especes || 0) + (x.avecVerse ? num(x.verse) : 0)) * 100) / 100;
+  return { parts, prix, ordre, frais, cout: Math.round((ordre + frais) * 100) / 100, verse: num(x.verse), dispo, maxParts: prix > 0 ? Math.floor(dispo / (prix * (dispo > 500 ? 1.0035 : 1))) : 0 };
+}
+function renderDca() {
+  const x = S.dca, k = dcaCalc(), d = S.bo.data;
+  const comptes = d.comptes.filter(c => c.total > 0 || /PEA Ga|CTO/.test(c.compte)).map(c => c.compte);
+  const titres = d.positions.filter(p => p.compte === x.compte).map(p => p.titre);
+  openSheet(`<h3>✅ J'ai fait mon DCA</h3>
+    <label>Compte</label><div class="tchips">${comptes.map(c => `<button class="cat ${x.compte === c ? "on" : ""}" data-dcac="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+    <div class="dcab"><label class="dck"><input type="checkbox" id="dcaV" ${x.avecVerse ? "checked" : ""}> 💶 J'ai fait un versement</label>
+      ${x.avecVerse ? `<div class="two"><div><label>Date</label><input type="date" id="dcaDV" value="${x.dateVerse}"></div><div><label>Montant (€)</label><input type="text" inputmode="decimal" id="dcaMV" value="${esc(x.verse)}"></div></div>
+      ${x.compte !== "PEA Gaëtan" ? `<label>Versé par</label><div class="tchips">${["Gaëtan", "Mathilde", "Les deux"].map(q => `<button class="cat ${x.qui === q ? "on" : ""}" data-dcaq="${q}">${q}</button>`).join("")}</div>` : ""}` : ""}</div>
+    <div class="dcab"><label class="dck"><input type="checkbox" id="dcaA" ${x.avecAchat ? "checked" : ""}> 🛒 J'ai acheté des parts</label>
+      ${x.avecAchat ? `${titres.length > 1 ? `<div class="tchips">${titres.map(t => `<button class="cat ${x.titre === t ? "on" : ""}" data-dcat="${esc(t)}">${esc(t)}</button>`).join("")}</div>` : `<div class="hint">${esc(x.titre)}</div>`}
+      <div class="two"><div><label>Date de l'achat</label><input type="date" id="dcaDA" value="${x.dateAchat}"></div><div><label>Nombre de parts</label><input type="text" inputmode="numeric" id="dcaP" value="${esc(x.parts)}" placeholder="${k.maxParts ? "max " + k.maxParts : ""}"></div></div>
+      <div class="two"><div><label>Prix par part (€)</label><input type="text" inputmode="decimal" id="dcaPx" value="${esc(x.prix)}"></div><div><label>Frais (€)</label><input type="text" inputmode="decimal" id="dcaF" value="${x.fraisMain ? esc(x.frais) : String(k.frais).replace(".", ",")}"></div></div>
+      <div class="hint" id="dcaRes">${dcaResume(k)}</div>` : ""}</div>
+    <button class="btn" id="dcaSave">Enregistrer dans le journal</button>
+    <div class="hint">Ça ajoute ${x.avecVerse && x.avecAchat ? "deux lignes" : "une ligne"} au « Journal des opérations ». Le PRU, les espèces et le plafond se recalculent tout seuls.</div>`);
+}
+function dcaResume(k) {
+  if (!(k.parts > 0 && k.prix > 0)) return k.maxParts ? `Avec ${eur(k.dispo)} disponibles, tu peux acheter jusqu'à ${k.maxParts} parts.` : "";
+  return `Ordre de ${eur(k.ordre)} · frais ${k.frais ? eur(k.frais) + " (0,35 %, ordre de plus de 500 €)" : "0 € (ordre jusqu'à 500 €)"} · coût ${eur(k.cout)}${k.dispo ? ` · il resterait ${eur(Math.round((k.dispo - k.cout) * 100) / 100)} d'espèces` : ""}`;
+}
+function saveDca() {
+  const x = S.dca, k = dcaCalc();
+  if (!x.avecVerse && !x.avecAchat) { toast("Coche le versement ou l'achat"); return; }
+  if (x.avecVerse && !(k.verse > 0)) { toast("Montant du versement ?"); return; }
+  if (x.avecAchat && !(k.parts > 0 && k.prix > 0)) { toast("Nombre de parts et prix ?"); return; }
+  if (x.avecAchat && k.dispo > 0 && k.cout > k.dispo + 0.01) { if (!confirm("L'achat (" + eur(k.cout) + ") dépasse les espèces disponibles (" + eur(k.dispo) + "). Enregistrer quand même ?")) return; }
+  const p = { compte: x.compte, qui: x.compte === "PEA Gaëtan" ? "Gaëtan" : x.qui };
+  if (x.avecVerse) { p.verse = k.verse; p.dateVerse = x.dateVerse || todayISO(); p.remVerse = "DCA, depuis l'appli"; }
+  if (x.avecAchat) { p.parts = k.parts; p.prix = k.prix; p.frais = k.frais; p.titre = x.titre; p.dateAchat = x.dateAchat || todayISO(); p.remAchat = k.frais ? "DCA, frais 0,35 % (ordre de plus de 500 €)" : "DCA, ordre gratuit"; }
+  enqueue("boursedca", p);
+  // affichage immédiat en attendant la synchro
+  const d = S.bo.data, m = boMoisCourant(d);
+  if (m && x.compte === "PEA Gaëtan" && x.avecVerse) m.peaVerse = (m.peaVerse || 0) + k.verse;
+  if (x.avecAchat) d.ops.unshift({ d: p.dateAchat, op: "Achat", compte: x.compte, parts: k.parts, prix: k.prix, frais: k.frais, cout: k.cout, rem: "⏳ envoi…" });
+  if (x.avecVerse) d.ops.unshift({ d: p.dateVerse, op: "Versement", compte: x.compte, verse: k.verse, rem: "⏳ envoi…" });
+  LS.set("bf.bo", S.bo);
+  closeSheet(); toast("📈 DCA enregistré"); render();
+}
+
+// ---------- état de l'appli (Réglages) ----------
+async function chargerSante(controle) {
+  const box = $("#santeBox"); if (!box || !configured()) return;
+  box.innerHTML = `<b>🩺 État de l'appli</b><div class="hint">${controle ? "Contrôle en cours…" : "Lecture…"}</div>`;
+  try {
+    const r = await call(controle ? "santecheck" : "sante", {}, 60000);
+    if (!r.ok) throw new Error(r.error || "lecture impossible");
+    S.sante = r.sante;
+  } catch (e) { box.innerHTML = `<b>🩺 État de l'appli</b><div class="hint">⚠ ${esc(e.message)}</div>`; return; }
+  const s = S.sante, dn = s.dernier;
+  const d2 = iso => { try { return new Date(iso).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } };
+  box.innerHTML = `<b>🩺 État de l'appli</b>
+    <div class="hint">Appli ${APP_VERSION} · script ${s.version}${S.base && S.base.scriptVersion ? "" : ""} · ${s.nb7} erreur(s) ces 7 derniers jours</div>
+    ${dn ? `<div class="sante ${dn.ok ? "ok" : "bad"}">${dn.ok ? "✅ Tout va bien" : "⚠ " + dn.details.filter(x => !x.ok).length + " point(s) à vérifier"} <small>contrôle du ${d2(dn.d)}</small></div>
+      <ul class="ings">${dn.details.map(x => `<li>${x.ok ? "✓" : "✗"} ${esc(x.nom)}<span>${esc(x.info)}</span></li>`).join("")}</ul>` : `<div class="hint">Aucun contrôle encore fait.</div>`}
+    <div class="hint">${s.quotidien ? "Contrôle automatique chaque matin" + (s.mail ? ", mail seulement en cas de problème." : " (sans mail).") : "Contrôle automatique pas encore activé : dans le Sheet, menu 🛠️ Gestion Budget → 🩺 Activer le contrôle quotidien (une fois)."}</div>
+    ${s.erreurs.length ? `<details><summary>Dernières erreurs notées (${s.erreurs.length})</summary><ul class="ings">${s.erreurs.map(x => `<li><span style="text-align:left;flex:1">${d2(x.d)} · ${esc(x.ou)}<br><small>${esc(x.msg)}</small></span></li>`).join("")}</ul></details>` : ""}
+    <button class="btn sec" id="santeGo">🔍 Lancer le contrôle maintenant</button>`;
+}
+
+// ---------- événements ----------
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-stper],[data-sttop],[data-stmaj],[data-act=gostats],[data-bodca],[data-bomaj],[data-dcac],[data-dcaq],[data-dcat],#dcaSave,#santeGo");
+  if (!t) return;
+  const d = t.dataset;
+  if (d.stper) { S.stPer = d.stper; LS.set("bf.stper", d.stper); render(); return; }
+  if (d.sttop) { S.stTop = d.sttop; render(); return; }
+  if (d.stmaj) { toast("📊 Recalcul…"); chargerStats(true); return; }
+  if (d.act === "gostats") { S.tab = "stats"; render(); window.scrollTo(0, 0); return; }
+  if (d.bodca) { e.stopPropagation(); openDca(); return; }
+  if (d.bomaj) { toast("📈 Lecture du fichier…"); chargerBourse(true); return; }
+  if (d.dcac) { S.dca.compte = d.dcac; S.dca.qui = d.dcac === "PEA Gaëtan" ? "Gaëtan" : "Les deux"; const p = S.bo.data.positions.find(x => x.compte === d.dcac); if (p) { S.dca.titre = p.titre; S.dca.prix = String(p.cours).replace(".", ","); } renderDca(); return; }
+  if (d.dcaq) { S.dca.qui = d.dcaq; renderDca(); return; }
+  if (d.dcat) { S.dca.titre = d.dcat; const p = S.bo.data.positions.find(x => x.titre === d.dcat); if (p) S.dca.prix = String(p.cours).replace(".", ","); renderDca(); return; }
+  if (t.id === "dcaSave") { saveDca(); return; }
+  if (t.id === "santeGo") { chargerSante(true); return; }
+}, true);
+document.addEventListener("input", e => {
+  if (!S.dca || !e.target.id || !/^dca/.test(e.target.id)) return;
+  const x = S.dca, v = e.target.value, id = e.target.id;
+  if (id === "dcaDV") x.dateVerse = v; else if (id === "dcaMV") x.verse = v; else if (id === "dcaDA") x.dateAchat = v;
+  else if (id === "dcaP") x.parts = v; else if (id === "dcaPx") x.prix = v; else if (id === "dcaF") { x.frais = v; x.fraisMain = true; }
+  const k = dcaCalc(), r = $("#dcaRes"); if (r) r.innerHTML = dcaResume(k);
+  const f = $("#dcaF"); if (f && !x.fraisMain && id !== "dcaF") f.value = String(k.frais).replace(".", ",");
+});
+document.addEventListener("change", e => {
+  if (!S.dca) return;
+  if (e.target.id === "dcaV") { S.dca.avecVerse = e.target.checked; renderDca(); }
+  if (e.target.id === "dcaA") { S.dca.avecAchat = e.target.checked; renderDca(); }
 });
 
 // ---------- événements ----------

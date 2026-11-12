@@ -220,6 +220,23 @@ details summary::-webkit-details-marker{color:var(--mut)}
 details summary{cursor:pointer;font-size:13px;color:var(--blue);margin:8px 0}
 .avh{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;padding:0 0 4px;border-bottom:1px solid var(--line)}
 .alert.ok{background:#dcf5e8;color:#0b5a37}
+.v19c{border:1.5px solid var(--acc,#0e9f6e)}
+.v19c .row{padding:8px 0}
+.v19mini{margin:0 0 12px;padding:10px 14px;border-radius:14px;background:var(--chip,#8882);font-size:14px;cursor:pointer}
+.tache{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line,#8883)}
+.tache:last-child{border-bottom:0}
+.tache .rt{flex:1;cursor:pointer;min-width:0}
+.tache .rt b{display:block;white-space:normal}
+.tache .rt span{display:block;font-size:12.5px;color:var(--mut)}
+.tck{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--acc,#0e9f6e);background:transparent;color:#fff;font-weight:700;font-size:15px;padding:0;cursor:pointer}
+.tache.faite .tck{background:var(--acc,#0e9f6e)}
+.tache.faite .rt b{text-decoration:line-through;opacity:.6}
+.cat.plc.ok{border-color:#2f9e6e66}
+.cat.plc.manque{background:#e63e1122;border-color:#e63e11;color:inherit}
+.row.plan .rt span{display:block;margin-top:3px}
+.pl{display:inline-block;margin-left:4px;padding:1px 8px;border-radius:99px;font-size:12.5px;background:var(--chip,#8882)}
+.pl.ok{background:#2f9e6e22;color:#2f9e6e}.pl.mi{background:#d98a0022;color:#b86e00}.pl.af{background:#e63e1118;color:#c23a10}
+.v19c .rt b{white-space:normal}
 </style>
 </head>
 <body>
@@ -243,7 +260,7 @@ details summary{cursor:pointer;font-size:13px;color:var(--blue);margin:8px 0}
 
 <script>
 "use strict";
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.9.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -329,6 +346,7 @@ function shift(v, cat, mont, ldds, sign) {
 }
 function applyOp(v, op) {
   const p = op.payload;
+  if (V19_TYPES.includes(op.type)) { v19Apply(v, op); return; }
   if (String(op.type).indexOf("repas") === 0) { repasApply(v, op); return; }
   if (op.type === "add" && isPerso(p.qui)) { persoAdd(v, p.qui, p.cat, p.lib, p.mont, p.date, op.id); }
   else if (op.type === "del" && isPerso(p.qui)) { persoDel(v, p.qui, p.lib, p.mont); }
@@ -440,6 +458,7 @@ async function flush() {
         if (r.courses) { fusionCourses(r.courses); }
         else if (r.conges) { S.cg = { data: r.conges, at: Date.now() }; LS.set("bf.cg", S.cg); }
         else if (r.bourse) { S.bo = { data: r.bourse, at: Date.now() }; LS.set("bf.bo", S.bo); }
+        else if (r.v19) { S.base.v19 = Object.assign({}, S.base.v19, r.v19); saveBase(); }
         else { lourd = true; if (S.queue.length === 0 && r.state) { S.base = r.state; saveBase(); } }
         S.offline = false; S.error = "";
       } else if (r.error === "clé invalide" || /code de l'appli/.test(r.error)) {
@@ -553,8 +572,9 @@ function viewPlus() {
     T("🩺", "Soins et mutuelle", "suivi des remboursements", "goso") +
     (estG() ? T("🏖️", "Congés", "compteurs, poser, ponts", "goconges") : "") +
     T("👶", "Garde de Léo", "qui garde, calendrier", "gogarde") +
+    T("✅", "Tâches", "à faire à deux", "gotaches") +
     T("📊", "Statistiques", "courses, prix, note A à E", "gostats") +
-    (estG() ? T("📈", "Bourse", "PEA, CTO de Léo, DCA", "gobourse") : T("📈", "Ma bourse", "bientôt", "gobourse")) +
+    (estG() ? T("📈", "Bourse", "PEA, CTO pour Léo, DCA", "gobourse") : T("📈", S.roleM ? "Ma bourse" : "Bourse de Mathilde", "PEA, CTO pour Léo", "gobourse")) +
     T("🍽️", "Menus et courses", "recettes, liste partagée", "", 'data-rr="gorepas"') +
     T("⚙️", "Réglages", "connexion, mise à jour", "goreg") + `</div>`;
 }
@@ -613,8 +633,8 @@ function openAmzJour(bloc) {
 
 // ---------- soins et entrées d'argent ----------
 const ENTREE_CATS = [["Soin", "🩺"], ["Remboursement", "↩️"], ["Salaire", "💼"], ["Courses", "🛒"], ["Animaux", "🐾"], ["Bébé", "🍼"], ["Loisirs", "🎉"], ["Autre", "📦"]];
-const ETAPES = [["adeclarer", "1 · À déclarer", "Aucune démarche faite"], ["demande", "2 · Demandé", "Démarche faite, j'attends"], ["rembourse", "3 · Remboursé", "Reçu en partie ou en totalité"], ["clos", "4 · Clos", "Dossier fini, reste à charge définitif"]];
-const etapeDef = s => (s.statut === "solde" || s.statut === "clos" || s.statut === "nonremb") ? "clos" : ((s.recu.secu + s.recu.mut + s.recu.autre) > 0 ? "rembourse" : "adeclarer");
+const ETAPES = [["adeclarer", "1 · À déclarer", "Aucune démarche faite"], ["demande", "2 · En attente de remboursement", "Télétransmis ou envoyé, j'attends"], ["rembourse", "3 · Remboursé", "Reçu en partie ou en totalité"], ["clos", "4 · Clos", "Dossier fini, reste à charge définitif"]];
+const etapeDef = s => (s.statut === "solde" || s.statut === "clos" || s.statut === "nonremb") ? "clos" : ((s.recu.secu + s.recu.mut + s.recu.autre) > 0 ? "rembourse" : "demande");
 const etapeOf = s => s.etape || etapeDef(s);
 const ORGS = [["secu", "Sécu"], ["mut", "Mutuelle"], ["autre", "Autre"]];
 const r2 = x => Math.round(x * 100) / 100;
@@ -850,7 +870,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += tonightCard(v, true) + accueilPerso() + accueilBourse() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += tonightCard(v, true) + accueilPerso() + accueilBourse() + tachesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -915,6 +935,7 @@ function viewReglages() {
     <div class="card"><b>État</b>
     <div class="hint">Version ${APP_VERSION} · ${S.queue.length} saisie(s) en attente · ${S.base ? "dernier chargement : " + new Date(S.base.genere).toLocaleString("fr-FR") : "aucune donnée chargée"}</div>
     <button class="btn sec" id="cfgReload">Recharger l'appli (mise à jour)</button></div>
+    ${estG() && !S.roleM && S.base && S.base.v19 ? `<div class="card"><b>👤 Téléphone de Mathilde</b><div class="hint">${S.base.v19.accesM ? "Son accès est créé : une fois le lien ouvert sur son téléphone, elle reste sur son profil." : "Pour que son téléphone reste sur son profil (sans pouvoir basculer sur le tien) : dans le Sheet, menu 🛠️ Gestion Budget → 👤 Accès de Mathilde, puis envoie-lui le lien."}</div></div>` : ""}
     <div class="card" id="santeBox"></div>
     <button class="linkbtn" data-act="goplus">← Plus</button>`;
 }
@@ -922,7 +943,7 @@ function viewReglages() {
 function render() {
   const v = computeView();
   const el = $("#view");
-  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse"].includes(S.tab);
+  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches"].includes(S.tab);
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
   $("#fab").style.display = (grpPlus || S.tab === "repas") ? "none" : "block";
   if (S.tab === "plus") { el.innerHTML = viewPlus(); return; }
@@ -934,6 +955,7 @@ function render() {
   if (S.tab === "garde") { el.innerHTML = viewGarde(); return; }
   if (S.tab === "stats") { el.innerHTML = bandeauScript() + viewStats(false); return; }
   if (S.tab === "bourse") { el.innerHTML = bandeauScript() + viewBourse(); return; }
+  if (S.tab === "taches") { el.innerHTML = bandeauScript() + viewTaches(); return; }
   el.innerHTML = S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : S.tab === "amazon" ? viewAmazon(v) : S.tab === "soins" ? viewSoins(v) : viewAnnuels(v);
 }
 
@@ -1219,7 +1241,7 @@ function construireListe(v, sem, jours) {
   });
   (data.manuels || []).forEach(m => {
     const p = pm[m.lib];
-    lignes.push({ produit: m.lib, rayon: m.rayon || (p ? p.r : "Divers"), achat: "ajout", prix: m.prix || 0, manuel: true, maison: (m.rayon || (p && p.r)) === RAYON_MAISON, etat: m.etat || "" });
+    lignes.push({ produit: m.lib, rayon: m.rayon || (p ? p.r : "Divers"), achat: "× " + (m.qte || 1), prix: m.prix || 0, manuel: true, maison: (m.rayon || (p && p.r)) === RAYON_MAISON, etat: m.etat || "" });
   });
   const compte = l => !l.placard && l.etat !== "maison";
   const alim = lignes.filter(l => compte(l) && !l.maison).reduce((s, l) => s + l.prix, 0);
@@ -1282,13 +1304,15 @@ function repasApply(v, op) {
   } else if (op.type === "repasajout") {
     const x = w(p.semaine);
     if (p.suppr) x.manuels = x.manuels.filter(m => m.lib !== p.lib);
-    else x.manuels.push({ lib: p.lib, rayon: p.rayon, prix: p.prix, etat: "" });
+    else if (p.maj) { const m = x.manuels.find(m => m.lib === p.lib); if (m) { m.qte = p.qte; m.prix = p.prix; } }
+    else x.manuels.push({ lib: p.lib, rayon: p.rayon, prix: p.prix, qte: p.qte || 1, etat: "" });
   } else if (op.type === "repasmot") { v.repas.inconnus = (v.repas.inconnus || []).filter(i => i.lib !== p.lib); }
   else if (op.type === "repasreglage") { v.repas.reglages = Object.assign({}, v.repas.reglages, { [p.cle]: p.valeur }); }
   else if (op.type === "repasqte") { const x = w(p.semaine); x.qte = x.qte || {}; if (Number(p.qte) > 0) x.qte[p.produit] = Number(p.qte); else delete x.qte[p.produit]; }
   else if (op.type === "repasproduit") { const x = (v.repas.produits || []).find(q => q.n === p.produit); if (x) { if (p.pas > 0) { x.pas = p.pas; x.c = p.cond || x.c; } if (p.prix > 0) Object.assign(x, { prix: p.prix, appris: true, mag: "saisie manuelle", date: todayISO() }); } }
   else if (op.type === "repasprix") { const x = (v.repas.produits || []).find(q => q.n === p.produit); if (x) Object.assign(x, { prix: p.prix, appris: true, mag: "saisie manuelle", date: todayISO() }); }
   else if (op.type === "repasphotochoix") { const x = (v.repas.recettes || []).find(q => q.id === p.recette); if (x) Object.assign(x, { photo: p.aucune ? "" : p.url, credit: p.aucune ? "" : p.credit, page: p.aucune ? "" : p.page, photoChoisie: true }); }
+  else if (op.type === "repasgarder") { const r = p.recette; if (!(v.repas.recettes || []).some(q => q.id === p.rid)) (v.repas.recettes = v.repas.recettes || []).push({ id: p.rid, nom: r.nom, proteine: r.proteine, feculent: r.feculent, prepa: r.prepa, cuisson: r.cuisson, appareil: r.appareil, prep: r.prep, cuis: r.cuis, astuce: r.astuce, actif: true, photo: "", credit: "", page: "", photoChoisie: false, tags: "gemini", ings: r.ings }); }
   else if (op.type === "repasactif") { const x = (v.repas.recettes || []).find(q => q.id === p.recette); if (x) x.actif = p.actif; }
 }
 function fusionCourses(c) {
@@ -1420,7 +1444,7 @@ function viewCourses(v) {
     items.forEach(l => {
       h += `<div class="citem ${l.etat}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}"><div class="ck">${l.etat === "achete" ? "✓" : l.etat === "maison" ? "🏠" : ""}</div>
         <div class="rt"><b>${esc(l.produit)}</b><span>${l.placard ? "normalement à la maison" : esc(l.achat) + (l.choisi ? " (choisi)" : "") + (l.besoin ? " · il faut " + esc(l.besoin) : "") + (l.kilo ? " · " + f2(l.kilo) + " €/kg" : "") + (l.source && !l.manuel ? " · " + esc(l.source === "estimé" ? "prix estimé" : l.source) : "")}</span></div>
-        ${l.placard ? "" : l.manuel ? `<div class="am">${eur(l.prix)}</div>` : `<div class="am" data-rprix="${esc(l.produit)}" style="text-decoration:underline dotted;text-underline-offset:3px">${eur(l.prix)}</div>`}
+        ${l.placard ? "" : l.manuel ? `<div class="am" data-rman="${esc(l.produit)}" style="text-decoration:underline dotted;text-underline-offset:3px">${l.prix ? eur(l.prix) : "prix ?"}</div>` : `<div class="am" data-rprix="${esc(l.produit)}" style="text-decoration:underline dotted;text-underline-offset:3px">${eur(l.prix)}</div>`}
         ${l.manuel ? `<button class="mini" data-rdel="${esc(l.produit)}" aria-label="Retirer">✕</button>` : l.placard ? "" : `<button class="mini" data-rmaison="${esc(l.produit)}" aria-label="Déjà à la maison">🏠</button>`}</div>`;
     });
     h += `</div>`;
@@ -1453,7 +1477,7 @@ function viewTiroir(v) {
   const pm = prodMap(v), sel = new Set(S.rp.tiroir || []);
   const prods = (R(v).produits || []).filter(p => !estPlacard(p) && !estMaison(p) && actives(v).some(r => r.ings.some(i => i[0] === p.n)));
   const groupes = {}; prods.forEach(p => { (groupes[p.r] = groupes[p.r] || []).push(p); });
-  let h = `<div class="card"><b>🧊 Qu'est-ce qu'il te reste ?</b><div class="hint">Touche 2 ou 3 ingrédients. Les épices, l'huile, le bouillon et la moutarde sont considérés comme toujours là.</div>`;
+  let h = placardCarte() + tiroirTexteCarte() + `<div class="card"><b>🧊 Ou touche ce qu'il te reste</b><div class="hint">Touche 2 ou 3 ingrédients. Les épices, l'huile, le bouillon et la moutarde sont considérés comme toujours là.</div>`;
   Object.keys(groupes).sort((a, b) => a.localeCompare(b, "fr")).forEach(g => {
     h += `<label>${esc(g)}</label><div class="tchips">${groupes[g].map(p => `<button class="cat ${sel.has(p.n) ? "on" : ""}" data-rti="${esc(p.n)}">${esc(p.n.replace(/ surgelés?$/, ""))}</button>`).join("")}</div>`;
   });
@@ -1891,13 +1915,13 @@ function viewFlemme(v) {
   const pp = choisis.filter(b => !b.f).reduce((s, b) => s + (num(F.b[b.k]) || 0) / b.par, 0);
   const portions = Math.max(pf, pp, 1);
   const keys = choisis.map(b => b.k);
-  const dispo = SAUCES.filter(sc => keys.some(k => sc.ok.split(" ").includes(k)) && !sc.ings.some(i => ev.has(i[0])));
+  const dispo = SAUCES.filter(sc => keys.some(k => sc.ok.split(" ").includes(k)) && !sc.ings.some(i => ev.has(i[0]))).sort((a, b) => sauceManque(a) - sauceManque(b));
   h += `<h2>Quelle sauce ? <span style="font-weight:500;text-transform:none;letter-spacing:0">(${String(Math.round(portions * 10) / 10).replace(".", ",")} portion${portions > 1 ? "s" : ""})</span></h2><div class="tchips">${dispo.map(sc => `<button class="cat ${F.s === sc.id ? "on" : ""}" data-rfs="${sc.id}">${esc(sc.n)} · ${sc.t} min</button>`).join("")}</div>`;
   const sc = dispo.find(x => x.id === F.s);
   if (sc) {
     const k = portions * 1.1;
     h += `<div class="card" style="margin-top:12px"><b>${esc(sc.n)}</b><div class="hint">Pour ${String(Math.round(portions * 10) / 10).replace(".", ",")} portion(s) + 10 % · prête en ${sc.t} min</div>
-      <ul class="ings" style="margin-top:6px">${sc.ings.map(([n, q, u]) => `<li>${esc(n)}<span>${qteSauce(q * k, u)}</span></li>`).join("")}<li>Sel et poivre<span>au goût</span></li></ul>
+      ${sauceManque(sc) ? `<div class="hint" style="color:var(--warn)">🫙 Il manque au placard : ${esc(sc.ings.filter(i => v19().placard.manque.includes(i[0])).map(i => i[0]).join(", "))}</div>` : ""}<ul class="ings" style="margin-top:6px">${sc.ings.map(([n, q, u]) => `<li>${esc(n)}<span>${qteSauce(q * k, u)}</span></li>`).join("")}<li>Sel et poivre<span>au goût</span></li></ul>
       <div class="sth">Étapes</div><ol class="steps">${choisis.map((b, i) => `<li data-rstep="fl_b${i}">${esc(b.cuis)}</li>`).join("")}${sc.et.map((e, i) => `<li data-rstep="fl_s${i}">${esc(e)}</li>`).join("")}</ol>
       <div class="hint">Les étapes en parallèle : la base cuit pendant que la sauce se prépare.</div></div>`;
   }
@@ -2014,7 +2038,7 @@ setInterval(pollCourses, 8000);
 // =====================================================================
 // v1.7.0 : PROFILS (Gaétan = tout, Mathilde = sa version), CONGÉS, GARDE DE LÉO, PONTS, JOUR DES COURSES
 // =====================================================================
-const SCRIPT_ATTENDU = 25;
+const SCRIPT_ATTENDU = 26;
 S.prof = LS.get("bf.prof", "G");
 S.cg = LS.get("bf.cg", null);            // { data, at } : copie locale du fichier congés (lu par le script, cache 10 min)
 S.gardeVue = "14";
@@ -2231,7 +2255,7 @@ document.addEventListener("click", e => {
   if (dd.prof) { setProf(dd.prof); closeSheet(); toast(estG() ? "Profil Gaétan : tout est visible" : "Profil Mathilde"); return; }
   if (dd.act === "goconges") { S.tab = "conges"; render(); window.scrollTo(0, 0); chargerConges(); return; }
   if (dd.act === "gogarde") { S.tab = "garde"; render(); window.scrollTo(0, 0); chargerConges(); return; }
-  if (dd.act === "gobourse") { if (!estG()) { toast("Ta bourse arrivera dans une prochaine version"); return; } S.tab = "bourse"; render(); window.scrollTo(0, 0); chargerBourse(); return; }
+  if (dd.act === "gobourse") { S.tab = "bourse"; render(); window.scrollTo(0, 0); chargerBourse(); return; }
   if (dd.cgmaj) { toast("🔄 Lecture du fichier congés…"); chargerConges(true); return; }
   if (dd.gvue) { S.gardeVue = dd.gvue; render(); return; }
   if (dd.cgposer !== undefined) { openPoser(dd.cgposer); return; }
@@ -2550,7 +2574,8 @@ async function chargerSante(controle) {
     ${dn ? `<div class="sante ${dn.ok ? "ok" : "bad"}">${dn.ok ? "✅ Tout va bien" : "⚠ " + dn.details.filter(x => !x.ok).length + " point(s) à vérifier"} <small>contrôle du ${d2(dn.d)}</small></div>
       <ul class="ings">${dn.details.map(x => `<li>${x.ok ? "✓" : "✗"} ${esc(x.nom)}<span>${esc(x.info)}</span></li>`).join("")}</ul>` : `<div class="hint">Aucun contrôle encore fait.</div>`}
     <div class="hint">${s.quotidien ? "Contrôle automatique chaque matin" + (s.mail ? ", mail seulement en cas de problème." : " (sans mail).") : "Contrôle automatique pas encore activé : dans le Sheet, menu 🛠️ Gestion Budget → 🩺 Activer le contrôle quotidien (une fois)."}</div>
-    ${s.erreurs.length ? `<details><summary>Dernières erreurs notées (${s.erreurs.length})</summary><ul class="ings">${s.erreurs.map(x => `<li><span style="text-align:left;flex:1">${d2(x.d)} · ${esc(x.ou)}<br><small>${esc(x.msg)}</small></span></li>`).join("")}</ul></details>` : ""}
+    ${s.erreurs.length ? `<details><summary>Dernières erreurs notées (${s.erreurs.length})</summary><ul class="ings">${s.erreurs.map(x => `<li style="${x.vue || x.mineure ? "opacity:.55" : ""}"><span style="text-align:left;flex:1">${d2(x.d)} · ${esc(x.ou)}${x.mineure ? " · sans gravité" : x.vue ? " · vue" : ""}<br><small>${esc(x.msg)}</small></span></li>`).join("")}</ul></details>` : ""}
+    ${s.erreurs.length && estG() ? `<button class="btn sec" id="santeVu">👁 J'ai vu ces erreurs (elles ne comptent plus)</button>` : ""}
     <button class="btn sec" id="santeGo">🔍 Lancer le contrôle maintenant</button>`;
 }
 
@@ -2563,7 +2588,7 @@ document.addEventListener("click", e => {
   if (d.sttop) { S.stTop = d.sttop; render(); return; }
   if (d.stmaj) { toast("📊 Recalcul…"); chargerStats(true); return; }
   if (d.act === "gostats") { S.tab = "stats"; render(); window.scrollTo(0, 0); return; }
-  if (d.bodca) { e.stopPropagation(); openDca(); return; }
+  if (d.bodca) { e.stopPropagation(); openDca(d.bodca === "1" ? null : d.bodca); return; }
   if (d.bomaj) { toast("📈 Lecture du fichier…"); chargerBourse(true); return; }
   if (d.dcac) { S.dca.compte = d.dcac; S.dca.qui = d.dcac === "PEA Gaëtan" ? "Gaëtan" : "Les deux"; const p = S.bo.data.positions.find(x => x.compte === d.dcac); if (p) { S.dca.titre = p.titre; S.dca.prix = String(p.cours).replace(".", ","); } renderDca(); return; }
   if (d.dcaq) { S.dca.qui = d.dcaq; renderDca(); return; }
@@ -2584,6 +2609,509 @@ document.addEventListener("change", e => {
   if (e.target.id === "dcaV") { S.dca.avecVerse = e.target.checked; renderDca(); }
   if (e.target.id === "dcaA") { S.dca.avecAchat = e.target.checked; renderDca(); }
 });
+
+// =====================================================================
+// v1.9.0 : PROFILS VERROUILLÉS, SALAIRE ET CARTES DU MOIS, BOURSE PAR COMPTE (+ PEA de Mathilde),
+//          TÂCHES COMMUNES, PLACARD DE BASE, TIROIR AVEC GEMINI EN TEXTE LIBRE, QUANTITÉ DES AJOUTS
+// =====================================================================
+const V19_TYPES = ["tache", "placard", "salaire", "moisrep"];
+const P_NOM = p => p === "M" ? "Mathilde" : "Gaëtan";
+const LIB_COMPTE = { "CTO Léo": "CTO Gaëtan · pour Léo" };
+const libCompte = c => LIB_COMPTE[c] || c;
+const profCode = () => estG() ? "G" : "M";
+const lendemain = () => addDays(todayISO(), 1);
+S.tf = { pour: "Tous", f: "tout", edit: false };
+
+function v19Norm(x) {
+  x = x || {};
+  x.mois = x.mois || {}; x.mois.sal = x.mois.sal || {}; x.mois.sal.G = x.mois.sal.G || []; x.mois.sal.M = x.mois.sal.M || [];
+  x.mois.rep = x.mois.rep || {}; x.mois.fait = x.mois.fait || {}; x.mois.b7 = x.mois.b7 || {};
+  x.taches = x.taches || []; x.placard = x.placard || {}; ["manque", "ajouts", "retires"].forEach(k => { x.placard[k] = x.placard[k] || []; });
+  return x;
+}
+// état v1.9 (petit) : celui du script + les opérations pas encore envoyées
+function v19(v) {
+  if (v) return (v.v19 = v19Norm(v.v19));
+  const vv = { v19: v19Norm(JSON.parse(JSON.stringify((S.base && S.base.v19) || {}))) };
+  S.queue.forEach(op => { if (V19_TYPES.includes(op.type)) v19Apply(vv, op); });
+  return vv.v19;
+}
+const v19Pret = () => !!(S.base && S.base.v19);
+// affichage immédiat des opérations en attente
+function v19Apply(v, op) {
+  const p = op.payload; if (!v.v19) return;
+  const x = v19(v);
+  if (op.type === "tache") {
+    if (p.op === "add") x.taches.push({ id: p.tid, txt: p.txt, pour: p.pour, ajout: todayISO(), par: p.par, quand: p.quand || "", faite: "", fpar: "" });
+    const t = x.taches.find(y => y.id === p.tid); if (!t) return;
+    if (p.op === "fait") { t.faite = todayISO(); t.fpar = p.par; }
+    else if (p.op === "defait") { t.faite = ""; t.fpar = ""; }
+    else if (p.op === "suppr") x.taches = x.taches.filter(y => y.id !== p.tid);
+    else if (p.op === "modif") Object.assign(t, { txt: p.txt || t.txt, pour: p.pour, quand: p.quand || "" });
+  } else if (op.type === "placard") {
+    const pl = x.placard, n = p.n;
+    if (p.op === "etat") { pl.manque = pl.manque.filter(y => y !== n); if (p.manque) pl.manque.push(n); }
+    else if (p.op === "plein") pl.manque = pl.manque.filter(y => !(p.liste || []).includes(y));
+    else if (p.op === "ajout") { pl.ajouts = pl.ajouts.filter(y => y.n !== n).concat({ n, g: p.g }); pl.retires = pl.retires.filter(y => y !== n); }
+    else if (p.op === "retrait") { pl.ajouts = pl.ajouts.filter(y => y.n !== n); pl.manque = pl.manque.filter(y => y !== n); pl.retires.push(n); }
+    else if (p.op === "defaut") x.placard = { manque: [], ajouts: [], retires: [] };
+  } else if (op.type === "salaire") {
+    const l = x.mois.sal[p.qui] = x.mois.sal[p.qui].filter(s => s.per !== p.per);
+    l.push({ per: p.per, d: p.date, mont: p.mont, cible: "", applique: false });
+  } else if (op.type === "moisrep") {
+    if (p.fait) x.mois.fait[p.k] = p.date || todayISO();
+    else if (p.jusqu) x.mois.rep[p.k] = p.jusqu;
+    else { delete x.mois.rep[p.k]; delete x.mois.fait[p.k]; }
+  }
+  v.v19 = x;
+}
+
+// ---------- profil verrouillé sur le téléphone de Mathilde ----------
+function v19Role() {
+  const r = S.base && S.base.v19 && S.base.v19.role;
+  S.roleM = r === "M";
+  if (S.roleM && S.prof !== "M") { S.prof = "M"; LS.set("bf.prof", "M"); majProf(); }
+}
+const _renderV18 = render;
+render = function () { try { v19Role(); } catch (e) {} return _renderV18.apply(this, arguments); };
+window.addEventListener("click", e => {
+  if (S.roleM && e.target.closest && e.target.closest("#prof,[data-prof]")) { e.stopImmediatePropagation(); e.preventDefault(); toast("Ce téléphone est sur le profil de Mathilde"); }
+}, true);
+
+// ---------- salaire : une petite carte à partir du 24 (du 20 en décembre) ----------
+const jourDebutSal = ym => ym.slice(5, 7) === "12" ? 20 : 24;
+function periodeSalaire() {
+  const t = todayISO(), ym = t.slice(0, 7), j = Number(t.slice(8, 10));
+  if (j >= jourDebutSal(ym)) return ym;
+  if (j <= 10) return addMois(ym, -1);
+  return null;
+}
+const moisSuivantNom = d => { const ym = Number(d.slice(8, 10)) >= 20 ? addMois(d.slice(0, 7), 1) : d.slice(0, 7); return moisLong(ym).split(" ")[0]; };
+function dernierSalaire(P, v) { const l = v19(v).mois.sal[P].slice().sort((a, b) => a.d < b.d ? -1 : 1); return l[l.length - 1] || null; }
+function openSalaire(per) {
+  const P = profCode(), x = v19(), der = dernierSalaire(P), m0 = (der && der.mont) || x.mois.b7[P] || "";
+  S.sal = { P, per };
+  openSheet(`<h3>💶 Salaire ${P === "M" && !S.roleM ? "de Mathilde" : "reçu"}</h3>
+    <div class="two"><div><label>Montant net reçu (€)</label><input type="text" inputmode="decimal" id="salM" value="${esc(String(m0).replace(".", ","))}" autocomplete="off"></div>
+    <div><label>Reçu le</label><input type="date" id="salD" value="${todayISO()}"></div></div>
+    <div class="hint" id="salH">Il sera rangé dans l'onglet ${P === "M" ? "Mathilde" : "Gaétan"} (case du salaire) pour ${esc(moisSuivantNom(todayISO()))}${Number(todayISO().slice(8, 10)) >= 20 ? ", le 1er du mois (après l'archivage)" : ""}, et compté dans les statistiques.</div>
+    <button class="btn" data-v19="salsave">Enregistrer le salaire</button>`);
+  setTimeout(() => { const i = $("#salM"); if (i) i.select(); }, 250);
+}
+function saveSalaire() {
+  const s = S.sal, mont = num($("#salM").value), d = $("#salD").value || todayISO();
+  if (!(mont > 0)) { toast("Montant ?"); return; }
+  enqueue("salaire", { qui: s.P, per: s.per, mont: Math.round(mont * 100) / 100, date: d });
+  closeSheet(); toast("💶 Salaire noté"); render();
+}
+
+// ---------- bourse : vue par profil et état de chaque compte depuis le dernier salaire ----------
+function boVue(d, P) {
+  if (!d) return null;
+  const ok = P === "M" ? (c => /Mathilde/i.test(c) || /^CTO/i.test(c)) : (c => !/Mathilde/i.test(c));
+  return Object.assign({}, d, { positions: d.positions.filter(p => ok(p.compte)), comptes: d.comptes.filter(c => ok(c.compte)), ops: d.ops.filter(o => ok(o.compte)) });
+}
+const comptesDe = P => P === "M" ? ["PEA Mathilde", "CTO Léo"] : ["PEA Gaëtan", "CTO Léo"];
+const quiOk = (P, q) => P === "M" ? /Mathilde|deux/i.test(q || "") : /Ga[eéë]tan|deux/i.test(q || "");
+function compteEtat(d, P, compte, depuis) {
+  const ops = (d.ops || []).filter(o => o.compte === compte && o.d >= depuis && !/^Position de départ/.test(o.rem || ""));
+  const vers = ops.filter(o => o.op === "Versement" && (/^PEA/.test(compte) || quiOk(P, o.qui)));
+  const ach = ops.filter(o => o.op === "Achat");
+  const ok = /^PEA/.test(compte) ? (vers.length + ach.length > 0) : vers.length > 0;
+  const der = ops.filter(o => vers.includes(o) || ach.includes(o)).map(o => o.d).sort().pop() || "";
+  return { ok, verse: vers.reduce((s, o) => s + (o.verse || 0), 0), achete: ach.reduce((s, o) => s + (o.cout || 0), 0), d: der };
+}
+function comptesActifs(d, P) { return comptesDe(P).filter(c => d.positions.some(p => p.compte === c) || (d.comptes.find(z => z.compte === c) || {}).total > 0); }
+function depuisCompte(P) { const s = dernierSalaire(P); return s && (Date.parse(todayISO()) - Date.parse(s.d)) / 86400000 <= 35 ? s.d : todayISO().slice(0, 8) + "01"; }
+function prevuCompte(d, compte, s) {
+  const ym = s ? (Number(s.d.slice(8, 10)) >= 20 ? addMois(s.d.slice(0, 7), 1) : s.d.slice(0, 7)) : todayISO().slice(0, 7);
+  const m = (d.mois || []).find(z => z.m === ym); if (!m) return 0;
+  return compte === "PEA Gaëtan" ? m.peaPrevu : /^CTO/.test(compte) ? m.ctoPrevu : 0;
+}
+function etatComptesHtml(d, P) {
+  const dep = depuisCompte(P), s = dernierSalaire(P), lignes = comptesActifs(d, P).map(c => {
+    const e = compteEtat(d, P, c, dep), f = s && v19().mois.fait[P + "." + c + "." + s.per];
+    return `<div class="row"><div class="ic">${e.ok || f ? "✅" : "⏳"}</div><div class="rt"><b>${esc(libCompte(c))}</b><span>${e.ok ? "fait le " + dateCourte(e.d) + (e.verse ? " · " + eur(e.verse) + " versés" : "") + (e.achete ? " · " + eur(e.achete) + " investis" : "") : f ? "noté comme fait" : "en attente" + (prevuCompte(d, c, s) ? " · " + eur(prevuCompte(d, c, s)) + " prévus" : "")}</span></div>${e.ok || f ? "" : `<button class="mini" data-bodca="${esc(c)}" style="width:auto;padding:0 10px">Fait</button>`}</div>`;
+  });
+  if (!lignes.length) return "";
+  return `<div class="card"><b>${s && dep === s.d ? "Depuis le salaire du " + dateCourte(s.d) : "Ce mois-ci"}</b>${lignes.join("")}</div>`;
+}
+// cartes de l'accueil : salaire, puis l'investissement de chaque compte (ne disparaît que quand c'est fait)
+function cartesMois() {
+  if (!v19Pret()) return "";
+  const P = profCode(), x = v19(), m = x.mois, auj = todayISO(), per = periodeSalaire(), qui = P === "M" && !S.roleM ? "Mathilde a-t-elle" : "As-tu";
+  let h = "";
+  if (per && !m.sal[P].some(s => s.per === per) && !((m.rep[P + ".sal." + per] || "") > auj)) {
+    h += `<div class="card v19c"><div class="row" style="border:0;padding:0"><div class="ic">💶</div><div class="rt"><b>${qui} reçu ${P === "M" && !S.roleM ? "son" : "ton"} salaire ?</b><span>Il sera rangé pour ${esc(moisSuivantNom(auj))}. Ensuite, l'appli te propose le DCA.</span></div></div>
+      <div class="duo" style="margin-top:10px"><button class="btn" style="margin:0" data-v19="saloui" data-per="${per}">Oui</button><button class="btn sec" style="margin:0" data-v19="salnon" data-per="${per}">Pas encore</button></div></div>`;
+  }
+  const s = dernierSalaire(P);
+  if (s && (Date.parse(auj) - Date.parse(s.d)) / 86400000 <= 35) {
+    chargerBourse();
+    const d = boVue(S.bo && S.bo.data, P);
+    if (d) {
+      const items = comptesActifs(d, P).filter(c => !compteEtat(d, P, c, s.d).ok && !m.fait[P + "." + c + "." + s.per]);
+      if (items.length) {
+        const compact = (m.rep[P + ".inv." + s.per] || "") > auj;
+        if (compact) h += `<div class="v19mini" data-bodca="${esc(items[0])}">⏳ À faire : ${items.map(c => esc(libCompte(c))).join(" · ")}</div>`;
+        else h += `<div class="card v19c"><b>📈 Salaire reçu le ${dateCourte(s.d)} : on investit ?</b>
+          ${items.map(c => { const pr = prevuCompte(d, c, s); return `<div class="row"><div class="rt"><b>${esc(libCompte(c))}</b><span>${pr ? eur(pr) + " prévus" : P === "M" && /^PEA/.test(c) ? "le montant que tu veux ce mois-ci" : "versement du mois"}</span></div>
+            <button class="mini" data-v19="dejafait" data-c="${esc(c)}" data-per="${s.per}" style="width:auto;padding:0 8px;font-size:12px">déjà noté</button>
+            <button class="btn" style="margin:0 0 0 6px;width:auto;padding:8px 12px" data-bodca="${esc(c)}">Je le fais</button></div>`; }).join("")}
+          <button class="linkbtn" data-v19="invtard" data-per="${s.per}" style="margin-top:6px">Plus tard (un rappel discret reste ici)</button></div>`;
+      }
+    }
+  }
+  return h;
+}
+function chargerBourse(force) {
+  if (!configured() || !navigator.onLine) return;
+  if (!force && S.bo && Date.now() - S.bo.at < 10 * 60000) return;
+  if (chargerBourse.busy) return; chargerBourse.busy = true;
+  call("bourse", { force: !!force }, 45000).then(r => {
+    if (r.ok) { S.bo = { data: r.bourse, at: Date.now() }; LS.set("bf.bo", S.bo); S.boErreur = ""; }
+    else S.boErreur = r.error || "lecture impossible";
+  }).catch(e => { S.boErreur = e.name === "AbortError" ? "le fichier des investissements met trop de temps à répondre" : e.message; })
+    .finally(() => { chargerBourse.busy = false; if (["home", "bourse"].includes(S.tab) && !$("#sheet").classList.contains("open")) render(); });
+}
+function dcaCard() { return ""; }
+function accueilBourse() { return cartesMois(); }
+function viewBourse() {
+  let h = `<button class="linkbtn" data-act="goplus">← Plus</button>`;
+  chargerBourse();
+  const P = profCode(), d0 = S.bo && S.bo.data;
+  if (!d0) return h + `<div class="empty">${S.boErreur ? "⚠ " + esc(S.boErreur) : "📈 Lecture du fichier des investissements…"}</div>`;
+  const d = boVue(d0, P);
+  const val = d.positions.reduce((s, p) => s + p.valeur, 0), cout = d.positions.reduce((s, p) => s + p.cout, 0), pv = val - cout;
+  const esp = d.comptes.reduce((s, c) => s + c.especes, 0), verse = d.comptes.reduce((s, c) => s + c.total, 0);
+  if (P === "M" && !d.positions.some(p => p.compte === "PEA Mathilde"))
+    h += `<div class="card v19c"><b>📈 ${S.roleM ? "Ton PEA" : "Le PEA de Mathilde"} n'est pas encore dans l'appli</b><div class="hint">Une seule fois : le nom de l'ETF, le nombre de parts et le PRU (prix de revient). Ensuite chaque DCA se note en 10 secondes.</div><button class="btn" data-v19="boinit">Ajouter ${S.roleM ? "mon" : "son"} PEA</button></div>`;
+  h += `<div class="hero"><small>📈 ${P === "M" ? (S.roleM ? "Ma bourse" : "Bourse de Mathilde") : "Bourse"} · PEA et CTO pour Léo</small><div class="big">${eur(val + esp)}</div>
+    <div class="sub">${pv >= 0 ? "+" : ""}${eur(pv)} (${pv >= 0 ? "+" : ""}${cout > 0 ? String(Math.round(pv / cout * 1000) / 10).replace(".", ",") : 0} %) · ${eur(verse)} versés · ${eur(esp)} d'espèces</div></div>`;
+  h += etatComptesHtml(d, P);
+  h += `<button class="btn" data-bodca="1">✅ J'ai fait mon DCA</button>`;
+  h += `<h2>Positions</h2>` + (d.positions.length ? d.positions.map(p => `<div class="card pos"><div class="mh"><b>${esc(p.titre)}</b><span>${esc(libCompte(p.compte))}</span></div>
+    <div class="mk"><div><b>${String(p.parts).replace(".", ",")}</b>parts</div><div><b>${eur(p.pru)}</b>PRU</div><div><b>${p.cours ? eur(p.cours) : "?"}</b>cours</div><div><b>${eur(p.valeur)}</b>valeur</div>
+    <div><b style="color:${p.pv >= 0 ? "#2f9e6e" : "#e63e11"}">${p.pv >= 0 ? "+" : ""}${eur(p.pv)}</b>plus-value</div><div><b>${eur(p.frais)}</b>frais payés</div></div>${p.cours ? "" : `<div class="hint">Cours introuvable : vérifie le symbole (ex. EPA:WPEA) dans « Positions » du fichier des investissements.</div>`}</div>`).join("") : `<div class="empty">Aucune position.</div>`);
+  h += `<h2>Comptes</h2><div class="card">${d.comptes.filter(c => c.total > 0 || c.especes > 0).map(c => `<div class="row"><div class="rt"><b>${esc(libCompte(c.compte))}</b><span>${eur(c.total)} versés${c.verseM || c.verse2 ? " (Gaëtan " + e0(c.verseG + c.verse2 / 2) + ", Mathilde " + e0(c.verseM + c.verse2 / 2) + ")" : ""} · ${eur(c.investi)} investis · ${eur(c.especes)} d'espèces${c.reste != null ? " · reste " + e0(c.reste) + " avant le plafond" : ""}</span></div></div>`).join("") || `<div class="hint">Rien de versé pour l'instant.</div>`}</div>`;
+  if (/CTO/.test(d.comptes.map(c => c.compte).join())) h += `<div class="hint" style="margin:-4px 4px 8px">Le CTO est à ton nom ; ses titres seront donnés à Léo (don de titres) à sa majorité.</div>`;
+  if (P === "G") {
+    // plan du fichier : le mois en cours et les 3 suivants, avec un état écrit en clair
+    const ym = todayISO().slice(0, 7), mois = d.mois.filter(m => m.m >= ym).slice(0, 4);
+    const etat = (prevu, verse, futur) => {
+      if (!(prevu > 0)) return "";
+      if (futur) return `<span class="pl fut">🗓 à venir · ${eur(prevu)}</span>`;
+      if (verse != null && verse >= prevu - 0.5) return `<span class="pl ok">✅ fait · ${eur(verse)}</span>`;
+      if (verse > 0) return `<span class="pl mi">◐ en partie · ${eur(verse)} sur ${eur(prevu)}</span>`;
+      return `<span class="pl af">⏳ à faire · ${eur(prevu)}</span>`;
+    };
+    h += `<h2>Plan des prochains mois</h2><div class="card">${mois.map(m => {
+      const futur = m.m > ym;
+      return `<div class="row plan"><div class="rt"><b>${moisLong(m.m)}${m.m === ym ? " · ce mois-ci" : ""}</b>
+        <span>PEA ${etat(m.peaPrevu, m.peaVerse, futur)}</span>${m.ctoPrevu ? `<span>${esc(libCompte("CTO Léo"))} ${etat(m.ctoPrevu, m.ctoVerse, futur)}</span>` : ""}</div></div>`;
+    }).join("")}</div><div class="hint" style="margin:-4px 4px 8px">Montants prévus dans ton fichier des investissements (onglets PEA et CTO). « Fait » = versé au moins le montant prévu ce mois-là.</div>`;
+  }
+  h += `<h2>Dernières opérations</h2><div class="card">${d.ops.slice(0, 12).map(o => `<div class="row"><div class="ic">${o.op === "Versement" ? "💶" : o.op === "Achat" ? "🛒" : "↔️"}</div><div class="rt"><b>${esc(o.op)} · ${esc(libCompte(o.compte))}</b><span>${dateCourte(o.d)}${o.op === "Versement" && o.qui ? " · " + esc(o.qui) : ""}${o.op === "Achat" ? " · " + String(o.parts).replace(".", ",") + " × " + eur(o.prix) + (o.frais ? " + " + eur(o.frais) + " de frais" : " · sans frais") : ""}${o.rem ? " · " + esc(o.rem) : ""}</span></div><div class="am">${eur(o.op === "Achat" ? o.cout || o.parts * o.prix + o.frais : o.verse)}</div></div>`).join("") || `<div class="hint">Aucune opération.</div>`}</div>
+    <div class="hint" style="margin:6px 4px">Tout vient du « Journal des opérations » du fichier des investissements. Le cours est celui de Google Finance (léger décalage possible).</div>
+    <button class="btn sec" data-bomaj="1">⟳ Relire le fichier</button>`;
+  return h;
+}
+// PEA de Mathilde : position de départ
+function openBoInit() {
+  S.boi = { titre: "iShares MSCI World Swap PEA (WPEA)", symbole: "EPA:WPEA" };
+  openSheet(`<h3>📈 ${S.roleM ? "Mon" : "Le"} PEA${S.roleM ? "" : " de Mathilde"}</h3>
+    <div class="hint">Dans l'appli de la banque, sur la ligne de l'ETF : le nombre de parts et le PRU (prix de revient unitaire). Vérifie aussi le nom exact de l'ETF.</div>
+    <label>Nom de l'ETF</label><input type="text" id="biT" value="${esc(S.boi.titre)}" autocomplete="off">
+    <label>Symbole Google Finance (pour le cours)</label><input type="text" id="biS" value="${esc(S.boi.symbole)}" autocomplete="off">
+    <div class="two"><div><label>Parts détenues</label><input type="text" inputmode="decimal" id="biP" autocomplete="off"></div><div><label>PRU (€)</label><input type="text" inputmode="decimal" id="biR" autocomplete="off"></div></div>
+    <label>Total versé sur le PEA (€, facultatif)</label><input type="text" inputmode="decimal" id="biV" placeholder="sinon parts × PRU" autocomplete="off">
+    <button class="btn" data-v19="boinitsave">Enregistrer</button>
+    <div class="hint">Ça ajoute une ligne « PEA Mathilde » dans « Positions » et la position de départ dans le « Journal des opérations » du fichier des investissements.</div>`);
+}
+function saveBoInit() {
+  const titre = $("#biT").value.trim(), symbole = $("#biS").value.trim(), parts = num($("#biP").value), pru = num($("#biR").value), verse = num($("#biV").value);
+  if (!titre) { toast("Nom de l'ETF ?"); return; }
+  if (!(parts > 0 && pru > 0)) { toast("Nombre de parts et PRU ?"); return; }
+  enqueue("boursinit", { titre, symbole, parts, pru, verse: verse > 0 ? verse : 0, date: todayISO() });
+  closeSheet(); toast("📈 PEA ajouté : lecture du fichier…");
+}
+
+// ---------- fenêtre « J'ai fait mon DCA » (versement et/ou achat, versement à deux avec montants différents) ----------
+function openDca(compte) {
+  const d0 = S.bo && S.bo.data; if (!d0) { toast("Fichier des investissements pas encore lu"); chargerBourse(true); return; }
+  const P = profCode(), d = boVue(d0, P), comptes = comptesActifs(d, P);
+  if (!comptes.length) { toast(P === "M" ? "Ajoute d'abord le PEA de Mathilde" : "Aucun compte trouvé"); return; }
+  if (!compte || !comptes.includes(compte)) {
+    const dep = depuisCompte(P);
+    compte = comptes.find(c => !compteEtat(d, P, c, dep).ok) || comptes[0];
+  }
+  S.dca = { P, compte, avecVerse: true, avecAchat: true, dateVerse: todayISO(), dateAchat: todayISO(), qui: P === "M" ? "Mathilde" : "Gaëtan", verse: "", vG: "", vM: "", parts: "", prix: "", frais: "", fraisMain: false };
+  dcaCompte(compte);
+  renderDca();
+}
+function dcaCompte(c) {
+  const x = S.dca, d = S.bo.data, s = dernierSalaire(x.P), pr = prevuCompte(d, c, s);
+  x.compte = c;
+  x.qui = /^PEA/.test(c) ? (/Mathilde/.test(c) ? "Mathilde" : "Gaëtan") : (x.P === "M" ? "Mathilde" : "Gaëtan");
+  x.verse = pr ? String(pr).replace(".", ",") : "";
+  x.vG = ""; x.vM = "";
+  const p = d.positions.find(z => z.compte === c);
+  x.titre = p ? p.titre : ""; x.prix = p && p.cours ? String(p.cours).replace(".", ",") : "";
+  x.parts = ""; x.fraisMain = false;
+}
+function dcaCalc() {
+  const x = S.dca, n = s => parseFloat(String(s || "").replace(/\s/g, "").replace(",", ".")) || 0;
+  const parts = n(x.parts), prix = n(x.prix), ordre = Math.round(parts * prix * 100) / 100;
+  const frais = x.fraisMain ? n(x.frais) : fraisOrdre(ordre);
+  const deux = x.qui === "Les deux" && !/^PEA/.test(x.compte);
+  const verse = deux ? Math.round((n(x.vG) + n(x.vM)) * 100) / 100 : n(x.verse);
+  const c = S.bo.data.comptes.find(y => y.compte === x.compte) || { especes: 0 };
+  const dispo = Math.round(((c.especes || 0) + (x.avecVerse ? verse : 0)) * 100) / 100;
+  return { parts, prix, ordre, frais, cout: Math.round((ordre + frais) * 100) / 100, verse, vG: n(x.vG), vM: n(x.vM), deux, especes: c.especes || 0, dispo, maxParts: prix > 0 ? Math.floor(dispo / (prix * (dispo > 500 ? 1.0035 : 1))) : 0 };
+}
+function renderDca() {
+  const x = S.dca, k = dcaCalc(), comptes = comptesActifs(boVue(S.bo.data, x.P), x.P);
+  const titres = S.bo.data.positions.filter(p => p.compte === x.compte).map(p => p.titre), cto = !/^PEA/.test(x.compte);
+  openSheet(`<h3>✅ ${x.P === "M" && !S.roleM ? "DCA de Mathilde" : "J'ai fait mon DCA"}</h3>
+    <label>Compte</label><div class="tchips">${comptes.map(c => `<button class="cat ${x.compte === c ? "on" : ""}" data-dcac="${esc(c)}">${esc(libCompte(c))}</button>`).join("")}</div>
+    <div class="dcab"><label class="dck"><input type="checkbox" id="dcaV" ${x.avecVerse ? "checked" : ""}> 💶 L'argent a bien été versé sur le compte</label>
+      ${x.avecVerse ? `<div class="two"><div><label>Date du versement</label><input type="date" id="dcaDV" value="${x.dateVerse}"></div>${k.deux ? `<div><label>Total versé</label><input type="text" disabled value="${eur(k.verse)}"></div>` : `<div><label>Montant (€)</label><input type="text" inputmode="decimal" id="dcaMV" value="${esc(x.verse)}"></div>`}</div>
+      ${cto ? `<label>Versé par</label><div class="tchips">${["Gaëtan", "Mathilde", "Les deux"].map(q => `<button class="cat ${x.qui === q ? "on" : ""}" data-dcaq="${q}">${q}</button>`).join("")}</div>
+        ${k.deux ? `<div class="two"><div><label>Part de Gaëtan (€)</label><input type="text" inputmode="decimal" id="dcaVG" value="${esc(x.vG)}"></div><div><label>Part de Mathilde (€)</label><input type="text" inputmode="decimal" id="dcaVM" value="${esc(x.vM)}"></div></div>` : ""}` : ""}`
+      : `<div class="hint">Pas de versement : l'achat est payé avec les espèces déjà sur le compte (${eur(k.especes)}).</div>`}</div>
+    <div class="dcab"><label class="dck"><input type="checkbox" id="dcaA" ${x.avecAchat ? "checked" : ""}> 🛒 J'ai acheté des parts</label>
+      ${x.avecAchat ? `${titres.length > 1 ? `<div class="tchips">${titres.map(t => `<button class="cat ${x.titre === t ? "on" : ""}" data-dcat="${esc(t)}">${esc(t)}</button>`).join("")}</div>` : `<div class="hint">${esc(x.titre)}</div>`}
+      <div class="two"><div><label>Date de l'achat</label><input type="date" id="dcaDA" value="${x.dateAchat}"></div><div><label>Nombre de parts</label><input type="text" inputmode="decimal" id="dcaP" value="${esc(x.parts)}" placeholder="${k.maxParts ? "max " + k.maxParts : ""}"></div></div>
+      <div class="two"><div><label>Prix par part (€)</label><input type="text" inputmode="decimal" id="dcaPx" value="${esc(x.prix)}"></div><div><label>Frais (€)</label><input type="text" inputmode="decimal" id="dcaF" value="${x.fraisMain ? esc(x.frais) : String(k.frais).replace(".", ",")}"></div></div>
+      <div class="hint" id="dcaRes">${dcaResume(k)}</div>` : ""}</div>
+    <button class="btn" id="dcaSave">Enregistrer dans le journal</button>
+    <div class="hint">Ça ajoute ${x.avecVerse && k.deux ? "une ligne par personne pour le versement" : x.avecVerse ? "une ligne pour le versement" : ""}${x.avecVerse && x.avecAchat ? " et " : ""}${x.avecAchat ? "une ligne pour l'achat" : ""} au « Journal des opérations ». PRU, espèces et plafond se recalculent tout seuls.</div>`);
+}
+function saveDca() {
+  const x = S.dca, k = dcaCalc();
+  if (!x.avecVerse && !x.avecAchat) { toast("Coche le versement ou l'achat"); return; }
+  if (x.avecVerse && !(k.verse > 0)) { toast("Montant du versement ?"); return; }
+  if (x.avecAchat && !(k.parts > 0 && k.prix > 0)) { toast("Nombre de parts et prix ?"); return; }
+  if (x.avecAchat && k.cout > k.dispo + 0.01) { if (!confirm("L'achat (" + eur(k.cout) + ") dépasse les espèces disponibles (" + eur(k.dispo) + "). Enregistrer quand même ?")) return; }
+  const p = { compte: x.compte, qui: x.qui };
+  if (x.avecVerse) {
+    p.dateVerse = x.dateVerse || todayISO(); p.remVerse = "DCA, depuis l'appli";
+    p.verses = k.deux ? [{ qui: "Gaëtan", mont: k.vG }, { qui: "Mathilde", mont: k.vM }].filter(z => z.mont > 0) : [{ qui: x.qui, mont: k.verse }];
+    p.verse = k.verse;
+  }
+  if (x.avecAchat) { p.parts = k.parts; p.prix = k.prix; p.frais = k.frais; p.titre = x.titre; p.dateAchat = x.dateAchat || todayISO(); p.remAchat = k.frais ? "DCA, frais 0,35 % (ordre de plus de 500 €)" : "DCA, ordre gratuit"; }
+  enqueue("boursedca", p);
+  const d = S.bo.data;
+  if (x.avecAchat) d.ops.unshift({ d: p.dateAchat, op: "Achat", compte: x.compte, parts: k.parts, prix: k.prix, frais: k.frais, cout: k.cout, rem: "⏳ envoi…" });
+  if (x.avecVerse) p.verses.forEach(z => d.ops.unshift({ d: p.dateVerse, op: "Versement", compte: x.compte, qui: z.qui, verse: z.mont, rem: "⏳ envoi…" }));
+  LS.set("bf.bo", S.bo);
+  closeSheet(); toast("📈 Enregistré dans le journal"); render();
+}
+
+// ---------- tâches communes ----------
+function tachesOuvertes(P) { return v19().taches.filter(t => !t.faite && (P === "tout" || t.pour === "Tous" || t.pour === P_NOM(P))).sort((a, b) => ((a.quand || "9") < (b.quand || "9") ? -1 : (a.quand || "9") > (b.quand || "9") ? 1 : a.ajout < b.ajout ? -1 : 1)); }
+function tacheLigne(t) {
+  const retard = t.quand && t.quand < todayISO(), auj = t.quand === todayISO();
+  return `<div class="tache ${t.faite ? "faite" : ""}"><button class="tck" data-tck="${esc(t.id)}" aria-label="Fait">${t.faite ? "✓" : ""}</button>
+    <div class="rt" data-tedit="${esc(t.id)}"><b>${esc(t.txt)}</b><span>${t.pour !== "Tous" ? "pour " + esc(t.pour) + " · " : ""}${t.faite ? "faite " + (t.fpar ? "par " + esc(t.fpar) + " " : "") + "le " + dateCourte(t.faite) : (t.quand ? `<b style="color:${retard ? "var(--bad)" : auj ? "var(--warn)" : "inherit"};font-weight:600">${retard ? "en retard · " : ""}pour le ${dateCourte(t.quand)}</b> · ` : "") + "ajoutée par " + esc(t.par || "?")}</span></div></div>`;
+}
+function tachesAccueil() {
+  if (!v19Pret()) return "";
+  const L = tachesOuvertes(profCode());
+  if (!L.length) return "";
+  return `<div class="card"><div class="mh" style="display:flex;justify-content:space-between;align-items:center"><b>✅ À faire (${L.length})</b><button class="linkbtn" style="margin:0" data-act="gotaches">Tout voir</button></div>${L.slice(0, 4).map(tacheLigne).join("")}</div>`;
+}
+function viewTaches() {
+  let h = `<button class="linkbtn" data-act="goplus">← Plus</button>`;
+  if (!v19Pret()) return h + `<div class="empty">Mets à jour le script (version 26) pour utiliser les tâches.</div>`;
+  const x = v19(), f = S.tf;
+  h += `<div class="card"><b>✅ Ajouter une tâche</b><input type="text" id="tTxt" placeholder="Ex. sortir la poubelle, ranger le bois…" autocomplete="off" style="margin-top:8px" value="${esc(f.txt || "")}">
+    <label>Pour</label><div class="tchips">${["Tous", "Gaëtan", "Mathilde"].map(q => `<button class="cat ${f.pour === q ? "on" : ""}" data-tpour="${q}">${q === "Tous" ? "Nous deux" : q}</button>`).join("")}</div>
+    <div class="two" style="align-items:end"><div><label>Pour le (facultatif)</label><input type="date" id="tQuand" value="${esc(f.quand || "")}"></div><button class="btn" style="margin:0" data-v19="tadd">Ajouter</button></div></div>`;
+  const P = profCode(), L = tachesOuvertes(f.f === "moi" ? P : "tout");
+  h += `<div class="tchips" style="margin:8px 0"><button class="cat ${f.f !== "moi" ? "on" : ""}" data-tf="tout">Toutes (${tachesOuvertes("tout").length})</button><button class="cat ${f.f === "moi" ? "on" : ""}" data-tf="moi">Pour moi (${tachesOuvertes(P).length})</button></div>`;
+  h += L.length ? `<div class="card" style="padding:4px 14px">${L.map(tacheLigne).join("")}</div>` : `<div class="empty">Rien à faire 🎉</div>`;
+  const faites = x.taches.filter(t => t.faite).sort((a, b) => a.faite < b.faite ? 1 : -1);
+  if (faites.length) h += `<details style="margin-top:10px"><summary>Faites ces 14 derniers jours (${faites.length})</summary><div class="card" style="padding:4px 14px;margin-top:6px">${faites.map(tacheLigne).join("")}</div></details>`;
+  return h + `<div class="hint" style="margin:10px 4px">Touche le rond quand c'est fait : la tâche disparaît chez vous deux. Touche le texte pour la modifier ou la supprimer.</div>`;
+}
+function addTache() {
+  const txt = ($("#tTxt").value || "").trim(); if (!txt) { toast("Écris la tâche"); return; }
+  const quand = $("#tQuand").value || "";
+  S.tf.txt = ""; S.tf.quand = "";
+  enqueue("tache", { op: "add", tid: "T" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), txt, pour: S.tf.pour, quand, par: P_NOM(profCode()) });
+  toast("✔ Tâche ajoutée");
+}
+function openTache(id) {
+  const t = v19().taches.find(y => y.id === id); if (!t) return;
+  S.tf.cur = { id, pour: t.pour };
+  openSheet(`<h3>Modifier la tâche</h3><input type="text" id="teTxt" value="${esc(t.txt)}" autocomplete="off">
+    <label>Pour</label><div class="tchips">${["Tous", "Gaëtan", "Mathilde"].map(q => `<button class="cat ${t.pour === q ? "on" : ""}" data-tepour="${q}">${q === "Tous" ? "Nous deux" : q}</button>`).join("")}</div>
+    <label>Pour le</label><input type="date" id="teQuand" value="${t.quand || ""}">
+    <button class="btn" data-v19="tsave">Enregistrer</button><button class="btn sec" data-v19="tsuppr">🗑 Supprimer</button>`);
+}
+
+// ---------- placard de base : de quoi toujours faire une sauce ou un plat de dépannage ----------
+const PLACARD_DEF = [
+  ["🧂 Assaisonnements", ["Sel", "Poivre", "Huile d'olive", "Huile de tournesol", "Vinaigre", "Moutarde", "Sauce soja", "Miel", "Herbes de Provence", "Paprika", "Curry en poudre", "Cumin", "Bouillon cube"]],
+  ["🍅 Sauces et conserves", ["Tomates concassées", "Coulis de tomate", "Concentré de tomate", "Lait de coco", "Crème fraîche liquide", "Pesto", "Thon en boîte"]],
+  ["🌾 Féculents et farines", ["Pâtes", "Riz", "Semoule", "Farine", "Maïzena", "Sucre", "Chapelure"]],
+  ["🧄 Frais qui se gardent", ["Ail", "Oignons", "Échalotes", "Citron", "Beurre doux", "Œufs", "Parmesan râpé", "Gruyère râpé", "Lait demi-écrémé"]],
+  ["❄️ Congélateur", ["Légumes surgelés", "Oignons surgelés", "Épinards hachés surgelés"]]
+];
+function placardListe(v) {
+  const pl = v19(v).placard, out = PLACARD_DEF.map(([g, l]) => [g, l.filter(n => !pl.retires.includes(n))]);
+  const aj = pl.ajouts.filter(a => !out.some(([, l]) => l.includes(a.n)));
+  if (aj.length) out.push(["➕ Mes ajouts", aj.map(a => a.n)]);
+  return out.filter(([, l]) => l.length);
+}
+const placardManquants = v => { const pl = v19(v).placard, tous = placardListe(v).flatMap(([, l]) => l); return pl.manque.filter(n => tous.includes(n)); };
+const placardEnStock = v => placardListe(v).flatMap(([, l]) => l).filter(n => !v19(v).placard.manque.includes(n));
+const sauceManque = sc => { if (!v19Pret()) return 0; const m = v19().placard.manque; return sc.ings.filter(i => m.includes(i[0])).length; };
+function placardCarte() {
+  if (!v19Pret()) return "";
+  const n = placardManquants().length;
+  return `<div class="card v19c" data-v19="placard" style="cursor:pointer"><div class="row" style="border:0;padding:0"><div class="ic">🫙</div><div class="rt"><b>Placard de base</b><span>${n ? n + " chose(s) à racheter : " + esc(placardManquants().slice(0, 4).join(", ")) + (n > 4 ? "…" : "") : "tout est là pour faire une sauce ou un plat de dépannage"}</span></div><div class="am">›</div></div></div>`;
+}
+function openPlacard() {
+  const v = computeView(), pl = v19(v).placard, ed = S.tf.edit, manq = placardManquants(v);
+  openSheet(`<h3>🫙 Placard de base</h3><div class="hint">Ce qu'on a presque toujours pour faire une sauce ou un plat avec ce qui reste. Touche ce qui manque ou est presque fini : ça passe en rouge.</div>
+    ${placardListe(v).map(([g, l]) => `<label>${esc(g)}</label><div class="tchips">${l.map(n => `<button class="cat plc ${pl.manque.includes(n) ? "manque" : "ok"}" data-plc="${esc(n)}">${ed ? "✕ " : pl.manque.includes(n) ? "🔴 " : ""}${esc(n)}</button>`).join("")}</div>`).join("")}
+    ${manq.length ? `<button class="btn" data-v19="plccourses">🛒 Mettre les ${manq.length} à racheter dans la liste de courses</button><button class="btn sec" data-v19="plcplein">✓ J'ai tout racheté</button>` : ""}
+    <div class="two" style="margin-top:12px"><input type="text" id="plcN" placeholder="Ajouter (ex. sauce barbecue)" autocomplete="off"><button class="btn sec" style="margin:0" data-v19="plcadd">Ajouter</button></div>
+    <button class="linkbtn" data-v19="plcedit">${ed ? "Fini de retirer" : "✏️ Retirer des produits de la liste"}</button>`);
+}
+
+// ---------- tiroir : texte libre (ou dictée) pour Gemini, et « garder la recette » ----------
+function tiroirTexteCarte() {
+  return `<div class="card"><b>✍️ Dis ce que tu as</b><div class="hint">En vrac, au clavier ou avec le micro du clavier : « 2 poireaux, des lardons, un reste de crème, du riz ». Gemini en tire une recette dans tes contraintes.</div>
+    <textarea id="rTx" rows="3" style="width:100%;margin-top:8px;border-radius:12px;padding:10px;font:inherit;background:var(--card2,transparent);color:inherit;border:1px solid var(--line,#8884)">${esc(S.rp.texte || "")}</textarea>
+    <button class="btn" data-v19="idee2">💡 Une recette avec ça</button></div>`;
+}
+async function idee2() {
+  const v = computeView(), g = reg(v), tx = $("#rTx"), texte = (tx ? tx.value : S.rp.texte || "").trim();
+  S.rp.texte = texte;
+  if (!navigator.onLine) { toast("Il faut du réseau pour demander à Gemini"); return; }
+  if (!texte && !(S.rp.tiroir || []).length) { toast("Écris ce que tu as, ou touche des ingrédients"); return; }
+  openSheet(`<h3>💡 Gemini réfléchit…</h3><div class="spin"></div>`);
+  try {
+    const produits = (R(v).produits || []).filter(p => !estMaison(p)).map(p => ({ n: p.n, u: p.u || "" }));
+    const r = await call("repasidee", { v: 2, texte, ingredients: S.rp.tiroir || [], prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, heure: g.heure, produits, placard: v19Pret() ? placardEnStock(v) : [] }, 90000);
+    if (!r.ok) throw new Error(r.error);
+    const x = r.idee, h0 = minOf(g.heure);
+    S.rf = { idee: x };
+    openSheet(`<h3>💡 ${esc(x.nom)}</h3><div class="tline"><div>🔪 Prépa<b>${x.prepa} min</b></div><div class="hc">⚡ Cuisson<b>${x.cuisson} min</b>à ${hm(h0)}</div><div>🍽 À table<b>${hm(h0 + x.cuisson)}</b></div></div>
+      <div class="sth">Ingrédients</div><ul class="ings">${x.ingredients.map(i => `<li>${esc(i.nom)}<span>${esc(i.quantite)}</span></li>`).join("")}</ul>
+      <div class="sth">🔪 Préparation</div><ol class="steps">${x.prep.map((s, k) => `<li data-rstep="ia_p${k}">${esc(s)}</li>`).join("")}</ol>
+      <div class="sth">⚡ Cuisson</div><ol class="steps" style="counter-reset:st ${x.prep.length}">${x.cuis.map((s, k) => `<li data-rstep="ia_c${k}">${esc(s)}</li>`).join("")}</ol>
+      ${x.astuce ? `<div class="alert" style="margin-top:12px">💡 ${esc(x.astuce)}</div>` : ""}
+      <button class="btn" data-v19="garder">⭐ Elle est bien : la garder dans mes recettes</button><button class="btn sec" data-v19="idee2">🔁 Une autre idée</button>
+      <div class="credit">Recette proposée par Gemini : vérifie les cuissons. Gardée, elle pourra être proposée dans les menus et ses ingrédients iront dans la liste de courses.</div>`);
+  } catch (e) { closeSheet(); toast("⚠ " + (e.name === "AbortError" ? "Gemini met trop de temps" : e.message)); }
+}
+function garderIdee() {
+  const x = S.rf && S.rf.idee; if (!x) return;
+  const ings = x.ingredients.map(i => i.produit ? [i.produit, Math.round((i.qte || 0) * 10) / 10, i.quantite] : [i.nom, 0, i.quantite]);
+  const rec = { nom: x.nom, proteine: x.proteine || "Autre", feculent: x.feculent || "Autre", prepa: x.prepa, cuisson: x.cuisson, appareil: x.appareil || "", prep: x.prep, cuis: x.cuis, astuce: x.astuce || "", ings };
+  enqueue("repasgarder", { rid: "IA" + Date.now().toString(36), recette: rec });
+  closeSheet(); toast("⭐ Recette gardée dans le catalogue");
+}
+
+// ---------- quantité et prix des articles ajoutés à la main ----------
+function openManuel(lib) {
+  const v = computeView(), sem = semaineOff(S.rp.wk), m = (semData(v, sem).manuels || []).find(y => y.lib === lib); if (!m) return;
+  const q = m.qte || 1, pu = q ? (m.prix || 0) / q : 0;
+  S.rf = { man: lib, sem };
+  openSheet(`<h3>${esc(lib)}</h3>
+    <label>Quantité</label><div class="two"><input type="text" id="mQ" inputmode="numeric" value="${q}" autocomplete="off"><div class="tchips" style="align-items:center">${[-1, 1].map(k => `<button class="cat" data-mqk="${k}" style="font-size:18px;padding:6px 16px">${k > 0 ? "+" : "−"}</button>`).join("")}</div></div>
+    <label>Prix à l'unité (€, facultatif)</label><input type="text" id="mP" inputmode="decimal" value="${pu ? esc(f2(pu)) : ""}" autocomplete="off">
+    <div class="hint" id="mT">Total : ${eur(q * pu)}</div>
+    <button class="btn" data-v19="mansave">Enregistrer</button>`);
+}
+function majManuelTotal() { const t = $("#mT"); if (t) t.textContent = "Total : " + eur((num($("#mQ").value) || 0) * (num($("#mP").value) || 0)); }
+function saveManuel() {
+  const x = S.rf, q = Math.max(1, Math.round(num($("#mQ").value) || 1)), pu = num($("#mP").value) || 0;
+  enqueue("repasajout", { semaine: x.sem, lib: x.man, maj: true, qte: q, prix: Math.round(q * pu * 100) / 100 });
+  closeSheet(); toast("✔ " + x.man + " : " + q);
+}
+
+// ---------- événements v1.9 ----------
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-v19],[data-tck],[data-tedit],[data-tpour],[data-tepour],[data-tf],[data-plc],[data-rman],[data-mqk],[data-act=gotaches],#santeVu");
+  if (!t) return;
+  const d = t.dataset, a = d.v19;
+  if (d.rman) { e.stopImmediatePropagation(); openManuel(d.rman); return; }
+  if (d.mqk) { const el = $("#mQ"); el.value = Math.max(1, (num(el.value) || 0) + Number(d.mqk)); majManuelTotal(); return; }
+  if (d.act === "gotaches") { S.tab = "taches"; render(); window.scrollTo(0, 0); return; }
+  if (t.id === "santeVu") { call("errvue", {}, 60000).then(r => { if (r.ok) { toast("👁 Erreurs marquées comme vues"); chargerSante(false); } else toast("⚠ " + r.error); }).catch(er => toast("⚠ " + er.message)); return; }
+  if (d.tck) { e.stopPropagation(); const x = v19().taches.find(y => y.id === d.tck); if (x) enqueue("tache", { op: x.faite ? "defait" : "fait", tid: x.id, par: P_NOM(profCode()) }); return; }
+  if (d.tedit) { openTache(d.tedit); return; }
+  if (d.tpour) { S.tf.pour = d.tpour; render(); return; }
+  if (d.tepour) { S.tf.cur.pour = d.tepour; document.querySelectorAll("[data-tepour]").forEach(b => b.classList.toggle("on", b === t)); return; }
+  if (d.tf) { S.tf.f = d.tf; render(); return; }
+  if (d.plc) {
+    const v = computeView(), pl = v19(v).placard;
+    if (S.tf.edit) enqueue("placard", { op: "retrait", n: d.plc });
+    else enqueue("placard", { op: "etat", n: d.plc, manque: !pl.manque.includes(d.plc) });
+    openPlacard(); return;
+  }
+  if (!a) return;
+  if (a === "saloui") { openSalaire(d.per); return; }
+  if (a === "salnon") { enqueue("moisrep", { k: profCode() + ".sal." + d.per, jusqu: lendemain() }); toast("D'accord, je redemande demain"); return; }
+  if (a === "salsave") { saveSalaire(); return; }
+  if (a === "invtard") { enqueue("moisrep", { k: profCode() + ".inv." + d.per, jusqu: addDays(todayISO(), 40) }); toast("Un petit rappel reste sur l'accueil"); return; }
+  if (a === "dejafait") { enqueue("moisrep", { k: profCode() + "." + d.c + "." + d.per, fait: true, date: todayISO() }); toast("✔ Noté comme fait"); return; }
+  if (a === "boinit") { openBoInit(); return; }
+  if (a === "boinitsave") { saveBoInit(); return; }
+  if (a === "tadd") { addTache(); return; }
+  if (a === "tsave") { const c = S.tf.cur; enqueue("tache", { op: "modif", tid: c.id, txt: $("#teTxt").value.trim(), pour: c.pour, quand: $("#teQuand").value || "" }); closeSheet(); toast("✔ Tâche modifiée"); return; }
+  if (a === "tsuppr") { if (!confirm("Supprimer cette tâche ?")) return; enqueue("tache", { op: "suppr", tid: S.tf.cur.id }); closeSheet(); toast("Tâche supprimée"); return; }
+  if (a === "placard") { S.tf.edit = false; openPlacard(); return; }
+  if (a === "plcedit") { S.tf.edit = !S.tf.edit; openPlacard(); return; }
+  if (a === "plcadd") { const n = ($("#plcN").value || "").trim(); if (!n) return; enqueue("placard", { op: "ajout", n, g: "Mes ajouts" }); openPlacard(); return; }
+  if (a === "plcplein") { enqueue("placard", { op: "plein", liste: placardManquants() }); closeSheet(); toast("✔ Placard plein"); return; }
+  if (a === "plccourses") {
+    const v = computeView(), sem = semaineOff(S.rp.wk || 0), deja = new Set((semData(v, sem).manuels || []).map(m => m.lib)), pm = prodMap(v);
+    const L = placardManquants(v).filter(n => !deja.has(n));
+    L.forEach(n => enqueue("repasajout", { semaine: sem, lib: n, prix: pm[n] && !estPlacard(pm[n]) ? pm[n].prix : 0, rayon: pm[n] && !estPlacard(pm[n]) ? pm[n].r : "Épicerie" }));
+    closeSheet(); toast(L.length ? "🛒 " + L.length + " article(s) ajouté(s) à la liste" : "Déjà dans la liste"); return;
+  }
+  if (a === "idee2") { idee2(); return; }
+  if (a === "garder") { garderIdee(); return; }
+  if (a === "mansave") { saveManuel(); return; }
+}, true);
+document.addEventListener("input", e => {
+  if (e.target.id === "rTx") { S.rp.texte = e.target.value; return; }
+  if (e.target.id === "tTxt") { S.tf.txt = e.target.value; return; }
+  if (e.target.id === "tQuand") { S.tf.quand = e.target.value; return; }
+  if (e.target.id === "mQ" || e.target.id === "mP") { majManuelTotal(); return; }
+  if (e.target.id === "salD") { const h = $("#salH"); if (h) { const dd = e.target.value || todayISO(); h.textContent = "Il sera rangé dans l'onglet " + (S.sal.P === "M" ? "Mathilde" : "Gaétan") + " (case du salaire) pour " + moisSuivantNom(dd) + (Number(dd.slice(8, 10)) >= 20 ? ", le 1er du mois (après l'archivage)" : "") + ", et compté dans les statistiques."; } return; }
+  if (S.dca && (e.target.id === "dcaVG" || e.target.id === "dcaVM")) {
+    S.dca[e.target.id === "dcaVG" ? "vG" : "vM"] = e.target.value;
+    const k = dcaCalc(), r = $("#dcaRes"); if (r) r.innerHTML = dcaResume(k);
+    const tot = document.querySelector("#sheet input[disabled]"); if (tot) tot.value = eur(k.verse);
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "tTxt") { e.preventDefault(); addTache(); } });
+// choix du compte ou de « qui a versé » dans la fenêtre DCA (après le gestionnaire de la v1.8)
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-dcac],[data-dcaq]"); if (!t || !S.dca) return;
+  if (t.dataset.dcac) dcaCompte(t.dataset.dcac);
+  if (t.dataset.dcaq && t.dataset.dcaq === "Les deux") { const tot = num(S.dca.verse); if (!S.dca.vG && !S.dca.vM && tot > 0) { S.dca.vG = String(Math.round(tot / 2 * 100) / 100).replace(".", ","); S.dca.vM = S.dca.vG; } }
+  renderDca();
+}, false);
+
+// ---------- ponts : plus proposés s'ils commencent aujourd'hui ou avant, ni si les jours sont déjà en congé/repos ----------
+function pontsAVenir(d) {
+  const today = todayISO(), m0 = today.slice(0, 7), m1 = addDays(m0 + "-28", 7).slice(0, 7);
+  const poses = (d.demandes || []).filter(x => !x.annule);
+  const garde = {}; (d.garde || []).forEach(g => { garde[g[0]] = g[2]; });
+  const dejaLibre = p => { let j = p.du, n = 0; while (j <= p.au && n < 40) { const s = garde[j]; if (s === undefined || /travail/i.test(s)) return false; j = addDays(j, 1); n++; } return n > 0; };
+  return (d.ponts || []).filter(p => p.du > today && (p.du.slice(0, 7) === m0 || p.du.slice(0, 7) === m1)).map(p => {
+    const fait = d.ponts_etat[p.occ] === "fait" || poses.some(x => x.du <= p.au && x.au >= p.du) || dejaLibre(p);
+    return Object.assign({}, p, { fait, refus: d.ponts_etat[p.occ] === "non", quand: p.du.slice(0, 7) === m0 ? "Ce mois-ci" : "Le mois prochain" });
+  }).filter(p => !p.refus);
+}
 
 // ---------- événements ----------
 document.addEventListener("click", e => {
@@ -2727,7 +3255,7 @@ async function reloadApp() {
   // lien de configuration : #u=<url>&k=<code>
   if (location.hash.length > 2) {
     const p = new URLSearchParams(location.hash.slice(1));
-    if (p.get("u") && p.get("k")) { S.cfg = { url: p.get("u"), key: p.get("k") }; saveCfg(); history.replaceState(null, "", location.pathname); toast("Connexion configurée"); }
+    if (p.get("u") && p.get("k")) { const nouv = p.get("k") !== S.cfg.key; S.cfg = { url: p.get("u"), key: p.get("k") }; saveCfg(); if (nouv) { S.base = null; saveBase(); } history.replaceState(null, "", location.pathname); toast("Connexion configurée"); }
   }
   majProf(); setSync(); render();
   if (configured()) { S.queue.length ? flush() : refresh(true); }

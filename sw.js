@@ -1,5 +1,5 @@
 // Service worker : l'appli s'ouvre sans connexion et se met à jour toute seule dès qu'une nouvelle version est publiée
-const CACHE = "bf-v1.8.0";
+const CACHE = "bf-v1.9.0";
 const IMG = "bf-img"; // photos des recettes (Wikimedia Commons), gardées d'une version à l'autre pour l'usage hors ligne
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
@@ -29,4 +29,3 @@ self.addEventListener("fetch", e => {
     }).catch(() => caches.match(req).then(r => r || caches.match("index.html")))
   );
 });
- 

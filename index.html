@@ -237,12 +237,58 @@ details summary{cursor:pointer;font-size:13px;color:var(--blue);margin:8px 0}
 .pl{display:inline-block;margin-left:4px;padding:1px 8px;border-radius:99px;font-size:12.5px;background:var(--chip,#8882)}
 .pl.ok{background:#2f9e6e22;color:#2f9e6e}.pl.mi{background:#d98a0022;color:#b86e00}.pl.af{background:#e63e1118;color:#c23a10}
 .v19c .rt b{white-space:normal}
+header h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+header .hr{flex:none}
+#ideeBtn{font-size:17px}
+.ibtx{width:100%;margin-top:10px;border-radius:12px;padding:10px;font:inherit;font-size:16px;background:var(--chip);color:var(--ink);border:1px solid var(--line);box-sizing:border-box;resize:vertical}
+.ibcap{display:flex;gap:12px;align-items:center;margin-top:10px;padding:8px;border:1px solid var(--line);border-radius:12px}
+.ibcap img{width:64px;height:110px;object-fit:cover;object-position:top;border-radius:8px;border:1px solid var(--line);flex:none}
+.ibcap b{display:block}.ibcap span{display:block;font-size:12px;color:var(--mut)}
+.ibctx{margin-top:12px;padding:8px 10px;border-radius:10px;background:var(--chip);font-size:12px;color:var(--mut);line-height:1.4}
+.idee{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.idee:last-child{border-bottom:0}
+.idee .idic{flex:none;font-size:20px;line-height:1.2}
+.idee .rt{flex:1;min-width:0}
+.idee .rt b{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;font-weight:600}
+.idee .rt>span{display:block;font-size:12.5px;color:var(--mut);margin-top:3px}
+.ids{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:var(--chip);color:var(--ink)}
+.ids.nv{background:#2f6fed1a;color:#2f6fed}.ids.vu{background:#8a63d21f;color:#7a52c7}.ids.pr{background:#d98a0022;color:#b86e00}
+.ids.ok{background:#2f9e6e22;color:#2f9e6e}.ids.no{background:#e63e1118;color:#c23a10}.ids.env{background:#d98a0022;color:#b86e00}
+.iderep{margin-top:6px;padding:8px 10px;border-radius:10px;background:var(--chip);font-size:13.5px;line-height:1.4;white-space:pre-wrap}
+.ibfull{white-space:pre-wrap;font-size:16px;line-height:1.45;margin-top:6px}
+a.btn.ibln{display:block;text-align:center;text-decoration:none;box-sizing:border-box}
+.idnb{font-weight:500;color:var(--mut);font-size:13px}
+.vyc{cursor:pointer}
+.vybar{height:8px;border-radius:99px;background:var(--chip);overflow:hidden;margin:10px 0 6px}
+.vybar.big{height:12px}
+.vybar i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--acc));border-radius:99px}
+.vynum{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--mut)}
+.vynum b{display:block;font-size:15px;color:var(--ink)}
+.vyplan .vyseg{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.vyseg>div{padding:8px 10px;border-radius:10px;background:var(--chip)}
+.vyseg b{font-size:17px}.vyseg span{margin-left:8px;font-size:12.5px;color:var(--mut)}.vyseg small{display:block;font-size:12px;color:var(--mut);margin-top:2px}
+.vyok{padding:8px 10px;border-radius:10px;background:#2f9e6e1f;color:#1f7a53;font-size:13.5px;line-height:1.4}
+.vyko{padding:8px 10px;border-radius:10px;background:#d98a0024;color:#a86500;font-size:13.5px;line-height:1.4}
+.vyhero .big{font-size:34px}
+.vyact{display:flex;gap:8px;margin-top:10px}.vyact .btn{flex:1;margin:0}
+.vysec{margin:12px 0 4px;flex-wrap:wrap}
+.vytot{margin-top:10px}.vytot>div{display:flex;justify-content:space-between;padding:4px 0;font-size:14px;color:var(--mut)}
+.vytot>div.t{border-top:1px solid var(--line);margin-top:4px;padding-top:8px;font-size:16px;color:var(--ink);font-weight:700}
+.vyf{padding:12px;margin-top:8px;cursor:pointer}
+.vyf img{display:block;width:100%;height:150px;object-fit:cover;border-radius:10px;margin-bottom:8px;background:var(--chip)}
+.vyf b{font-size:15.5px}
+.vycat{margin-left:8px;font-size:11.5px;padding:1px 8px;border-radius:99px;background:var(--chip);color:var(--mut)}
+.vyn{margin-top:4px;font-size:13.5px;line-height:1.45;color:var(--ink);white-space:pre-wrap}
+.vysrc{display:inline-block;margin-top:6px;font-size:13px;color:var(--blue);text-decoration:none}
+.vycr{display:block;margin-top:4px;font-size:10.5px;color:var(--mut)}
+.vy2{display:flex;gap:10px}.vy2>div{flex:1;min-width:0}
+img.vyimg{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin:8px 0}
 </style>
 </head>
 <body>
 <header>
   <h1>Budget Familial</h1>
-  <div class="hr"><button class="ib" id="prof" aria-label="Profil">G</button><span id="sync">…</span><button class="ib" id="refresh" aria-label="Actualiser">⟳</button></div>
+  <div class="hr"><button class="ib" id="ideeBtn" aria-label="Boîte à idées">💡</button><button class="ib" id="prof" aria-label="Profil">G</button><span id="sync">…</span><button class="ib" id="refresh" aria-label="Actualiser">⟳</button></div>
 </header>
 <main id="view"></main>
 <button id="fab" aria-label="Ajouter une dépense">+</button>
@@ -257,10 +303,11 @@ details summary{cursor:pointer;font-size:13px;color:var(--blue);margin:8px 0}
 <div id="sheet"></div>
 <div id="toast"></div>
 <input type="file" id="scanFile" accept="image/*,application/pdf" style="display:none">
+<input type="file" id="ibFile" accept="image/*" style="display:none">
 
 <script>
 "use strict";
-const APP_VERSION = "1.9.0";
+const APP_VERSION = "1.11.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -452,13 +499,15 @@ async function flush() {
     let lourd = false;
     while (S.queue.length) {
       const op = S.queue[0];
-      const r = await call(op.type, Object.assign({}, op.payload, { id: op.id }), op.type === "repasinstall" ? 180000 : 30000);
+      const r = await call(op.type, Object.assign({}, op.payload, { id: op.id }), op.type === "repasinstall" ? 180000 : (op.type === "idee" && op.payload.capture) ? 120000 : op.type === "voyage" ? 60000 : 30000);
       if (r.ok) {
         S.queue.shift(); saveQueue();
         if (r.courses) { fusionCourses(r.courses); }
         else if (r.conges) { S.cg = { data: r.conges, at: Date.now() }; LS.set("bf.cg", S.cg); }
         else if (r.bourse) { S.bo = { data: r.bourse, at: Date.now() }; LS.set("bf.bo", S.bo); }
         else if (r.v19) { S.base.v19 = Object.assign({}, S.base.v19, r.v19); saveBase(); }
+        else if (r.v110) { S.base.v110 = Object.assign({}, S.base.v110, r.v110); saveBase(); }
+        else if (r.v111) { S.base.v111 = r.v111; saveBase(); }
         else { lourd = true; if (S.queue.length === 0 && r.state) { S.base = r.state; saveBase(); } }
         S.offline = false; S.error = "";
       } else if (r.error === "clé invalide" || /code de l'appli/.test(r.error)) {
@@ -573,6 +622,8 @@ function viewPlus() {
     (estG() ? T("🏖️", "Congés", "compteurs, poser, ponts", "goconges") : "") +
     T("👶", "Garde de Léo", "qui garde, calendrier", "gogarde") +
     T("✅", "Tâches", "à faire à deux", "gotaches") +
+    T("✈️", "Voyages", "budget, épargne, idées", "govoyages") +
+    T("💡", "Boîte à idées", "bugs, idées, questions", "goidees") +
     T("📊", "Statistiques", "courses, prix, note A à E", "gostats") +
     (estG() ? T("📈", "Bourse", "PEA, CTO pour Léo, DCA", "gobourse") : T("📈", S.roleM ? "Ma bourse" : "Bourse de Mathilde", "PEA, CTO pour Léo", "gobourse")) +
     T("🍽️", "Menus et courses", "recettes, liste partagée", "", 'data-rr="gorepas"') +
@@ -870,7 +921,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += tonightCard(v, true) + accueilPerso() + accueilBourse() + tachesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += tonightCard(v, true) + accueilPerso() + accueilBourse() + tachesAccueil() + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -943,7 +994,7 @@ function viewReglages() {
 function render() {
   const v = computeView();
   const el = $("#view");
-  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches"].includes(S.tab);
+  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches", "idees", "voyages"].includes(S.tab);
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
   $("#fab").style.display = (grpPlus || S.tab === "repas") ? "none" : "block";
   if (S.tab === "plus") { el.innerHTML = viewPlus(); return; }
@@ -956,6 +1007,8 @@ function render() {
   if (S.tab === "stats") { el.innerHTML = bandeauScript() + viewStats(false); return; }
   if (S.tab === "bourse") { el.innerHTML = bandeauScript() + viewBourse(); return; }
   if (S.tab === "taches") { el.innerHTML = bandeauScript() + viewTaches(); return; }
+  if (S.tab === "idees") { el.innerHTML = bandeauScript() + viewIdees(); ideesVues(); return; }
+  if (S.tab === "voyages") { el.innerHTML = bandeauScript() + viewVoyages(); if (v111Pret() && voy().photosManquantes) setTimeout(voyPhotos, 400); return; }
   el.innerHTML = S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : S.tab === "amazon" ? viewAmazon(v) : S.tab === "soins" ? viewSoins(v) : viewAnnuels(v);
 }
 
@@ -2038,7 +2091,7 @@ setInterval(pollCourses, 8000);
 // =====================================================================
 // v1.7.0 : PROFILS (Gaétan = tout, Mathilde = sa version), CONGÉS, GARDE DE LÉO, PONTS, JOUR DES COURSES
 // =====================================================================
-const SCRIPT_ATTENDU = 26;
+const SCRIPT_ATTENDU = 28;
 S.prof = LS.get("bf.prof", "G");
 S.cg = LS.get("bf.cg", null);            // { data, at } : copie locale du fichier congés (lu par le script, cache 10 min)
 S.gardeVue = "14";
@@ -3111,6 +3164,552 @@ function pontsAVenir(d) {
     const fait = d.ponts_etat[p.occ] === "fait" || poses.some(x => x.du <= p.au && x.au >= p.du) || dejaLibre(p);
     return Object.assign({}, p, { fait, refus: d.ponts_etat[p.occ] === "non", quand: p.du.slice(0, 7) === m0 ? "Ce mois-ci" : "Le mois prochain" });
   }).filter(p => !p.refus);
+}
+
+// =====================================================================
+// v1.10.0 : 💡 BOÎTE À IDÉES : bugs, idées, questions notés de n'importe quel écran,
+//           avec le contexte (écran, versions, profil, dernière erreur) et une capture facultative.
+//           Claude lit l'onglet « Boîte à idées » du Sheet et y répond (statut, version, réponse).
+// =====================================================================
+const V110_TYPES = ["idee"];
+const IDEE_TYPES = [["bug", "🐞", "Bug"], ["idee", "💡", "Idée"], ["question", "❓", "Question"]];
+const IDEE_AIDE = { bug: "Ce qui ne marche pas, et ce que tu faisais juste avant…", idee: "Ce que tu aimerais dans l'appli…", question: "Ta question…" };
+const NOMS_ONGLETS = { home: "Accueil", repas: "Repas", journal: "Journal", annuels: "Annuels", plus: "Plus", amazon: "Amazon P&É", soins: "Soins et mutuelle", reglages: "Réglages", conges: "Congés", garde: "Garde de Léo", stats: "Statistiques", bourse: "Bourse", taches: "Tâches", idees: "Boîte à idées" };
+const SOUS_REPAS = { menus: "Menus", courses: "Courses", recettes: "Recettes", tiroir: "Tiroir", flemme: "Flemme", stats: "Stats" };
+S.ib = Object.assign({ type: "idee", txt: "", f: "cours", qui: "moi" }, LS.get("bf.ib", {}));
+S.ib.cap = null;                                   // capture jointe (gardée en mémoire seulement : trop lourde pour le brouillon)
+S.derErr = LS.get("bf.derr", null);               // dernière erreur vue dans l'appli { d, msg }
+S.derFen = null;                                   // dernière fenêtre ouverte { t, at }
+const saveIb = () => LS.set("bf.ib", { type: S.ib.type, txt: S.ib.txt, f: S.ib.f, qui: S.ib.qui });
+const v110Pret = () => !!(S.base && S.base.v110) && (Number(S.base.scriptVersion) || 0) >= 27;
+const moiNom = () => S.roleM ? "Mathilde" : "Gaëtan";
+
+// ---------- contexte ajouté tout seul ----------
+function noterErreur(msg) { S.derErr = { d: new Date().toISOString(), msg: String(msg).slice(0, 200) }; LS.set("bf.derr", S.derErr); }
+window.addEventListener("error", e => { try { noterErreur((e.message || "erreur") + " (" + (e.filename || "").split("/").pop() + ":" + (e.lineno || "") + ")"); } catch (x) {} });
+window.addEventListener("unhandledrejection", e => { try { noterErreur("promesse : " + ((e.reason && (e.reason.message || e.reason)) || "rejet")); } catch (x) {} });
+const _toast110 = toast;
+toast = function (msg) { try { if (/^(⚠|Refusé|🔐)/.test(String(msg))) noterErreur(msg); } catch (e) {} return _toast110.apply(this, arguments); };
+const _openSheet110 = openSheet;
+openSheet = function (html) {
+  try { if (!S.ibOuvert) { const m = String(html).match(/<h3[^>]*>([\s\S]*?)<\/h3>/); if (m) S.derFen = { t: m[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 60), at: Date.now() }; } } catch (e) {}
+  return _openSheet110.apply(this, arguments);
+};
+const _closeSheet110 = closeSheet;
+closeSheet = function () { if (S.ibOuvert && S.derFen) S.derFen.at = Date.now(); S.ibOuvert = false; return _closeSheet110.apply(this, arguments); };
+function erreurRecente() {
+  const e = S.derErr; if (!e || !e.d) return "";
+  const t = Date.parse(e.d); if (!t || Date.now() - t > 24 * 3600000) return "";
+  const d = new Date(t);
+  return e.msg + " (" + (d.toDateString() === new Date().toDateString() ? "" : dateCourte(e.d.slice(0, 10)) + " ") + String(d.getHours()).padStart(2, "0") + "h" + String(d.getMinutes()).padStart(2, "0") + ")";
+}
+function ecranNom() {
+  let e = NOMS_ONGLETS[S.tab] || S.tab;
+  if (S.tab === "repas" && S.rp) e += " › " + (SOUS_REPAS[S.rp.sub] || S.rp.sub);
+  if (S.tab === "home" && S.who && S.who !== "Commun") e += " › " + S.who;
+  if (S.derFen && Date.now() - S.derFen.at < 5 * 60000) e += " · après la fenêtre « " + S.derFen.t + " »";
+  return e + " · profil " + profCode() + (S.roleM ? " (téléphone de Mathilde)" : "");
+}
+
+// ---------- liste : celle du script + les envois en attente ----------
+function idees() {
+  const L = JSON.parse(JSON.stringify((S.base && S.base.v110 && S.base.v110.idees) || []));
+  S.queue.forEach(op => {
+    if (op.type !== "idee") return;
+    const p = op.payload;
+    if (p.op === "add") { if (!L.some(x => x.id === p.iid)) L.push({ id: p.iid, d: p.dloc || p.quand.slice(0, 16), qui: moiNom(), type: p.type, txt: p.txt, ecran: p.ecran, cap: p.capture ? "attente" : "", statut: "envoi", ver: "", rep: "" }); return; }
+    const x = L.find(y => y.id === p.iid); if (!x) return;
+    if (p.op === "modif") { x.txt = p.txt || x.txt; x.type = p.type || x.type; }
+    if (p.op === "suppr") L.splice(L.indexOf(x), 1);
+  });
+  return L;
+}
+const ideeMienne = x => x.qui === moiNom();
+const ideeFinie = x => /^(corrigée|non retenue)/.test(x.statut);
+const ideeSig = x => x.statut + "|" + x.ver + "|" + x.rep;
+function ideeStatut(x) {
+  const v = x.ver ? " en " + esc(x.ver.replace(/^v?/, "v")) : "";
+  if (x.statut === "envoi") return `<span class="ids env">⏳ en attente d'envoi</span>`;
+  if (x.statut === "nouvelle") return `<span class="ids nv">🆕 pas encore lue</span>`;
+  if (x.statut === "vue") return `<span class="ids vu">👀 vue par Claude</span>`;
+  if (x.statut === "prévue") return `<span class="ids pr">🗓 prévue${v}</span>`;
+  if (x.statut === "corrigée") return `<span class="ids ok">✅ ${x.type === "bug" ? "corrigée" : x.type === "question" ? "répondue" : "faite"}${v}</span>`;
+  if (x.statut === "non retenue") return `<span class="ids no">✖ non retenue</span>`;
+  return `<span class="ids vu">${esc(x.statut)}${v}</span>`;
+}
+const ideeIc = t => (IDEE_TYPES.find(y => y[0] === t) || IDEE_TYPES[1])[1];
+const ideeDate = d => d ? dateCourte(d.slice(0, 10)) + (d.length > 11 ? " " + d.slice(11, 16).replace(":", "h") : "") : "";
+function ideeLigne(x) {
+  return `<div class="idee" data-ib="${esc(x.id)}"><div class="idic">${ideeIc(x.type)}</div><div class="rt"><b>${esc(x.txt || "(capture seule)")}</b>
+    <span>${ideeDate(x.d)}${!ideeMienne(x) ? " · " + esc(x.qui) : ""}${x.cap ? " · 📎" : ""} · ${ideeStatut(x)}</span>
+    ${x.rep ? `<div class="iderep">🤖 ${esc(x.rep)}</div>` : ""}</div></div>`;
+}
+
+// ---------- fenêtre « 💡 » ----------
+function openIdee() {
+  if (!configured() || !S.base) { toast("Configure d'abord la connexion"); return; }
+  if (!v110Pret()) { toast("Mets d'abord à jour le script du Sheet (version 27)"); return; }
+  if (!S.ibOuvert) S.ibCtx = { ecran: ecranNom(), err: erreurRecente() };
+  S.ibOuvert = true;
+  const c = S.ibCtx, n = idees().filter(ideeMienne).length;
+  openSheet(`<h3>💡 Boîte à idées</h3>
+    <div class="tchips">${IDEE_TYPES.map(([k, ic, nom]) => `<button class="cat ${S.ib.type === k ? "on" : ""}" data-ibtype="${k}">${ic} ${nom}</button>`).join("")}</div>
+    <textarea id="ibTx" class="ibtx" rows="4" placeholder="${esc(IDEE_AIDE[S.ib.type])}">${esc(S.ib.txt || "")}</textarea>
+    <div class="hint">Tu peux dicter avec le micro du clavier. Le texte reste en brouillon si tu fermes.</div>
+    <div id="ibCap">${ideeCapHtml()}</div>
+    <div class="ibctx">📎 Joint tout seul : ${esc(c.ecran)} · appli ${esc(APP_VERSION)} · script ${Number(S.base.scriptVersion) || "?"}${c.err ? `<br>⚠ Dernière erreur : ${esc(c.err)}` : ""}</div>
+    <button class="btn" data-v110="ibsend">Envoyer</button>
+    <button class="linkbtn" data-v110="ibliste">📋 ${S.roleM ? "Mes remarques" : "Voir les remarques"} (${n}) ›</button>`);
+  setTimeout(() => { const t = $("#ibTx"); if (t && !S.ib.txt) t.focus(); }, 250);
+}
+function ideeCapHtml() {
+  const c = S.ib.cap;
+  if (c) return `<div class="ibcap"><img src="data:${c.mime};base64,${c.data}" alt="capture"><div><b>Capture jointe</b><span>${Math.round(c.data.length * 0.75 / 1024)} Ko</span><button class="linkbtn" data-v110="ibcapx">✕ Retirer</button></div></div>`;
+  return `<button class="btn sec" data-v110="ibcap">📷 Joindre une capture d'écran</button>
+    <div class="hint">Fais d'abord la capture avec les boutons du téléphone (marche + volume bas), puis choisis-la ici dans ta galerie.</div>`;
+}
+async function ideeCapLire(f) {
+  if (!f) return;
+  try {
+    const im = await loadImage(f);
+    let cote = 1600, q = 0.72, data = "";
+    for (let essai = 0; essai < 4; essai++) {
+      const k = Math.min(1, cote / Math.max(im.naturalWidth, im.naturalHeight)), cv = document.createElement("canvas");
+      cv.width = Math.max(1, Math.round(im.naturalWidth * k)); cv.height = Math.max(1, Math.round(im.naturalHeight * k));
+      cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+      data = cv.toDataURL("image/jpeg", q).split(",")[1];
+      if (data.length < 600000) break;
+      cote = Math.round(cote * 0.8); q = Math.max(0.5, q - 0.08);
+    }
+    S.ib.cap = { mime: "image/jpeg", data };
+    const el = $("#ibCap"); if (el) el.innerHTML = ideeCapHtml();
+  } catch (e) { toast("⚠ Image illisible : " + e.message); }
+}
+function envoyerIdee() {
+  const tx = $("#ibTx"), txt = ((tx ? tx.value : S.ib.txt) || "").trim();
+  if (!txt && !S.ib.cap) { toast("Écris ta remarque (ou joins une capture)"); return; }
+  if (!v110Pret()) { toast("Mets d'abord à jour le script du Sheet (version 27)"); return; }
+  const c = S.ibCtx || { ecran: ecranNom(), err: erreurRecente() };
+  const p = { op: "add", iid: "I" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), type: S.ib.type, txt, ecran: c.ecran, app: APP_VERSION, erreur: c.err, quand: new Date().toISOString(), dloc: todayISO() + " " + new Date().toTimeString().slice(0, 5) };
+  if (S.ib.cap) p.capture = { mime: S.ib.cap.mime, data: S.ib.cap.data };
+  S.ib.txt = ""; S.ib.cap = null; saveIb();
+  closeSheet();
+  enqueue("idee", p);
+  let garde = true;
+  try { localStorage.setItem("bf.queue", JSON.stringify(S.queue)); } catch (e) { garde = false; }
+  if (!garde) toast("⚠ Remarque notée, mais la capture est trop lourde pour attendre le réseau : laisse l'appli ouverte jusqu'à l'envoi");
+  else toast(navigator.onLine ? "💡 Merci, c'est noté" : "💡 Notée : elle partira dès que le réseau revient");
+}
+
+// ---------- détail d'une remarque ----------
+function openIdeeDetail(id, edition) {
+  const x = idees().find(y => y.id === id); if (!x) return;
+  const modifiable = x.statut === "nouvelle" && (ideeMienne(x) || !S.roleM);
+  S.ibEd = { id, type: x.type };
+  if (edition && modifiable) {
+    openSheet(`<h3>✏️ Modifier la remarque</h3><div class="tchips">${IDEE_TYPES.map(([k, ic, nom]) => `<button class="cat ${x.type === k ? "on" : ""}" data-ibetype="${k}">${ic} ${nom}</button>`).join("")}</div>
+      <textarea id="ibeTx" class="ibtx" rows="5">${esc(x.txt)}</textarea>
+      <button class="btn" data-v110="ibesave">Enregistrer</button><button class="btn sec" data-v110="ibesuppr">🗑 Supprimer</button>`);
+    return;
+  }
+  openSheet(`<h3>${ideeIc(x.type)} ${x.type === "bug" ? "Bug" : x.type === "question" ? "Question" : "Idée"} du ${ideeDate(x.d)}</h3>
+    <div class="ibfull">${esc(x.txt || "(capture seule)")}</div>
+    <div class="hint">${!ideeMienne(x) ? "De " + esc(x.qui) + " · " : ""}${esc(x.ecran || "")}</div>
+    ${/^https?:/.test(x.cap) ? `<a class="btn sec ibln" href="${esc(x.cap)}" target="_blank" rel="noopener">📎 Voir la capture</a>` : x.cap ? `<div class="hint">📎 capture en attente d'envoi</div>` : ""}
+    <div style="margin-top:12px">${ideeStatut(x)}</div>
+    ${x.rep ? `<div class="iderep" style="margin-top:8px">🤖 <b>Claude :</b> ${esc(x.rep)}</div>` : x.statut === "nouvelle" ? `<div class="hint">Claude la lira au début de votre prochaine conversation sur l'appli.</div>` : ""}
+    ${modifiable ? `<button class="btn sec" data-v110="ibedit">✏️ Modifier ou supprimer</button>` : ""}`);
+}
+
+// ---------- écran « Boîte à idées » (Plus → 💡) ----------
+function viewIdees() {
+  let h = `<button class="linkbtn" data-act="goplus">← Plus</button>`;
+  if (!v110Pret()) return h + `<div class="empty">Mets à jour le script (version 27) pour utiliser la boîte à idées.</div>`;
+  const L = idees().filter(x => S.roleM || S.ib.qui === "tous" || ideeMienne(x)).sort((a, b) => a.d < b.d ? 1 : -1);
+  const cours = L.filter(x => !ideeFinie(x)), finies = L.filter(ideeFinie);
+  const nb = t => cours.filter(x => x.type === t).length;
+  h += `<div class="card v19c"><div class="row" style="border:0;padding:0"><div class="ic">💡</div><div class="rt"><b>Bugs, idées, questions</b><span>Note-les au fil de la journée avec le 💡 en haut de l'écran. Claude les lit dans le Sheet et répond ici.</span></div></div>
+    <button class="btn" style="margin-top:10px" data-v110="ibnew">✍️ Nouvelle remarque</button></div>`;
+  if (!S.roleM) h += `<div class="tchips" style="margin:8px 0">${[["moi", "Les miennes"], ["tous", "Toutes (avec Mathilde)"]].map(([k, n]) => `<button class="cat ${S.ib.qui === k ? "on" : ""}" data-ibqui="${k}">${n}</button>`).join("")}</div>`;
+  h += `<h2>En cours (${cours.length})${cours.length ? ` <small class="idnb">${["bug", "idee", "question"].filter(nb).map(t => ideeIc(t) + " " + nb(t)).join(" · ")}</small>` : ""}</h2>`;
+  h += cours.length ? `<div class="card" style="padding:4px 14px">${cours.map(ideeLigne).join("")}</div>` : `<div class="empty">Rien en attente 🎉</div>`;
+  if (finies.length) h += `<details style="margin-top:10px"><summary>Traitées (${finies.length})</summary><div class="card" style="padding:4px 14px;margin-top:6px">${finies.map(ideeLigne).join("")}</div></details>`;
+  const nv = idees().filter(x => x.statut === "nouvelle");
+  if (!S.roleM && nv.length) h += `<button class="btn sec" data-v110="ibcopie">📋 Copier les ${nv.length} nouvelle(s) pour Claude</button><div class="hint" style="margin:4px">Si Claude ne peut pas lire le Sheet : un appui, puis colle le texte dans la conversation.</div>`;
+  return h + `<div class="hint" style="margin:10px 4px">Touche une remarque pour la voir en entier. Tant que Claude ne l'a pas lue, tu peux la modifier ou la supprimer.</div>`;
+}
+// texte à coller dans la conversation avec Claude (si le connecteur Google Sheets ne répond pas)
+function ideesTexte() {
+  const nv = idees().filter(x => x.statut === "nouvelle").sort((a, b) => a.d < b.d ? -1 : 1);
+  return `Boîte à idées : ${nv.length} nouvelle(s) remarque(s) (appli ${APP_VERSION}, script ${Number(S.base.scriptVersion) || "?"})\n\n` + nv.map(x =>
+    `[${x.id}] ${ideeIc(x.type)} ${x.type === "bug" ? "Bug" : x.type === "question" ? "Question" : "Idée"} · ${x.qui} · ${ideeDate(x.d)}\n${x.txt || "(capture seule)"}\nÉcran : ${x.ecran || "?"}${/^https?:/.test(x.cap) ? "\nCapture : " + x.cap : ""}`).join("\n\n");
+}
+async function copierIdees() {
+  const t = ideesTexte();
+  try { await navigator.clipboard.writeText(t); toast("📋 Copié : colle-le dans la conversation avec Claude"); }
+  catch (e) { openSheet(`<h3>📋 Pour Claude</h3><div class="hint">Appui long dans le cadre → Tout sélectionner → Copier.</div><textarea class="ibtx" rows="12" readonly>${esc(t)}</textarea>`); }
+}
+// marque comme « vues » les réponses de Claude (pour la carte de l'accueil)
+function ideesVues() {
+  const vu = LS.get("bf.idvu", null) || {};
+  idees().filter(ideeMienne).forEach(x => { vu[x.id] = ideeSig(x); });
+  LS.set("bf.idvu", vu);
+}
+function ideesAccueil() {
+  if (!v110Pret()) return "";
+  const vu = LS.get("bf.idvu", null);
+  if (!vu) { ideesVues(); return ""; }                     // première fois : rien d'ancien à annoncer
+  const L = idees().filter(x => ideeMienne(x) && !/^(envoi|nouvelle)$/.test(x.statut) && vu[x.id] !== ideeSig(x));
+  if (!L.length) return "";
+  const x = L[0];
+  return `<div class="card v19c" data-v110="ibvoir" style="cursor:pointer"><div class="row" style="border:0;padding:0"><div class="ic">💡</div><div class="rt"><b>Boîte à idées : ${L.length === 1 ? "une remarque a avancé" : L.length + " remarques ont avancé"}</b><span>${esc((x.txt || "").slice(0, 70))}${(x.txt || "").length > 70 ? "…" : ""} · ${ideeStatut(x)}</span></div><div class="am">›</div></div></div>`;
+}
+
+// ---------- événements v1.10 ----------
+document.addEventListener("click", e => {
+  const t = e.target.closest("#ideeBtn,[data-v110],[data-ibtype],[data-ibetype],[data-ib],[data-ibqui],[data-act=goidees]");
+  if (!t) return;
+  const d = t.dataset, a = d.v110;
+  e.stopImmediatePropagation();
+  if (t.id === "ideeBtn") { openIdee(); return; }
+  if (d.act === "goidees" || a === "ibliste" || a === "ibvoir") { if (a) closeSheet(); S.tab = "idees"; render(); window.scrollTo(0, 0); return; }
+  if (d.ibtype) { S.ib.type = d.ibtype; saveIb(); document.querySelectorAll("[data-ibtype]").forEach(b => b.classList.toggle("on", b === t)); const tx = $("#ibTx"); if (tx) tx.placeholder = IDEE_AIDE[d.ibtype]; return; }
+  if (d.ibetype) { S.ibEd.type = d.ibetype; document.querySelectorAll("[data-ibetype]").forEach(b => b.classList.toggle("on", b === t)); return; }
+  if (d.ib) { openIdeeDetail(d.ib); return; }
+  if (d.ibqui) { S.ib.qui = d.ibqui; saveIb(); render(); return; }
+  if (a === "ibnew") { openIdee(); return; }
+  if (a === "ibcopie") { copierIdees(); return; }
+  if (a === "ibsend") { envoyerIdee(); return; }
+  if (a === "ibcap") { $("#ibFile").click(); return; }
+  if (a === "ibcapx") { S.ib.cap = null; const el = $("#ibCap"); if (el) el.innerHTML = ideeCapHtml(); return; }
+  if (a === "ibedit") { openIdeeDetail(S.ibEd.id, true); return; }
+  if (a === "ibesave") { const txt = ($("#ibeTx").value || "").trim(); if (!txt) { toast("Le texte est vide"); return; } enqueue("idee", { op: "modif", iid: S.ibEd.id, txt, type: S.ibEd.type }); closeSheet(); toast("✔ Remarque modifiée"); return; }
+  if (a === "ibesuppr") { if (!confirm("Supprimer cette remarque ?")) return; enqueue("idee", { op: "suppr", iid: S.ibEd.id }); closeSheet(); toast("Remarque supprimée"); return; }
+}, true);
+document.addEventListener("input", e => { if (e.target.id === "ibTx") { S.ib.txt = e.target.value; saveIb(); } });
+document.addEventListener("change", e => { if (e.target.id === "ibFile") { const f = e.target.files && e.target.files[0]; e.target.value = ""; ideeCapLire(f); } });
+
+// =====================================================================
+// v1.11.0 : ✈️ VOYAGES : budget par voyage (marge sur l'estimé), épargne, effort mensuel, calendrier de paiements,
+//           fiches (idées, cuisine locale, pièges, astuces, réservations) avec photos libres de droits.
+//           Règle : chaque voyage a sa propre cagnotte et son propre effort : un nouveau voyage n'en retarde aucun autre.
+// =====================================================================
+const V111_TYPES = ["voyage"];
+NOMS_ONGLETS.voyages = "Voyages";
+const VOY_PCT = { "tarif vu": 5, "réservé": 0 };         // marge selon la fiabilité ; « estimé » = marge du voyage (20 % par défaut)
+const VOY_FIABS = [["estimé", "Estimé"], ["tarif vu", "Tarif vu"], ["réservé", "Réservé"]];
+const VOY_STATS = [["idée", "💭 Idée"], ["prévu", "🗓 Prévu"], ["réservé", "✅ Réservé"], ["fait", "🏁 Fait"]];
+const VOY_SECS = [["budget", "💶 Budget"], ["cal", "📅 Calendrier"], ["idees", "🎯 Idées"], ["conseils", "⚠ Conseils"]];
+const VOY_TYPE_IC = { "poste": "💶", "activité": "🎯", "cuisine": "🍽", "piège": "⚠️", "réservation": "📅", "astuce": "💡", "levier": "✂️" };
+S.vy = Object.assign({ id: null, sec: "budget" }, LS.get("bf.vy", {}), { id: null });
+const saveVy = () => LS.set("bf.vy", { sec: S.vy.sec });
+const v111Pret = () => !!(S.base && S.base.v111) && (Number(S.base.scriptVersion) || 0) >= 28;
+const MOIS_C = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+const moisAn = iso => iso ? MOIS_C[Number(iso.slice(5, 7)) - 1] + " " + iso.slice(0, 4) : "";
+const eur0 = n => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Math.round(Number(n) || 0));
+
+// ---------- données : celles du script + les modifications en attente ----------
+const pickK = (o, ks) => ks.reduce((r, k) => { if (o[k] != null) r[k] = o[k]; return r; }, {});
+const TRIP_K = ["nom", "ic", "dep", "ret", "ad", "en", "statut", "epargne", "marge", "notes"], LIG_K = ["type", "cat", "lib", "mont", "fiab", "date", "fait", "note", "photoq", "lien"];
+function voyApply(V, p) {
+  const t = V.voyages.find(x => x.id === p.vid), l = V.lignes.find(x => x.id === p.lid && x.v === p.vid);
+  if (p.op === "cfg") { if (p.capacite != null) V.cfg.capacite = Number(p.capacite) || 0; if (p.ldds != null) V.cfg.ldds = Number(p.ldds) || 0; }
+  else if (p.op === "tripadd") { if (!t) V.voyages.push(Object.assign({ id: p.vid, nom: "", ic: "✈️", dep: "", ret: "", ad: 2, en: 0, statut: "idée", epargne: 0, marge: 20, notes: "" }, pickK(p, TRIP_K))); }
+  else if (p.op === "tripmod") { if (t) Object.assign(t, pickK(p, TRIP_K)); }
+  else if (p.op === "verse") { if (t) t.epargne = Math.round((t.epargne + (Number(p.mont) || 0)) * 100) / 100; }
+  else if (p.op === "tripdel") { V.voyages = V.voyages.filter(x => x.id !== p.vid); V.lignes = V.lignes.filter(x => x.v !== p.vid); }
+  else if (p.op === "ligadd") { if (!l) V.lignes.push(Object.assign({ v: p.vid, id: p.lid, type: "poste", cat: "", lib: "", mont: 0, fiab: "estimé", date: "", fait: false, note: "", photo: "", credit: "", lien: "" }, pickK(p, LIG_K))); }
+  else if (p.op === "ligmod") { if (l) Object.assign(l, pickK(p, LIG_K)); }
+  else if (p.op === "ligdel") { V.lignes = V.lignes.filter(x => !(x.id === p.lid && x.v === p.vid)); }
+}
+function voy() {
+  const b = (S.base && S.base.v111) || {};
+  const V = JSON.parse(JSON.stringify({ voyages: b.voyages || [], lignes: b.lignes || [], cfg: b.cfg || {}, photosManquantes: b.photosManquantes || 0 }));
+  S.queue.forEach(op => { if (op.type === "voyage") voyApply(V, op.payload); });
+  V.voyages.sort((a, b2) => (a.dep || "9999") < (b2.dep || "9999") ? -1 : 1);
+  return V;
+}
+
+// ---------- calculs (purs) ----------
+const pctDe = (l, t) => l.fiab === "estimé" ? (Number(t.marge) || 0) : (VOY_PCT[l.fiab] || 0);
+const avecMarge = (l, t) => (Number(l.mont) || 0) * (1 + pctDe(l, t) / 100);
+function voyCalc(V, t, today) {
+  today = today || todayISO();
+  const P = V.lignes.filter(l => l.v === t.id && l.type === "poste");
+  const base = P.reduce((s, l) => s + (Number(l.mont) || 0), 0), total = P.reduce((s, l) => s + avecMarge(l, t), 0);
+  const reste = Math.max(0, total - (t.epargne || 0));
+  const dflt = t.dep || addDays(today, 365);
+  const ech = P.map(l => ({ l, d: l.date || dflt, m: avecMarge(l, t) })).sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0);
+  let cum = 0, need = 0;
+  ech.forEach(x => {
+    cum += x.m;
+    x.cum = cum; x.mois = Math.max(1, (dOf(x.d) - dOf(today)) / 86400000 / 30.44);
+    need = Math.max(need, (cum - (t.epargne || 0)) / x.mois);
+  });
+  const effort = reste <= 0.5 ? 0 : Math.ceil(need);
+  ech.forEach(x => { x.pot = (t.epargne || 0) + effort * x.mois; });
+  const moisDep = t.dep ? Math.max(0, Math.round((dOf(t.dep) - dOf(today)) / 86400000 / 30.44)) : null;
+  return { base, total, marge: total - base, reste, effort, ech, moisDep, pct: total > 0 ? Math.min(100, Math.round((t.epargne || 0) / total * 100)) : 0 };
+}
+const voyActif = (t, today) => t.statut !== "fait" && (!t.dep || t.dep >= (today || todayISO()));
+// effort cumulé dans le temps : à chaque départ, l'effort de ce voyage s'arrête et celui des autres continue
+function voyPlan(V, today) {
+  today = today || todayISO();
+  const A = V.voyages.filter(t => voyActif(t, today)).map(t => ({ t, c: voyCalc(V, t, today) })).filter(x => x.c.effort > 0);
+  const deps = [...new Set(A.map(x => x.t.dep || "9999-12-31"))].sort();
+  let debut = today; const seg = [];
+  deps.forEach(d => {
+    const parts = A.filter(x => (x.t.dep || "9999-12-31") >= d).map(x => ({ nom: x.t.nom, ic: x.t.ic, eff: x.c.effort }));
+    seg.push({ du: debut, au: d, total: parts.reduce((s, p) => s + p.eff, 0), parts });
+    debut = d;
+  });
+  return { seg, pic: seg.length ? seg[0].total : 0, A };
+}
+function lddsSurplus() {
+  const v = computeView(), l = v && v.ldds; if (!l || !(l.soldeReel > 0)) return null;
+  const est = l.soldeEstime != null ? l.soldeEstime : l.soldeReel, seuil = Number(l.seuil) || 0;
+  return { est, seuil, surplus: Math.max(0, Math.round(est - seuil)) };
+}
+
+// ---------- vignettes ----------
+function voyBadge(t, c) {
+  if (t.statut === "fait") return `<span class="ids ok">🏁 fait</span>`;
+  if (c.reste <= 0.5 && c.total > 0) return `<span class="ids ok">✅ financé</span>`;
+  return `<span class="ids pr">${eur0(c.effort)}/mois</span>`;
+}
+function voyCarte(V, t) {
+  const c = voyCalc(V, t);
+  return `<div class="card vyc" data-v111="vopen" data-id="${esc(t.id)}"><div class="row" style="border:0;padding:0"><div class="ic">${esc(t.ic)}</div><div class="rt"><b>${esc(t.nom)}</b>
+    <span>${t.dep ? esc(moisAn(t.dep)) + (c.moisDep != null && t.statut !== "fait" ? " · dans " + c.moisDep + " mois" : "") : "date à fixer"} · ${t.ad} adulte${t.ad > 1 ? "s" : ""}${t.en ? " + " + t.en + " enfant" + (t.en > 1 ? "s" : "") : ""}</span></div>${voyBadge(t, c)}</div>
+    <div class="vybar"><i style="width:${c.pct}%"></i></div>
+    <div class="vynum"><span>Budget avec marge <b>${eur0(c.total)}</b></span><span>Épargné <b>${eur0(t.epargne)}</b></span><span>Reste <b>${eur0(c.reste)}</b></span></div></div>`;
+}
+
+// ---------- écran « Voyages » (Plus → ✈️) ----------
+function viewVoyages() {
+  let h = `<button class="linkbtn" data-act="goplus">← Plus</button>`;
+  if (!v111Pret()) return h + `<div class="empty">Mets à jour le script du Sheet (version 28) pour utiliser les voyages.</div>`;
+  const V = voy();
+  if (S.vy.id) { const t = V.voyages.find(x => x.id === S.vy.id); if (t) return viewVoyage(V, t); S.vy.id = null; }
+  h = `<button class="linkbtn" data-act="goplus">← Plus</button>`;
+  if (!V.voyages.length) {
+    return h + `<div class="card v19c"><div class="row" style="border:0;padding:0"><div class="ic">✈️</div><div class="rt"><b>Voyages</b><span>Budget par voyage avec marge, épargne mensuelle, calendrier de paiements, idées de sorties, pièges à éviter et dates de réservation.</span></div></div>
+      ${estG() ? `<button class="btn" style="margin-top:10px" data-v111="vseed">Charger Irlande 2027 et Maurice 2028</button><div class="hint">Préparés par Claude à partir de prix actuels (recherches web) : tout est modifiable ensuite. Crée les onglets « Voyages » et « Voyages détail » dans le Sheet.</div>
+      <button class="btn sec" data-v111="vnew">＋ Un autre voyage, à partir de zéro</button>` : `<div class="hint">Aucun voyage pour l'instant.</div>`}</div>`;
+  }
+  const plan = voyPlan(V), cap = Number(V.cfg.capacite) || 0, ld = lddsSurplus();
+  h += `<div class="card v19c vyplan"><div class="row" style="border:0;padding:0"><div class="ic">🎯</div><div class="rt"><b>Plan d'épargne voyages</b>
+    <span>${plan.seg.length ? "Chaque voyage a sa cagnotte : un nouveau voyage n'en retarde aucun autre." : "Tous les voyages sont financés 🎉"}</span></div></div>`;
+  if (plan.seg.length) {
+    h += `<div class="vyseg">` + plan.seg.map(s => `<div><b>${eur0(s.total)}/mois</b><span>${esc(moisAn(s.du))} → ${s.au.startsWith("9999") ? "…" : esc(moisAn(s.au))}</span><small>${s.parts.map(p => esc(p.ic) + " " + eur0(p.eff)).join(" · ")}</small></div>`).join("") + `</div>`;
+    h += cap > 0
+      ? (plan.pic <= cap ? `<div class="vyok">✅ Ça tient dans ta capacité de ${eur0(cap)}/mois : il reste ${eur0(cap - plan.pic)}/mois pour un nouveau voyage.</div>` : `<div class="vyko">⚠ Il manque ${eur0(plan.pic - cap)}/mois par rapport à ta capacité de ${eur0(cap)}/mois. Leviers ci-dessous, dans chaque voyage.</div>`)
+      : `<div class="hint">Indique ce que tu peux mettre de côté par mois pour voir si ça tient.</div>`;
+  }
+  h += estG() ? `<button class="linkbtn" data-v111="vcap">${cap > 0 ? "Capacité d'épargne voyages : " + eur0(cap) + "/mois · modifier" : "Définir ma capacité d'épargne par mois ›"}</button>` : "";
+  h += `</div>`;
+  if (ld && ld.surplus > 0 && estG()) h += `<div class="card v19c"><div class="row" style="border:0;padding:0"><div class="ic">💙</div><div class="rt"><b>LDDS : ${eur0(ld.surplus)} au-dessus du seuil</b><span>Solde estimé ${eur0(ld.est)}, seuil de sécurité ${eur0(ld.seuil)}. Réaffecter ce surplus aux voyages est à débattre : rien n'est fait tant que tu ne le demandes pas dans un voyage.</span></div></div></div>`;
+  h += V.voyages.map(t => voyCarte(V, t)).join("");
+  if (estG()) h += `<button class="btn" data-v111="vnew">＋ Nouveau voyage</button>` + (V.voyages.length < 2 ? `<button class="btn sec" data-v111="vseed">Recharger Irlande et Maurice (si supprimés)</button>` : "");
+  return h;
+}
+
+// ---------- écran d'un voyage ----------
+function viewVoyage(V, t) {
+  const c = voyCalc(V, t), ld = lddsSurplus();
+  let h = `<button class="linkbtn" data-v111="vlist">← Voyages</button>`;
+  h += `<div class="hero vyhero"><small>${esc(t.ic)} ${esc(t.nom)}</small><div class="big">${eur0(c.total)}</div>
+    <div class="sub">${t.dep ? esc(moisAn(t.dep)) + (t.ret ? " (" + Math.max(1, Math.round((dOf(t.ret) - dOf(t.dep)) / 86400000)) + " nuits)" : "") + " · " : ""}${t.ad} adulte${t.ad > 1 ? "s" : ""}${t.en ? " + " + t.en + " enfant" + (t.en > 1 ? "s" : "") : ""} · ${VOY_STATS.find(x => x[0] === t.statut)[1]}</div></div>`;
+  h += `<div class="card"><div class="vybar big"><i style="width:${c.pct}%"></i></div><div class="vynum"><span>Épargné <b>${eur0(t.epargne)}</b></span><span>Reste <b>${eur0(c.reste)}</b></span>
+    <span>Effort <b>${c.effort ? eur0(c.effort) + "/mois" : "aucun"}</b></span></div>
+    <div class="hint">${c.effort ? "Pour que la cagnotte couvre chaque paiement à sa date (voir le calendrier)" + (c.moisDep != null ? ", sur " + c.moisDep + " mois avant le départ." : ".") : (c.total > 0 ? "Cagnotte suffisante pour tout payer." : "")} L'épargné compte tout ce qui a été mis de côté, y compris ce qui a déjà servi à payer.</div>
+    ${estG() ? `<div class="vyact"><button class="btn" data-v111="vverse" data-id="${esc(t.id)}">＋ J'ai mis de côté…</button><button class="btn sec" data-v111="vedit" data-id="${esc(t.id)}">✏️ Voyage</button></div>` : ""}
+    ${estG() && ld && ld.surplus > 0 && c.reste > 0 ? `<button class="linkbtn" data-v111="vldds" data-id="${esc(t.id)}">💙 Compter une partie du surplus du LDDS (${eur0(ld.surplus)}) ›</button>` : ""}</div>`;
+  h += `<div class="tchips vysec">${VOY_SECS.map(([k, n]) => `<button class="cat ${S.vy.sec === k ? "on" : ""}" data-v111="vsec" data-sec="${k}">${n}</button>`).join("")}</div>`;
+  const L = V.lignes.filter(l => l.v === t.id);
+  if (S.vy.sec === "budget") h += voySecBudget(V, t, c, L);
+  else if (S.vy.sec === "cal") h += voySecCal(t, c, L);
+  else if (S.vy.sec === "idees") h += voySecFiches(t, L.filter(l => l.type === "activité" || l.type === "cuisine"), ["activité", "cuisine"]);
+  else h += voySecFiches(t, L.filter(l => l.type === "piège" || l.type === "astuce"), ["piège", "astuce"]);
+  if (t.notes) h += `<div class="hint" style="margin:10px 4px">📝 ${esc(t.notes)}</div>`;
+  return h;
+}
+function voySecBudget(V, t, c, L) {
+  const P = L.filter(l => l.type === "poste"), cats = [...new Set(P.map(l => l.cat || "Divers"))];
+  let h = "";
+  if (!P.length) h += `<div class="empty">Aucun poste de budget.</div>`;
+  cats.forEach(k => {
+    const items = P.filter(l => (l.cat || "Divers") === k);
+    h += `<h2>${esc(k)} · ${eur0(items.reduce((s, l) => s + avecMarge(l, t), 0))}</h2><div class="card" style="padding:4px 14px">` + items.map(l => `<div class="row" data-v111="vledit" data-lid="${esc(l.id)}"><div class="rt"><b>${esc(l.lib)}</b>
+      <span>${esc(l.fiab)}${pctDe(l, t) ? " · +" + pctDe(l, t) + " %" : ""}${l.date ? " · à payer vers " + esc(dateCourte(l.date)) : ""}${l.fait ? " · ✔ payé" : ""}</span></div><div class="am">${eur0(avecMarge(l, t))}</div></div>`).join("") + `</div>`;
+  });
+  h += `<div class="card vytot"><div><span>Estimations de base</span><b>${eur0(c.base)}</b></div><div><span>Marge de sécurité (${t.marge} % sur l'estimé)</span><b>+ ${eur0(c.marge)}</b></div><div class="t"><span>Budget total</span><b>${eur0(c.total)}</b></div></div>`;
+  if (estG()) h += `<button class="btn sec" data-v111="vladd" data-type="poste">＋ Ajouter un poste</button>`;
+  const lev = L.filter(l => l.type === "levier");
+  if (lev.length) {
+    const tot = lev.reduce((s, l) => s + (Number(l.mont) || 0), 0);
+    h += `<h2>✂️ Leviers pour alléger (jusqu'à ${eur0(tot)})</h2><div class="card" style="padding:4px 14px">` + lev.map(l => `<div class="row" data-v111="vledit" data-lid="${esc(l.id)}"><div class="rt"><b>${esc(l.lib)}</b><span>${esc(l.note || "")}</span></div><div class="am">${l.mont ? "− " + eur0(l.mont) : "?"}</div></div>`).join("") + `</div>
+      <div class="hint" style="margin:0 4px">Ces économies s'additionnent en partie seulement (certaines se recoupent) et ne sont pas déduites du budget : à toi de choisir, puis modifie les postes.</div>`;
+  }
+  if (estG()) h += `<button class="btn sec" data-v111="vladd" data-type="levier">＋ Ajouter un levier</button>`;
+  return h;
+}
+function voySecCal(t, c, L) {
+  const ev = [];
+  c.ech.forEach(x => ev.push({ d: x.d, k: "p", l: x.l, m: x.m, cum: x.cum, pot: x.pot }));
+  L.filter(l => l.type === "réservation").forEach(l => ev.push({ d: l.date || "9999", k: "r", l }));
+  ev.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : (a.k === "r" ? -1 : 1));
+  const aujourdhui = todayISO();
+  let h = c.effort ? `<div class="hint" style="margin:0 4px 8px">Avec ${eur0(c.effort)} mis de côté chaque mois, la cagnotte (colonne « cagnotte ») couvre chaque paiement.</div>` : "";
+  h += `<div class="card" style="padding:4px 14px">` + (ev.length ? ev.map(e => e.k === "p"
+    ? `<div class="row" data-v111="vledit" data-lid="${esc(e.l.id)}"><div class="ic">💶</div><div class="rt"><b>${esc(e.l.lib)}</b><span>${esc(dateCourte(e.d))}${e.d < aujourdhui ? " · en retard ?" : ""} · cumul ${eur0(e.cum)} · cagnotte ${eur0(e.pot)}</span></div><div class="am">${eur0(e.m)}</div></div>`
+    : `<div class="row ${e.l.fait ? "paid" : ""}"><div class="rt" data-v111="vledit" data-lid="${esc(e.l.id)}"><b>📅 ${esc(e.l.lib)}</b><span>${e.l.date ? esc(dateCourte(e.l.date)) + (e.l.date < aujourdhui && !e.l.fait ? " · à faire !" : "") : "sans date"}${e.l.note ? " · " + esc(e.l.note) : ""}</span></div>${estG() ? `<div class="tg ${e.l.fait ? "on" : ""}" data-v111="vfait" data-lid="${esc(e.l.id)}"></div>` : ""}</div>`).join("") : `<div class="empty">Rien au calendrier.</div>`) + `</div>`;
+  if (estG()) h += `<button class="btn sec" data-v111="vladd" data-type="réservation">＋ Ajouter une réservation à faire</button>`;
+  return h;
+}
+function voySecFiches(t, L, types) {
+  let h = "";
+  types.forEach(tp => {
+    const items = L.filter(l => l.type === tp);
+    const titre = { "activité": "🎯 À faire", "cuisine": "🍽 À goûter (cuisine locale)", "piège": "⚠️ Pièges à éviter", "astuce": "💡 Astuces" }[tp];
+    h += `<h2>${titre}</h2>` + (items.length ? items.map(l => `<div class="card vyf" data-v111="vledit" data-lid="${esc(l.id)}">${l.photo ? `<img loading="lazy" src="${esc(l.photo)}" alt="${esc(l.lib)}" onerror="this.style.display='none'">` : ""}
+      <b>${esc(l.lib)}</b>${l.cat ? `<span class="vycat">${esc(l.cat)}</span>` : ""}<div class="vyn">${esc(l.note)}</div>${l.lien ? `<a href="${esc(l.lien)}" target="_blank" rel="noopener" class="vysrc">source ›</a>` : ""}${l.credit ? `<small class="vycr">${esc(l.credit)}</small>` : ""}</div>`).join("") : `<div class="empty">Rien pour l'instant.</div>`);
+    if (estG()) h += `<button class="btn sec" data-v111="vladd" data-type="${tp}">＋ Ajouter</button>`;
+  });
+  return h;
+}
+
+// ---------- accueil ----------
+function voyAccueil() {
+  if (!v111Pret()) return "";
+  const V = voy(), t = V.voyages.filter(x => voyActif(x)).sort((a, b) => (a.dep || "9999") < (b.dep || "9999") ? -1 : 1)[0];
+  if (!t) return "";
+  const c = voyCalc(V, t), plan = voyPlan(V);
+  return `<div class="card v19c" data-v111="vaccueil" style="cursor:pointer"><div class="row" style="border:0;padding:0"><div class="ic">${esc(t.ic)}</div><div class="rt"><b>${esc(t.nom)}${c.moisDep != null ? " · dans " + c.moisDep + " mois" : ""}</b>
+    <span>Épargné ${eur0(t.epargne)} sur ${eur0(c.total)}${plan.pic ? " · effort voyages " + eur0(plan.pic) + "/mois" : " · financé ✅"}</span></div></div></div>`;
+}
+
+// ---------- fenêtres ----------
+const newVid = () => "v" + Date.now().toString(36) + Math.random().toString(36).slice(2, 4);
+function openTrip(id) {
+  const V = voy(), t = id ? V.voyages.find(x => x.id === id) : null;
+  S.vyEd = { id: id || null, statut: t ? t.statut : "idée" };
+  const x = t || { nom: "", ic: "✈️", dep: "", ret: "", ad: 2, en: 0, epargne: 0, marge: 20, notes: "" };
+  openSheet(`<h3>${t ? "✏️ " + esc(t.nom) : "✈️ Nouveau voyage"}</h3>
+    <label>Nom</label><input type="text" id="vtNom" value="${esc(x.nom)}" placeholder="Ex. Japon">
+    <div class="vy2"><div><label>Icône</label><input type="text" id="vtIc" value="${esc(x.ic)}"></div><div><label>Marge sur l'estimé (%)</label><input type="text" inputmode="decimal" id="vtMar" value="${esc(x.marge)}"></div></div>
+    <div class="vy2"><div><label>Départ</label><input type="date" id="vtDep" value="${esc(x.dep)}"></div><div><label>Retour</label><input type="date" id="vtRet" value="${esc(x.ret)}"></div></div>
+    <div class="vy2"><div><label>Adultes</label><input type="text" inputmode="numeric" id="vtAd" value="${esc(x.ad)}"></div><div><label>Enfants</label><input type="text" inputmode="numeric" id="vtEn" value="${esc(x.en)}"></div></div>
+    <label>Déjà épargné (€)</label><input type="text" inputmode="decimal" id="vtEp" value="${esc(x.epargne)}">
+    <div class="tchips" style="margin-top:8px">${VOY_STATS.map(([k, n]) => `<button class="cat ${S.vyEd.statut === k ? "on" : ""}" data-v111="vstat" data-k="${k}">${n}</button>`).join("")}</div>
+    <label>Notes</label><textarea id="vtNo" class="ibtx" rows="3">${esc(x.notes)}</textarea>
+    <button class="btn" data-v111="vsave">Enregistrer</button>${t ? `<button class="btn sec" data-v111="vdel">🗑 Supprimer ce voyage</button>` : ""}`);
+}
+function saveTrip() {
+  const g = k => ($("#" + k).value || "").trim(), nom = g("vtNom");
+  if (!nom) { toast("Donne un nom au voyage"); return; }
+  const p = { op: S.vyEd.id ? "tripmod" : "tripadd", vid: S.vyEd.id || newVid(), nom, ic: g("vtIc") || "✈️", dep: g("vtDep"), ret: g("vtRet"), ad: num(g("vtAd")) || 1, en: num(g("vtEn")) || 0,
+    epargne: num(g("vtEp")) || 0, marge: Math.min(100, Math.max(0, num(g("vtMar")) || 0)), statut: S.vyEd.statut, notes: $("#vtNo").value.trim() };
+  enqueue("voyage", p); closeSheet();
+  if (p.op === "tripadd") { S.vy.id = p.vid; render(); }
+  toast("✔ Voyage enregistré");
+}
+function openLigne(lid, type) {
+  const V = voy(), t = V.voyages.find(x => x.id === S.vy.id); if (!t) return;
+  const l = lid ? V.lignes.find(x => x.id === lid && x.v === t.id) : null;
+  const tp = l ? l.type : type;
+  S.vyLg = { lid: lid || null, type: tp, fiab: l ? l.fiab : "estimé", fait: l ? l.fait : false };
+  const x = l || { cat: "", lib: "", mont: "", date: "", note: "", lien: "", photoq: "" };
+  const money = tp === "poste" || tp === "levier", dated = tp === "poste" || tp === "réservation", pic = tp === "activité" || tp === "cuisine" || tp === "astuce";
+  openSheet(`<h3>${VOY_TYPE_IC[tp]} ${l ? "Modifier" : "Ajouter"} · ${tp}</h3>
+    <label>${tp === "poste" ? "Libellé" : "Titre"}</label><input type="text" id="vlLib" value="${esc(x.lib)}">
+    ${tp === "poste" || tp === "levier" || tp === "activité" ? `<label>Catégorie</label><input type="text" id="vlCat" value="${esc(x.cat)}" placeholder="Transport, Logement, Repas…">` : `<input type="hidden" id="vlCat" value="${esc(x.cat)}">`}
+    ${money ? `<label>${tp === "levier" ? "Économie possible (€)" : "Montant estimé (€)"}</label><input type="text" inputmode="decimal" id="vlMont" value="${esc(x.mont === 0 ? "" : x.mont)}">` : ""}
+    ${tp === "poste" ? `<label>Fiabilité du prix</label><div class="tchips">${VOY_FIABS.map(([k, n]) => `<button class="cat ${S.vyLg.fiab === k ? "on" : ""}" data-v111="vfiab" data-k="${k}">${n}</button>`).join("")}</div>
+      <div class="hint">Estimé : marge du voyage · Tarif vu : +5 % · Réservé : aucune marge.</div>` : ""}
+    ${dated ? `<label>${tp === "poste" ? "Date de paiement" : "À faire avant le"}</label><input type="date" id="vlDate" value="${esc(x.date)}">` : ""}
+    <label>Note</label><textarea id="vlNote" class="ibtx" rows="4">${esc(x.note)}</textarea>
+    <label>Lien (source)</label><input type="url" id="vlLien" value="${esc(x.lien)}" placeholder="https://…">
+    ${pic ? `<label>Photo : mots de recherche (facultatif)</label><input type="text" id="vlPh" value="${esc(x.photoq)}" placeholder="Ex. Trou aux Biches beach Mauritius">` : ""}
+    <button class="btn" data-v111="vlsave">Enregistrer</button>${l ? `<button class="btn sec" data-v111="vldel">🗑 Supprimer</button>` : ""}`);
+}
+function saveLigne() {
+  const V = voy(), t = V.voyages.find(x => x.id === S.vy.id), g = k => { const e = $("#" + k); return e ? (e.value || "").trim() : null; };
+  const lib = g("vlLib"); if (!lib) { toast("Écris un titre"); return; }
+  const p = { op: S.vyLg.lid ? "ligmod" : "ligadd", vid: t.id, lid: S.vyLg.lid || "l" + Date.now().toString(36) + Math.random().toString(36).slice(2, 4), type: S.vyLg.type, lib, cat: g("vlCat") || "", note: g("vlNote") || "", lien: g("vlLien") || "" };
+  if (g("vlMont") != null) p.mont = num(g("vlMont")) || 0;
+  if (S.vyLg.type === "poste") p.fiab = S.vyLg.fiab;
+  if (g("vlDate") != null) p.date = g("vlDate");
+  if (g("vlPh") != null) p.photoq = g("vlPh");
+  enqueue("voyage", p); closeSheet(); toast("✔ Enregistré");
+}
+function openVerse(id, ldds) {
+  const V = voy(), t = V.voyages.find(x => x.id === id), c = voyCalc(V, t), ld = lddsSurplus();
+  S.vyVs = { id, ldds: !!ldds };
+  const sug = ldds ? Math.min(ld ? ld.surplus : 0, Math.ceil(c.reste)) : "";
+  openSheet(`<h3>${ldds ? "💙 Surplus du LDDS" : "＋ Épargne pour " + esc(t.nom)}</h3>
+    <div class="hint">${ldds ? "Ça compte cette somme comme déjà mise de côté pour ce voyage. Pense à ne plus la compter ailleurs : le LDDS lui-même n'est pas modifié ici." : "Montant que tu viens de mettre de côté (il s'ajoute à l'épargné)."}</div>
+    <label>Montant (€)</label><input type="text" inputmode="decimal" id="vvMont" value="${esc(sug)}" placeholder="0">
+    <button class="btn" data-v111="vvsave">Ajouter</button>`);
+  setTimeout(() => { const e = $("#vvMont"); if (e) e.focus(); }, 250);
+}
+function openCap() {
+  const V = voy();
+  openSheet(`<h3>🎯 Capacité d'épargne voyages</h3><div class="hint">Combien peux-tu mettre de côté chaque mois pour l'ensemble des voyages ? Sert uniquement à dire si le plan tient.</div>
+    <label>€ par mois</label><input type="text" inputmode="decimal" id="vcMont" value="${esc(V.cfg.capacite || "")}" placeholder="Ex. 450"><button class="btn" data-v111="vcsave">Enregistrer</button>`);
+}
+
+// ---------- photos libres : quelques-unes par appel, tant qu'il en manque ----------
+async function voyPhotos() {
+  if (S.vyPh || !estG() || !configured() || !navigator.onLine) return;
+  S.vyPh = true;
+  try {
+    let prev = -1;
+    for (let i = 0; i < 25; i++) {
+      if (S.queue.some(o => o.type === "voyage")) break;
+      const r = await call("voyphotos", {}, 60000);
+      if (!r.ok || !r.v111) break;
+      S.base.v111 = r.v111; saveBase();
+      if (S.tab === "voyages") { const y = window.scrollY; render(); window.scrollTo(0, y); }
+      if (!r.v111.photosManquantes || r.v111.photosManquantes === prev) break;
+      prev = r.v111.photosManquantes;
+    }
+  } catch (e) {}
+  S.vyPh = false;
+}
+
+// ---------- événements ----------
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-v111],[data-act=govoyages]");
+  if (!t) return;
+  const d = t.dataset, a = d.v111;
+  e.stopImmediatePropagation();
+  if (d.act === "govoyages") { S.vy.id = null; S.tab = "voyages"; render(); window.scrollTo(0, 0); return; }
+  if (a === "vaccueil") { const V = voy(), x = V.voyages.filter(y => voyActif(y)).sort((p, q) => (p.dep || "9999") < (q.dep || "9999") ? -1 : 1)[0]; S.vy.id = x ? x.id : null; S.tab = "voyages"; render(); window.scrollTo(0, 0); return; }
+  if (a === "vlist") { S.vy.id = null; render(); window.scrollTo(0, 0); return; }
+  if (a === "vopen") { S.vy.id = d.id; render(); window.scrollTo(0, 0); return; }
+  if (a === "vsec") { S.vy.sec = d.sec; saveVy(); render(); return; }
+  if (a === "vseed") { enqueue("voyage", { op: "seed" }); toast("✈️ Voyages en préparation… quelques secondes"); return; }
+  if (a === "vnew") { openTrip(null); return; }
+  if (a === "vedit") { openTrip(d.id); return; }
+  if (a === "vstat") { S.vyEd.statut = d.k; document.querySelectorAll("[data-v111=vstat]").forEach(b => b.classList.toggle("on", b === t)); return; }
+  if (a === "vsave") { saveTrip(); return; }
+  if (a === "vdel") { if (!confirm("Supprimer ce voyage et toutes ses fiches ?")) return; enqueue("voyage", { op: "tripdel", vid: S.vyEd.id }); closeSheet(); S.vy.id = null; render(); toast("Voyage supprimé"); return; }
+  if (a === "vverse") { openVerse(d.id, false); return; }
+  if (a === "vldds") { openVerse(d.id, true); return; }
+  if (a === "vvsave") { const m = num($("#vvMont").value) || 0; if (m <= 0) { toast("Indique un montant"); return; } enqueue("voyage", { op: "verse", vid: S.vyVs.id, mont: m }); closeSheet(); toast("✔ " + eur0(m) + " ajoutés à l'épargne"); return; }
+  if (a === "vcap") { openCap(); return; }
+  if (a === "vcsave") { enqueue("voyage", { op: "cfg", capacite: num($("#vcMont").value) || 0 }); closeSheet(); toast("✔ Capacité enregistrée"); return; }
+  if (a === "vladd") { openLigne(null, d.type); return; }
+  if (a === "vledit") { if (estG()) openLigne(d.lid); else openLigneLecture(d.lid); return; }
+  if (a === "vfiab") { S.vyLg.fiab = d.k; document.querySelectorAll("[data-v111=vfiab]").forEach(b => b.classList.toggle("on", b === t)); return; }
+  if (a === "vlsave") { saveLigne(); return; }
+  if (a === "vldel") { if (!confirm("Supprimer cette ligne ?")) return; enqueue("voyage", { op: "ligdel", vid: S.vy.id, lid: S.vyLg.lid }); closeSheet(); toast("Supprimé"); return; }
+  if (a === "vfait") { const V = voy(), l = V.lignes.find(x => x.id === d.lid && x.v === S.vy.id); if (l) enqueue("voyage", { op: "ligmod", vid: S.vy.id, lid: l.id, fait: !l.fait }); return; }
+}, true);
+function openLigneLecture(lid) {
+  const V = voy(), l = V.lignes.find(x => x.id === lid && x.v === S.vy.id); if (!l) return;
+  openSheet(`<h3>${VOY_TYPE_IC[l.type]} ${esc(l.lib)}</h3>${l.photo ? `<img class="vyimg" src="${esc(l.photo)}" alt="">` : ""}<div class="ibfull">${esc(l.note)}</div>${l.lien ? `<a class="btn sec ibln" href="${esc(l.lien)}" target="_blank" rel="noopener">Source ›</a>` : ""}`);
 }
 
 // ---------- événements ----------

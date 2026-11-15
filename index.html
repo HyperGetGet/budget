@@ -8,45 +8,45 @@
 <title>Budget Familial</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
 <style>
-:root{--bg:#f2f5f8;--card:#fff;--ink:#14212e;--mut:#6b7c8d;--line:#e3e9ef;--acc:#0e9f6e;--bad:#d9382c;--warn:#d98a00;--blue:#2f6fed;--chip:#eef2f6;--hero1:#0f3a5a;--hero2:#0b7f58;--shadow:0 1px 3px rgba(15,40,60,.08),0 6px 18px rgba(15,40,60,.06)}
-@media (prefers-color-scheme:dark){:root{--bg:#0b141c;--card:#14212d;--ink:#e8eef4;--mut:#8da0b2;--line:#233444;--chip:#1c2d3b;--hero1:#0d2f49;--hero2:#0a6a4b;--shadow:0 1px 2px rgba(0,0,0,.4)}}
+:root{--bg:#0e1318;--card:#18212a;--ink:#eef2f5;--mut:#9daab6;--line:#26313b;--acc:#f2b33d;--onacc:#0e1318;--bad:#ff8674;--warn:#ff9f43;--blue:#6fc3ff;--chip:#222d38;--hero1:#0e1318;--hero2:#18212a;--shadow:none;--num:"Space Grotesk",Inter,system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px}
 body{padding-top:calc(56px + env(safe-area-inset-top));padding-bottom:calc(84px + env(safe-area-inset-bottom))}
-header{position:fixed;top:0;left:0;right:0;z-index:20;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 16px 0;background:var(--hero1);color:#fff;display:flex;align-items:center;justify-content:space-between}
+header{position:fixed;top:0;left:0;right:0;z-index:20;height:calc(56px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 16px 0;background:var(--bg);color:var(--ink);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
 header h1{font-size:18px;margin:0;font-weight:650;letter-spacing:.2px}
 .hr{display:flex;gap:8px;align-items:center}
-#sync{font-size:12px;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.14)}
-#sync.warn{background:#d98a00}#sync.bad{background:#b3382e}
-.ib{border:0;background:rgba(255,255,255,.14);color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer}
+#sync{font-size:12px;padding:5px 10px;border-radius:99px;background:var(--card);color:var(--mut);border:1px solid var(--line)}
+#sync.warn{background:var(--warn);color:var(--onacc);border-color:var(--warn)}#sync.bad{background:var(--bad);color:var(--onacc);border-color:var(--bad)}
+.ib{border:1px solid var(--line);background:var(--card);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer}#prof{color:var(--acc);font-family:var(--num);font-weight:700}
 main{max-width:720px;margin:0 auto;padding:14px 14px 0}
-.card{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
-.hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;border-radius:22px;padding:20px 18px;margin-bottom:12px;box-shadow:var(--shadow)}
-.hero small{opacity:.85;font-size:13px}
-.hero .big{font-size:40px;font-weight:700;margin:4px 0 2px;letter-spacing:-.5px}
-.hero .big.neg{color:#ffb4ab}
-.hero .sub{font-size:13px;opacity:.9}
-.alert{border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:14px;line-height:1.35;background:#fff3d6;color:#6b4a00}
-.alert.bad{background:#fde1de;color:#7d1d14}
-@media (prefers-color-scheme:dark){.alert{background:#3a2f12;color:#ffd98a}.alert.bad{background:#3d1a17;color:#ffb4ab}}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px}
+.hero{background:none;color:var(--ink);padding:10px 4px 6px;margin-bottom:14px}
+.hero small{color:var(--mut);font-size:13px}
+.hero .big{font-family:var(--num);font-size:50px;font-weight:700;margin:6px 0 8px;letter-spacing:-1.5px;line-height:1;color:var(--acc)}
+.hero .big.neg{color:var(--bad)}
+.hero .sub{font-size:13px;color:var(--mut)}.hero .sub b{color:var(--ink);font-weight:600}
+.alert{border-radius:14px;padding:12px 14px;margin-bottom:12px;font-size:14px;line-height:1.35;background:#3a2f12;color:#ffd98a}
+.alert.bad{background:#3d1a17;color:#ffb4ab}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .env{background:var(--card);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow)}
 .env .t{font-size:13px;color:var(--mut);display:flex;justify-content:space-between}
-.env .v{font-size:20px;font-weight:650;margin:4px 0 8px}
+.env .v{font-family:var(--num);font-size:20px;font-weight:700;margin:4px 0 8px}
 .bar{height:7px;border-radius:99px;background:var(--chip);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
 .bar i.warn{background:var(--warn)}.bar i.bad{background:var(--bad)}
 .env .s{font-size:12px;color:var(--mut);margin-top:6px}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .chip{background:var(--card);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow);flex:1;min-width:30%}
-.chip b{display:block;font-size:17px}.chip span{font-size:12px;color:var(--mut)}
-h2{font-size:15px;margin:18px 4px 8px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.chip b{display:block;font-family:var(--num);font-size:17px}.chip span{font-size:12px;color:var(--mut)}
+h2{font-size:13px;margin:20px 4px 8px;color:var(--mut);font-weight:600}
 .row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:0}
 .ic{width:38px;height:38px;border-radius:12px;background:var(--chip);display:grid;place-items:center;font-size:19px;flex:none}
 .rt{flex:1;min-width:0}.rt b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rt span{font-size:12px;color:var(--mut)}
-.am{font-weight:650;white-space:nowrap}.am.l{color:var(--blue)}
+.am{font-family:var(--num);font-weight:700;white-space:nowrap}.am.l{color:var(--blue)}
 .day{font-size:12px;color:var(--mut);margin:14px 4px 4px;text-transform:uppercase;letter-spacing:.4px}
 .pend{opacity:.65}
 .pill{font-size:11px;background:var(--chip);border-radius:99px;padding:2px 8px;color:var(--mut);margin-left:6px}
@@ -54,10 +54,10 @@ h2{font-size:15px;margin:18px 4px 8px;color:var(--mut);font-weight:600;text-tran
 .tg{width:46px;height:26px;border-radius:99px;background:var(--chip);position:relative;flex:none;border:1px solid var(--line)}
 .tg:after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:.15s}
 .tg.on{background:var(--acc)}.tg.on:after{left:22px}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#131a21;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
 nav button{flex:1;border:0;background:none;color:var(--mut);font-size:11px;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
-nav button span{font-size:21px}nav button.on{color:var(--acc);font-weight:650}
-#fab{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:25;width:58px;height:58px;border-radius:50%;border:0;background:var(--acc);color:#fff;font-size:32px;line-height:1;box-shadow:0 6px 18px rgba(14,159,110,.45);cursor:pointer}
+nav button span{display:grid;place-items:center;height:24px}nav button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}nav button.on{color:var(--acc);font-weight:600}
+#fab{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:25;width:58px;height:58px;border-radius:18px;border:0;background:var(--acc);color:var(--onacc);font-size:32px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.5);cursor:pointer}
 #ov{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:none}
 #sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--card);border-radius:24px 24px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;transform:translateY(105%);transition:transform .2s;max-width:720px;margin:0 auto}
 #sheet.open{transform:none}
@@ -66,8 +66,8 @@ label{display:block;font-size:12px;color:var(--mut);margin:12px 0 4px}
 input[type=text],input[type=date],input[type=password],input[type=url],input[type=number]{font-family:inherit;width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .cats{display:flex;flex-wrap:wrap;gap:8px}
 .cat{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:99px;padding:8px 12px;font-size:14px;cursor:pointer}
-.cat.on{background:var(--acc);border-color:var(--acc);color:#fff}
-.btn{width:100%;border:0;border-radius:14px;background:var(--acc);color:#fff;font-size:17px;font-weight:650;padding:14px;margin-top:16px;cursor:pointer}
+.cat.on{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+.btn{width:100%;border:0;border-radius:14px;background:var(--acc);color:var(--onacc);font-size:17px;font-weight:650;padding:14px;margin-top:16px;cursor:pointer}
 .btn.sec{background:var(--chip);color:var(--ink);margin-top:8px}.btn.red{background:var(--bad)}
 .line{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
 .hint{font-size:12px;color:var(--mut);margin-top:6px;line-height:1.4}
@@ -88,7 +88,7 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 .tile span{display:block;font-size:30px;margin-bottom:6px}.tile small{display:block;font-weight:400;color:var(--mut);font-size:11px;margin-top:3px}
 .tile.soon{opacity:.6}
 .amz{display:flex;gap:6px;align-items:center}.amz .col{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--mut);width:44px}
-.row.done{opacity:.55}.am small{display:block;font-size:10px;font-weight:500;color:var(--mut)}.pill.bad{background:var(--bad);color:#fff}.pill.ok{background:var(--acc);color:#fff}.pill.warn{background:var(--warn);color:#fff}
+.row.done{opacity:.55}.am small{display:block;font-size:10px;font-weight:500;color:var(--mut)}.pill.bad{background:var(--bad);color:var(--onacc)}.pill.ok{background:var(--acc);color:var(--onacc)}.pill.warn{background:var(--warn);color:#fff}
 .soc{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}.soc:last-child{border-bottom:0}
 .soc .rt b{white-space:normal}
 .empty{text-align:center;color:var(--mut);padding:30px 10px;line-height:1.5}
@@ -116,7 +116,7 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 .dayc .dl{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
 .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
 .acts button{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:99px;padding:5px 10px;font-size:12px;cursor:pointer}
-.acts button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.acts button.on{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
 .rgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .rcard{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;cursor:pointer;border:0;padding:0;text-align:left;color:var(--ink)}
 .rcard .ph{height:104px}
@@ -134,7 +134,7 @@ input[type=text],input[type=date],input[type=password],input[type=url],input[typ
 .steps li{counter-increment:st;position:relative;padding:8px 0 8px 36px;border-bottom:1px solid var(--line);font-size:15px;line-height:1.4;cursor:pointer}
 .steps li:before{content:counter(st);position:absolute;left:0;top:7px;width:26px;height:26px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font-size:13px;font-weight:700}
 .steps li.done{color:var(--mut);text-decoration:line-through}
-.steps li.done:before{content:"✓";background:var(--acc);color:#fff}
+.steps li.done:before{content:"✓";background:var(--acc);color:var(--onacc)}
 .sth{font-size:13px;font-weight:700;margin:14px 0 2px;display:flex;justify-content:space-between}
 .sth span{font-weight:500;color:var(--mut)}
 .credit{font-size:10px;color:var(--mut);margin-top:12px;line-height:1.4}
@@ -312,6 +312,10 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .brs115{margin:10px 0}
 .mini{font:inherit;font-size:14px;padding:6px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
 .ctc115 .rt span,.brs115 .rt span{display:block}.ctc115 .rt{padding-left:4px}
+
+/* accueil : prochaine paie, garde de Léo en ligne */
+.paie{display:flex;align-items:center;justify-content:space-between;gap:12px}.paie span{font-size:12px;color:var(--mut);display:block}.paie b{font-family:var(--num);font-size:20px}.paie i{font-style:normal;font-size:13px;color:var(--mut)}
+.gl{display:flex;gap:8px;margin-top:10px}.gl div{flex:1;background:var(--chip);border-radius:12px;padding:9px 10px;min-width:0}.gl div.auj{outline:1px solid var(--acc)}.gl span{display:block;font-size:12px;color:var(--mut)}.gl b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
@@ -322,11 +326,11 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 <main id="view"></main>
 <button id="fab" aria-label="Ajouter une dépense">+</button>
 <nav id="nav">
-  <button data-tab="home"><span>🏠</span>Accueil</button>
-  <button data-tab="repas"><span>🍽️</span>Repas</button>
-  <button data-tab="journal"><span>📒</span>Journal</button>
-  <button data-tab="annuels"><span>📅</span>Annuels</button>
-  <button data-tab="plus"><span>☰</span>Plus</button>
+  <button data-tab="home"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</button>
+  <button data-tab="repas"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v8a2 2 0 0 0 4 0V3M8 11v10M17 3c-2 2-3 4-3 7h3v11"/></svg></span>Repas</button>
+  <button data-tab="journal"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></span>Journal</button>
+  <button data-tab="annuels"><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>Annuels</button>
+  <button data-tab="plus"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>Plus</button>
 </nav>
 <div id="ov"></div>
 <div id="sheet"></div>
@@ -336,8 +340,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.16.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 33;       // version du script que cette appli attend
+const APP_VERSION = "1.17.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 35;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -555,6 +559,14 @@ async function flush() {
         else if (r.v111) { S.base.v111 = r.v111; saveBase(); }
         else { lourd = true; if (S.queue.length === 0 && r.state) { S.base = r.state; saveBase(); } }
         S.offline = false; S.error = "";
+        S.essais = 0;
+      } else if (r.retry) {
+        // le Sheet est occupé ou Google a eu un raté : la saisie RESTE dans la file, on réessaie plus tard (5 s, 10 s, 20 s… 60 s au plus)
+        S.essais = (S.essais || 0) + 1;
+        if (S.essais === 1 || S.essais === 6) toast(S.essais === 1 ? "⏳ Le Sheet est occupé : je réessaie tout seul" : "⏳ Le Sheet ne répond toujours pas : ta saisie est gardée, je continue d'essayer");
+        S.pause = true; clearTimeout(flush.t);
+        flush.t = setTimeout(() => { S.pause = false; flush(); }, Math.min(60000, 5000 * Math.pow(2, S.essais - 1)));
+        break;
       } else if (r.error === "clé invalide" || /code de l'appli/.test(r.error)) {
         S.error = r.error; toast("🔐 Code incorrect : vérifie les Réglages"); break;
       } else {
@@ -564,10 +576,13 @@ async function flush() {
     if (!S.queue.length && !S.error && lourd) { const r2 = await call("state"); if (r2.ok) { S.base = r2.state; saveBase(); } }
   } catch (e) { S.offline = true; }
   S.flushing = false; setSync(); if (!renduDiffere()) render();
-  if (S.queue.length && !S.error && !S.offline) setTimeout(flush, 0);
+  if (S.queue.length && !S.error && !S.offline && !S.pause) setTimeout(flush, 0);
 }
 
+// actions réservées à Gaétan (le serveur les refuse aussi au profil Mathilde)
+const RESERVE_G = ["regleajout", "reglesup", "fixemod", "contratsave", "contratsup", "contratcontrole", "annuelmod", "annuelsup", "annuelajout", "congepose", "congemod", "pontetat", "appurl"];
 function enqueue(type, payload) {
+  if (S.roleM && RESERVE_G.includes(type)) { toast("Réservé à Gaétan"); return; }
   S.queue.push({ id: uid(), type, payload, ts: Date.now() });
   saveQueue(); render(); setSync();
   flush();
@@ -933,6 +948,17 @@ function handleFormInput(e) {
   }
 }
 
+// ligne LDDS sous le solde du compte commun (le LDDS est le compte de lissage du foyer)
+function lddsLigne(v) {
+  const l = v.ldds; if (!l) return "";
+  const est = l.soldeReel > 0 ? (l.soldeEstime != null ? l.soldeEstime : l.soldeReel) : l.soldeFinMois;
+  return typeof est === "number" ? `<div class="sub" style="margin-top:4px">LDDS (lissage) <b>${eur(est)}</b></div>` : "";
+}
+// prochaine paie du profil affiché (calendrier dans src/commun/regles.js)
+function paieCard() {
+  const qui = estG() ? "G" : "M", p = reglePaieProchaine(qui, todayISO()), j = regleJours(todayISO(), p.date);
+  return `<div class="card paie"><div><span>${p.estime ? "Ta prochaine paie (date estimée)" : "Ta prochaine paie"}</span><b>${p.estime ? "vers le " : ""}${esc(longD(p.date))}</b></div><i>${j === 0 ? "aujourd'hui" : j === 1 ? "demain" : "dans " + j + " jours"}</i></div>`;
+}
 function lddsCard(v, full) {
   const l = v.ldds; if (!l) return "";
   const reel = l.soldeReel > 0;
@@ -965,13 +991,13 @@ function viewHome(v) {
   const neg = t.soldeTheorique < 0;
   let h = bandeauScript() + whoBar() + `<div class="hero" data-act="solde" style="cursor:pointer"><small>Solde théorique aujourd'hui</small>
     <div class="big ${neg ? "neg" : ""}">${eur(t.soldeTheorique)}</div>
-    <div class="sub">Plus bas prévu : ${esc(pv.plusBas)} · ${esc(pv.plusBasDate)}</div>
-    <div class="sub" style="margin-top:6px;opacity:.75">Solde réel saisi : ${eur(pv.soldeReel)} · touche pour le mettre à jour</div></div>`;
+    <div class="sub">Plus bas prévu <b>${esc(pv.plusBas)}</b> le ${esc(pv.plusBasDate)}</div>
+    <div class="sub" style="margin-top:4px">Solde réel saisi : ${eur(pv.soldeReel)} · touche pour le mettre à jour</div>${lddsLigne(v)}</div>`;
   if (pv.alerte) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + contratsAccueil115() + tachesAccueil() + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += paieCard() + tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + contratsAccueil115() + tachesAccueil() + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -1272,6 +1298,28 @@ function regleContratEtat(c, auj) {
   if (!d.connu) { return "inconnu"; }
   if (d.immediat || d.date <= auj) { return (c.controle && regleJours(c.controle, auj) < 180) ? "verifie" : "libre"; }
   return regleJours(auj, d.date) <= 60 ? "bientot" : "attente";
+}
+
+// ---------- Calendrier de paie ----------
+// Gaétan : calendrier prévisionnel des mises en paiement, colonne Île-de-France (syndicat Unité, 19/01/2026, « sous réserve de modifications des SGAMI »).
+// Une année absente reprend la dernière année connue : ajouter ici la ligne 2027 quand le calendrier sera publié.
+var PAIE_IDF = { 2026: [27, 24, 26, 27, 26, 25, 28, 26, 25, 27, 25, 22] };
+// jour de paie d'un mois (mois0 : 0 = janvier). qui = "G" (calendrier ci-dessus) ou "M" (Mathilde : « dans les 3 derniers jours du mois » → avant-dernier jour, estimé)
+function reglePaieDate(qui, annee, mois0) {
+  var p = function (x) { return ("0" + x).slice(-2); }, jour;
+  if (qui === "M") { jour = new Date(annee, mois0 + 1, 0).getDate() - 1; }
+  else {
+    var ans = Object.keys(PAIE_IDF).map(Number).sort(function (a, b) { return a - b; }), ref = ans[0];
+    ans.forEach(function (a) { if (a <= annee) { ref = a; } });
+    jour = PAIE_IDF[ref][mois0];
+  }
+  return annee + "-" + p(mois0 + 1) + "-" + p(jour);
+}
+// prochaine paie à partir du jour « auj » (le jour même compte) : { date, estime }
+function reglePaieProchaine(qui, auj) {
+  var y = +auj.slice(0, 4), m = +auj.slice(5, 7) - 1, d = reglePaieDate(qui, y, m);
+  if (d < auj) { m++; if (m > 11) { m = 0; y++; } d = reglePaieDate(qui, y, m); }
+  return { date: d, estime: qui === "M" };
 }
 // =====================================================================
 // 🍽 REPAS : menus de la semaine, fiches recettes, liste de courses partagée, fond de tiroir (v1.6.0)
@@ -2173,7 +2221,7 @@ S.cg = LS.get("bf.cg", null);            // { data, at } : copie locale du fichi
 S.gardeVue = "14";
 const estG = () => S.prof !== "M";
 function setProf(p) { S.prof = p; LS.set("bf.prof", p); majProf(); if (!estG() && S.tab === "conges") S.tab = "home"; render(); }
-function majProf() { const b = $("#prof"); if (b) { b.textContent = estG() ? "G" : "M"; b.style.background = estG() ? "#2f6fd6" : "#c2457a"; } }
+function majProf() { const b = $("#prof"); if (b) { b.textContent = estG() ? "G" : "M"; b.style.color = estG() ? "" : "#ff8fb8"; } }
 
 // ---------- bandeau « script pas à jour » ----------
 function bandeauScript() {
@@ -2255,8 +2303,8 @@ function gardeJours(d, n) {
 function quiBadge(q) { const c = QUI_COL[q] || "#8a94a6"; return `<span style="background:${c};color:#fff;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap">${esc(q || "?")}</span>`; }
 function gardeCard(d) {
   const L = gardeJours(d, 3); if (!L.length) return "";
-  return `<div class="card" data-act="gogarde" style="cursor:pointer"><div style="display:flex;justify-content:space-between"><b>👶 Garde de Léo</b><span class="linkbtn" style="padding:0">Voir le calendrier</span></div>
-    ${L.map((g, i) => `<div class="row" style="padding:6px 0"><div class="rt"><b>${i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : esc(longD(g.date))}</b><span>Mathilde : ${esc(g.mathilde)} · Gaétan : ${esc(g.gaetan)}</span></div>${quiBadge(g.qui)}</div>`).join("")}</div>`;
+  return `<div class="card" data-act="gogarde" style="cursor:pointer"><div style="display:flex;justify-content:space-between"><b>Garde de Léo</b><span class="linkbtn" style="padding:0">Calendrier</span></div>
+    <div class="gl">${L.map((g, i) => `<div class="${i === 0 ? "auj" : ""}"><span>${i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : esc(longD(g.date))}</span><b>${esc(g.qui || "?")}</b></div>`).join("")}</div></div>`;
 }
 function viewGarde() {
   const d = cgData();

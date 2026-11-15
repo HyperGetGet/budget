@@ -342,8 +342,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.19.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 40;       // version du script que cette appli attend
+const APP_VERSION = "1.19.1";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 41;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -529,7 +529,8 @@ async function refresh(silent) {
     S.loading = true; setSync();
     try {
       const r = await call("state");
-      if (r.ok) { S.base = r.state; saveBase(); S.offline = false; S.error = ""; }
+      if (r.ok) { S.base = r.state; saveBase(); S.offline = false; S.error = ""; S.occupe = false; }
+      else if (r.retry) { S.occupe = true; clearTimeout(refresh.t); refresh.t = setTimeout(() => refresh(true), 12000); }   // Sheet occupé : on réessaie dans 12 s, sans message d'erreur
       else { S.error = r.error; if (!silent) toast("⚠ " + r.error); }
     } catch (e) { S.offline = true; if (!silent) toast("Hors connexion : données du dernier chargement"); }
     S.loading = false; setSync(); if (!(silent && renduDiffere())) render();
@@ -599,7 +600,8 @@ function setSync() {
   const calme = S.loadingSilent && !S.flushing && !S.queue.length && Date.now() - S.loadT0 < 4000;   // actualisation de fond de moins de 4 s : pas d'étiquette
   if (S.flushing || (S.loading && !calme)) { el.textContent = "⟳ synchro…"; el.className = "warn"; return; }
   if (S.queue.length) { el.textContent = "⏳ " + S.queue.length + " en attente"; el.className = "warn"; return; }
-  if (S.offline) { el.textContent = "hors connexion"; el.className = "warn"; return; }
+  if (S.occupe) { el.textContent = "Sheet occupé…"; el.className = "warn"; return; }
+  if (S.offline) { el.textContent = navigator.onLine ? "pas de réponse" : "hors connexion"; el.className = "warn"; return; }
   if (S.error) { el.textContent = "⚠ erreur"; el.className = "bad"; return; }
   el.textContent = "● à jour";
 }
@@ -4289,7 +4291,7 @@ function syncInfo114() {
   const h = syncHist114(); if (!h.length) return quotaInfo115();
   const sec = ms => (ms / 1000).toFixed(1).replace(".", ",") + " s", der = h[h.length - 1], moy = h.reduce((s, x) => s + x.ms, 0) / h.length, max = Math.max(...h.map(x => x.ms));
   const srv = h.filter(x => x.srv != null);
-  return `<div class="hint">Synchronisation : dernière ${sec(der.ms)}${der.srv != null ? " (dont " + sec(der.srv) + " de calcul dans le Sheet)" : ""} · moyenne ${sec(moy)} sur les ${h.length} dernières · la plus longue ${sec(max)}${srv.length ? "" : " · la durée de calcul du Sheet apparaîtra après la mise à jour du script (version 31 ou plus)"}.</div>${quotaInfo115()}`;
+  return `<div class="hint">Synchronisation : dernière ${sec(der.ms)}${der.srv != null ? " (dont " + sec(der.srv) + " de calcul dans le Sheet)" : ""} · moyenne ${sec(moy)} sur les ${h.length} dernières · la plus longue ${sec(max)}${srv.length ? "" : " · la durée de calcul du Sheet apparaîtra après la mise à jour du script (version 31 ou plus)"}.</div>${S.base && S.base.chrono ? `<div class="hint">Détail du dernier calcul dans le Sheet : ${esc(S.base.chrono)}.</div>` : ""}${quotaInfo115()}`;
 }
 
 // ---------- 🧾 charges fixes : titre (société) + description, et fiche de modification ----------

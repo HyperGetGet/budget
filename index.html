@@ -300,6 +300,18 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .fd114{display:block;color:var(--ink);opacity:.8;font-size:14px;margin-top:1px}
 .nf114{display:block;color:#b45f06;font-size:12.5px;margin-top:2px}
 .row.fx114{cursor:pointer}
+.row.ct115{border-left:4px solid #e0a020;padding-left:10px}
+.row.ct115.soon{border-left-color:#c9d1d9}
+.ctb115{display:inline-block;margin-top:2px;padding:1px 8px;border-radius:10px;background:#fff1d6;color:#8a5a00;font-size:12.5px;font-weight:600}
+.ctb115.soon{background:#eef1f4;color:#5b6b7a}
+.cts115.libre{color:#b06a00;font-weight:600}.cts115.bientot{color:#5b6b7a}.cts115.verifie{color:#2f9e6e}.cts115.inconnu{color:#e63e11}
+.ctc115.libre{border-left:4px solid #e0a020}
+.cta115{display:flex;flex-wrap:wrap;gap:8px;padding:2px 14px 12px}
+.lnk115{font:inherit;font-size:14px;padding:6px 12px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-decoration:none;cursor:pointer}
+.lnk115.ok{background:#e3f6ec;border-color:#9fd8b8;color:#1d7a50}
+.brs115{margin:10px 0}
+.mini{font:inherit;font-size:14px;padding:6px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.ctc115 .rt span,.brs115 .rt span{display:block}.ctc115 .rt{padding-left:4px}
 </style>
 </head>
 <body>
@@ -324,7 +336,7 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.14.0";
+const APP_VERSION = "1.15.0";
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -646,6 +658,7 @@ function viewPlus() {
     T("📊", "Statistiques", "courses, prix, note A à E", "gostats") +
     T("📒", "Bilan", "mois par mois, moyennes", "gobilan") +
     T("🔁", "Prélèvements", "règles par période", "goregles") +
+    T("📄", "Contrats", "renégociation, garanties", "gocontrats") +
     (estG() ? T("📈", "Bourse", "PEA, CTO pour Léo, DCA", "gobourse") : T("📈", S.roleM ? "Ma bourse" : "Bourse de Mathilde", "PEA, CTO pour Léo", "gobourse")) +
     T("🍽️", "Menus et courses", "recettes, liste partagée", "", 'data-rr="gorepas"') +
     T("⚙️", "Réglages", "connexion, mise à jour", "goreg") + `</div>`;
@@ -942,7 +955,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += tonightCard(v, true) + accueilPerso() + accueilBourse() + recapAccueil() + tachesAccueil() + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + contratsAccueil115() + tachesAccueil() + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -1015,7 +1028,7 @@ function viewReglages() {
 function render() {
   const v = computeView();
   const el = $("#view");
-  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches", "idees", "voyages", "bilan", "regles"].includes(S.tab);
+  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches", "idees", "voyages", "bilan", "regles", "contrats"].includes(S.tab);
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
   $("#fab").style.display = (grpPlus || S.tab === "repas") ? "none" : "block";
   if (S.tab === "plus") { el.innerHTML = viewPlus(); return; }
@@ -1030,6 +1043,7 @@ function render() {
   if (S.tab === "taches") { el.innerHTML = bandeauScript() + viewTaches(); return; }
   if (S.tab === "bilan") { el.innerHTML = bandeauScript() + viewBilan(); return; }
   if (S.tab === "regles") { el.innerHTML = bandeauScript() + viewRegles(); return; }
+  if (S.tab === "contrats") { el.innerHTML = bandeauScript() + viewContrats(); return; }
   if (S.tab === "idees") { el.innerHTML = bandeauScript() + viewIdees(); ideesVues(); return; }
   if (S.tab === "voyages") { el.innerHTML = bandeauScript() + viewVoyages(); if (v111Pret() && voy().photosManquantes) setTimeout(voyPhotos, 400); return; }
   el.innerHTML = S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : S.tab === "amazon" ? viewAmazon(v) : S.tab === "soins" ? viewSoins(v) : viewAnnuels(v);
@@ -2114,7 +2128,7 @@ setInterval(pollCourses, 8000);
 // =====================================================================
 // v1.7.0 : PROFILS (Gaétan = tout, Mathilde = sa version), CONGÉS, GARDE DE LÉO, PONTS, JOUR DES COURSES
 // =====================================================================
-const SCRIPT_ATTENDU = 31;
+const SCRIPT_ATTENDU = 32;
 S.prof = LS.get("bf.prof", "G");
 S.cg = LS.get("bf.cg", null);            // { data, at } : copie locale du fichier congés (lu par le script, cache 10 min)
 S.gardeVue = "14";
@@ -3062,17 +3076,20 @@ function openPlacard() {
 function tiroirTexteCarte() {
   return `<div class="card"><b>✍️ Dis ce que tu as</b><div class="hint">En vrac, au clavier ou avec le micro du clavier : « 2 poireaux, des lardons, un reste de crème, du riz ». Gemini en tire une recette dans tes contraintes.</div>
     <textarea id="rTx" rows="3" style="width:100%;margin-top:8px;border-radius:12px;padding:10px;font:inherit;background:var(--card2,transparent);color:inherit;border:1px solid var(--line,#8884)">${esc(S.rp.texte || "")}</textarea>
-    <button class="btn" data-v19="idee2">💡 Une recette avec ça</button></div>`;
+    <button class="btn" data-v19="idee2">💡 Une recette avec ça</button></div>
+    <div class="card"><b>📥 Importer une recette</b><div class="hint">Colle le lien d'une recette (ou son texte). Gemini la lit et la range comme tes autres recettes, à 4 portions.</div>
+    <textarea id="rImp" rows="2" placeholder="https://… ou texte de la recette" style="width:100%;margin-top:8px;border-radius:12px;padding:10px;font:inherit;background:var(--card2,transparent);color:inherit;border:1px solid var(--line,#8884)"></textarea>
+    <button class="btn" data-v19="import">📥 Importer</button></div>`;
 }
-async function idee2() {
-  const v = computeView(), g = reg(v), tx = $("#rTx"), texte = (tx ? tx.value : S.rp.texte || "").trim();
-  S.rp.texte = texte;
+async function idee2(source) {
+  const v = computeView(), g = reg(v), tx = $("#rTx"), texte = source ? "" : (tx ? tx.value : S.rp.texte || "").trim();
+  if (!source) S.rp.texte = texte;
   if (!navigator.onLine) { toast("Il faut du réseau pour demander à Gemini"); return; }
-  if (!texte && !(S.rp.tiroir || []).length) { toast("Écris ce que tu as, ou touche des ingrédients"); return; }
+  if (!source && !texte && !(S.rp.tiroir || []).length) { toast("Écris ce que tu as, ou touche des ingrédients"); return; }
   openSheet(`<h3>💡 Gemini réfléchit…</h3><div class="spin"></div>`);
   try {
     const produits = (R(v).produits || []).filter(p => !estMaison(p)).map(p => ({ n: p.n, u: p.u || "" }));
-    const r = await call("repasidee", { v: 2, texte, ingredients: S.rp.tiroir || [], prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, heure: g.heure, produits, placard: v19Pret() ? placardEnStock(v) : [] }, 90000);
+    const r = await call("repasidee", { v: 2, source: source || "", texte, ingredients: source ? [] : S.rp.tiroir || [], prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, heure: g.heure, produits, placard: v19Pret() ? placardEnStock(v) : [] }, 90000);
     if (!r.ok) throw new Error(r.error);
     const x = r.idee, h0 = minOf(g.heure);
     S.rf = { idee: x };
@@ -3081,8 +3098,8 @@ async function idee2() {
       <div class="sth">🔪 Préparation</div><ol class="steps">${x.prep.map((s, k) => `<li data-rstep="ia_p${k}">${esc(s)}</li>`).join("")}</ol>
       <div class="sth">⚡ Cuisson</div><ol class="steps" style="counter-reset:st ${x.prep.length}">${x.cuis.map((s, k) => `<li data-rstep="ia_c${k}">${esc(s)}</li>`).join("")}</ol>
       ${x.astuce ? `<div class="alert" style="margin-top:12px">💡 ${esc(x.astuce)}</div>` : ""}
-      <button class="btn" data-v19="garder">⭐ Elle est bien : la garder dans mes recettes</button><button class="btn sec" data-v19="idee2">🔁 Une autre idée</button>
-      <div class="credit">Recette proposée par Gemini : vérifie les cuissons. Gardée, elle pourra être proposée dans les menus et ses ingrédients iront dans la liste de courses.</div>`);
+      <button class="btn" data-v19="garder">⭐ Elle est bien : la garder dans mes recettes</button>${source ? "" : `<button class="btn sec" data-v19="idee2">🔁 Une autre idée</button>`}
+      <div class="credit">${source ? "Recette lue par Gemini à partir de ton lien ou de ton texte : compare avec l'original (quantités, cuissons)." : "Recette proposée par Gemini : vérifie les cuissons."} Gardée, elle pourra être proposée dans les menus et ses ingrédients iront dans la liste de courses.</div>`);
   } catch (e) { closeSheet(); toast("⚠ " + (e.name === "AbortError" ? "Gemini met trop de temps" : e.message)); }
 }
 function garderIdee() {
@@ -3153,6 +3170,7 @@ document.addEventListener("click", e => {
     closeSheet(); toast(L.length ? "🛒 " + L.length + " article(s) ajouté(s) à la liste" : "Déjà dans la liste"); return;
   }
   if (a === "idee2") { idee2(); return; }
+  if (a === "import") { const t = (($("#rImp") || {}).value || "").trim(); if (t.length < 8) { toast("Colle un lien ou le texte d'une recette"); return; } idee2(t.slice(0, 8000)); return; }
   if (a === "garder") { garderIdee(); return; }
   if (a === "mansave") { saveManuel(); return; }
 }, true);
@@ -4144,6 +4162,7 @@ refresh = async function (silent) {
     if (!S.offline && !S.error && S.base) {
       const h = syncHist114(); h.push({ t: Date.now(), ms: Math.round(performance.now() - t0), srv: typeof S.base.ms === "number" ? S.base.ms : null, calme });
       LS.set("bf.sms", h.slice(-20));
+      try { communiquerAdresse115(); } catch (e115) {}
     }
   }
 };
@@ -4153,10 +4172,10 @@ setSync = function () {
   setSync0114();
 };
 function syncInfo114() {
-  const h = syncHist114(); if (!h.length) return "";
+  const h = syncHist114(); if (!h.length) return quotaInfo115();
   const sec = ms => (ms / 1000).toFixed(1).replace(".", ",") + " s", der = h[h.length - 1], moy = h.reduce((s, x) => s + x.ms, 0) / h.length, max = Math.max(...h.map(x => x.ms));
   const srv = h.filter(x => x.srv != null);
-  return `<div class="hint">Synchronisation : dernière ${sec(der.ms)}${der.srv != null ? " (dont " + sec(der.srv) + " de calcul dans le Sheet)" : ""} · moyenne ${sec(moy)} sur les ${h.length} dernières · la plus longue ${sec(max)}${srv.length ? "" : " · la durée de calcul du Sheet apparaîtra après la mise à jour du script (version 31)"}.</div>`;
+  return `<div class="hint">Synchronisation : dernière ${sec(der.ms)}${der.srv != null ? " (dont " + sec(der.srv) + " de calcul dans le Sheet)" : ""} · moyenne ${sec(moy)} sur les ${h.length} dernières · la plus longue ${sec(max)}${srv.length ? "" : " · la durée de calcul du Sheet apparaîtra après la mise à jour du script (version 31 ou plus)"}.</div>${quotaInfo115()}`;
 }
 
 // ---------- 🧾 charges fixes : titre (société) + description, et fiche de modification ----------
@@ -4190,8 +4209,8 @@ function noteFixe114(f) {
   return notes.length ? `<span class="nf114">📝 ${esc(notes.join(" · "))}</span>` : "";
 }
 function fixeRow114(f, i) {
-  const td = titreDesc114(f.lib);
-  return `<div class="row fx114" data-fx="${i}"><div class="rt"><b>${esc(td.titre)}</b>${td.desc ? `<span class="fd114">${esc(td.desc)}</span>` : ""}<span>le ${jourFixe114(f)}${dimFixe114(f)}</span>${noteFixe114(f)}</div><div class="am">${eur(f.mont)}</div></div>`;
+  const td = titreDesc114(f.lib), ct = badgeContrat115(f);
+  return `<div class="row fx114${ct.cls}" data-fx="${i}"><div class="rt"><b>${esc(td.titre)}</b>${td.desc ? `<span class="fd114">${esc(td.desc)}</span>` : ""}<span>le ${jourFixe114(f)}${dimFixe114(f)}</span>${noteFixe114(f)}${ct.html}</div><div class="am">${eur(f.mont)}</div></div>`;
 }
 let fx114 = null;
 function openFixe114(f) {
@@ -4203,7 +4222,8 @@ function openFixe114(f) {
     <label>Ce changement vaut…</label><select id="fxP"><option value="mois">pour ce mois seulement (${moisCourt114(ym)})</option><option value="depuis">à partir de ce mois (jusqu'à nouvel ordre)</option></select>
     <label>Note (facultatif)</label><input type="text" id="fxN" autocomplete="off" placeholder="ex. en réalité 53 € (636 € ÷ 12)">
     <div class="hint">Le titre et la description sont renommés dans le Sheet. Le montant et le jour passent par une règle de prélèvement (visible dans Plus › Prélèvements) : le Prévisionnel suit tout seul.</div>
-    <button class="btn" id="fxSave">Enregistrer</button>`);
+    <button class="btn" id="fxSave">Enregistrer</button>
+    <button class="btn sec" id="fxCt" style="margin-top:8px">📄 Fiche contrat</button>`);
 }
 document.addEventListener("click", e => {
   const r = e.target.closest("[data-fx],#fxSave"); if (!r) return;
@@ -4222,6 +4242,151 @@ document.addEventListener("click", e => {
   if (change || note) enqueue("regleajout", { mot, du: ym, au: portee === "mois" ? ym : "", mont: String(mont), jour: String(jour), note });
   closeSheet(); toast("Enregistré");
 });
+
+// ===================== v1.15.0 : 📄 contrats, 📉 bourse sous le PRU, adresse de l'appli =====================
+const TYPES115 = { habitation: ["🏠", "Habitation"], auto: ["🚗", "Auto"], sante: ["🩺", "Santé / mutuelle"], internet: ["📶", "Internet / mobile"], energie: ["⚡", "Énergie"], abonnement: ["🎞", "Abonnement"], autre: ["📄", "Autre"] };
+const ASSUR115 = ["habitation", "auto", "sante"];
+const RECHERCHE115 = { habitation: "comparateur assurance habitation", auto: "comparateur assurance auto", sante: "comparateur mutuelle santé", internet: "comparateur offres internet box mobile", energie: "comparateur offres électricité gaz" };
+const fr115 = iso => iso ? iso.slice(8, 10) + "/" + iso.slice(5, 7) + "/" + iso.slice(0, 4) : "";
+const jours115 = (a, b) => Math.round((Date.UTC(+b.slice(0, 4), +b.slice(5, 7) - 1, +b.slice(8, 10)) - Date.UTC(+a.slice(0, 4), +a.slice(5, 7) - 1, +a.slice(8, 10))) / 86400000);
+function plusMois115(iso, n) {
+  let y = +iso.slice(0, 4), m = +iso.slice(5, 7) - 1 + n; const d = +iso.slice(8, 10);
+  y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+  return y + "-" + pad(m + 1) + "-" + pad(Math.min(d, new Date(y, m + 1, 0).getDate()));
+}
+const nb115 = v => (v === "" || v == null || !isFinite(Number(String(v).replace(",", ".")))) ? null : Number(String(v).replace(",", "."));
+
+// contrats : état du Sheet + opérations en attente (affichage immédiat)
+function contratsVue115() {
+  const L = ((S.base && S.base.v115 && S.base.v115.contrats) || []).map(c => Object.assign({}, c));
+  S.queue.forEach(op => {
+    const p = op.payload || {};
+    if (op.type === "contratsave") {
+      const o = { cid: p.cid || "tmp" + op.id, mot: p.mot, type: p.type, four: p.four || "", souscrit: p.souscrit || "", echeance: p.echeance || "", depuis: p.depuis || "", reel: nb115(p.reel), lisse: nb115(p.lisse), lien: p.lien || "", note: p.note || "", controle: "" };
+      const i = p.cid ? L.findIndex(x => x.cid === p.cid) : -1;
+      if (i >= 0) { o.controle = L[i].controle; L[i] = o; } else L.push(o);
+    } else if (op.type === "contratsup") { const i = L.findIndex(x => x.cid === p.cid); if (i >= 0) L.splice(i, 1); }
+    else if (op.type === "contratcontrole") { const x = L.find(y => y.cid === p.cid); if (x) x.controle = p.efface ? "" : todayISO(); }
+  });
+  return L;
+}
+// quand peut-on renégocier ? (règle indicative : assurances = après 1 an de contrat, résiliation à tout moment ensuite ; le reste = à la fin d'un éventuel engagement, sinon tout de suite)
+function depuis115(c) {
+  if (c.depuis) return { date: c.depuis, connu: true, manuel: true };
+  if (ASSUR115.includes(c.type)) return c.souscrit ? { date: plusMois115(c.souscrit, 12), connu: true } : { date: "", connu: false };
+  return c.echeance ? { date: c.echeance, connu: true } : { date: "", connu: true, immediat: true };
+}
+function statut115(c) {
+  const auj = todayISO(), d = depuis115(c), recent = c.controle && jours115(c.controle, auj) < 180;
+  if (!d.connu) return { k: "inconnu", txt: "Date de souscription à renseigner" };
+  const libre = d.immediat || d.date <= auj;
+  if (libre) return recent ? { k: "verifie", txt: `Vérifié le ${fr115(c.controle)} · à revoir vers ${fr115(plusMois115(c.controle, 6))}` } : { k: "libre", txt: d.immediat ? "Sans engagement : tu peux renégocier ou changer quand tu veux" : `Renégociable depuis le ${fr115(d.date)}` };
+  const j = jours115(auj, d.date);
+  return { k: j <= 60 ? "bientot" : "attente", txt: `Renégociable à partir du ${fr115(d.date)} (dans ${j} jour${j > 1 ? "s" : ""})` };
+}
+const contratDeFixe115 = (f, L) => (L || contratsVue115()).find(c => norm114(sansTag114(f.lib)).indexOf(norm114(c.mot)) >= 0) || null;
+function badgeContrat115(f) {
+  const c = contratDeFixe115(f); if (!c) return { cls: "", html: "" };
+  const s = statut115(c);
+  if (s.k === "libre") return { cls: " ct115", html: `<span class="ctb115">🔄 renégociable</span>` };
+  if (s.k === "bientot") return { cls: " ct115 soon", html: `<span class="ctb115 soon">⏳ bientôt renégociable</span>` };
+  return { cls: "", html: "" };
+}
+
+function viewContrats() {
+  const L = contratsVue115(), fixes = fixesVue114().filter(f => f.mont > 0), ordre = { libre: 0, bientot: 1, inconnu: 2, attente: 3, verifie: 4 };
+  let h = `<button class="linkbtn" data-act="goplus">← Plus</button><h2>📄 Contrats</h2>`;
+  if (!v115Pret()) return h + `<div class="empty">Mets d'abord le script à jour (version 32) : Réglages.</div>`;
+  h += `<div class="hint" style="margin:0 4px 10px">Un contrat par charge fixe : souscription, prix, garanties (lien vers ton Drive). Je te montre ceux qu'on peut renégocier. Règle indicative : pour l'habitation, l'auto et la santé, la résiliation est possible à tout moment après 1 an de contrat ; pour le reste, à la fin de l'engagement s'il y en a un. À vérifier sur ton contrat : ce n'est pas un avis juridique.</div>`;
+  const cartes = L.map(c => ({ c, s: statut115(c) })).sort((a, b) => ordre[a.s.k] - ordre[b.s.k] || a.c.mot.localeCompare(b.c.mot, "fr"));
+  h += cartes.length ? cartes.map(({ c, s }) => {
+    const T = TYPES115[c.type] || TYPES115.autre, prix = c.reel != null ? eur(c.reel) + "/mois" + (c.lisse != null && Math.abs(c.lisse - c.reel) > .005 ? " · lissé " + eur(c.lisse) : "") + " · " + eur((c.lisse != null ? c.lisse : c.reel) * 12) + "/an" : "";
+    const q = RECHERCHE115[c.type] || ("alternative " + (c.four || c.mot));
+    return `<div class="card ctc115 ${s.k}"><div class="row" style="border:0"><div class="ic">${T[0]}</div><div class="rt"><b>${esc(c.four || c.mot)}</b><span class="cts115 ${s.k}">${esc(s.txt)}</span>${prix ? `<span>${esc(prix)}</span>` : ""}${c.souscrit ? `<span>Souscrit le ${fr115(c.souscrit)}${c.echeance ? " · échéance " + fr115(c.echeance) : ""}</span>` : ""}${c.note ? `<span class="nf114">📝 ${esc(c.note)}</span>` : ""}</div><button class="mini" data-ct="edit" data-cid="${esc(c.cid)}" aria-label="Modifier">✏️</button></div>
+      <div class="cta115">${c.lien ? `<a class="lnk115" href="${esc(c.lien)}" target="_blank" rel="noopener">📎 Garanties</a>` : ""}<a class="lnk115" href="https://www.google.com/search?q=${encodeURIComponent(q)}" target="_blank" rel="noopener">🔎 Comparer</a><button class="lnk115" data-ct="copy" data-cid="${esc(c.cid)}">📋 Résumé</button>${s.k === "libre" || s.k === "bientot" || s.k === "inconnu" ? `<button class="lnk115 ok" data-ct="ctrl" data-cid="${esc(c.cid)}">✔ Contrôlé</button>` : (s.k === "verifie" ? `<button class="lnk115" data-ct="unctrl" data-cid="${esc(c.cid)}">↩ À revoir</button>` : "")}</div></div>`;
+  }).join("") : `<div class="empty">Aucun contrat pour l'instant.</div>`;
+  h += `<button class="btn" data-ct="add">＋ Ajouter un contrat</button>`;
+  const sans = fixes.filter(f => !contratDeFixe115(f, L));
+  if (sans.length) h += `<h2>Charges fixes sans contrat</h2><div class="card">${sans.map(f => { const td = titreDesc114(f.lib); return `<div class="row"><div class="rt"><b>${esc(td.titre)}</b><span>${esc(td.desc)}${td.desc ? " · " : ""}${eur(f.mont)}</span></div><button class="mini" data-ct="fiche" data-flib="${esc(f.lib)}">＋ Fiche</button></div>`; }).join("")}</div>`;
+  return h;
+}
+function v115Pret() { return !!(S.base && S.base.v115); }
+function contratsAccueil115() {
+  if (!v115Pret()) return "";
+  const L = contratsVue115().map(c => ({ c, s: statut115(c) })).filter(x => x.s.k === "libre" || x.s.k === "bientot");
+  if (!L.length) return "";
+  const libres = L.filter(x => x.s.k === "libre").length;
+  return `<h2>📄 Contrats à revoir${libres ? " · " + libres : ""}</h2><div class="card" data-act="gocontrats" style="cursor:pointer">${L.slice(0, 3).map(({ c, s }) => `<div class="row"><div class="ic">${(TYPES115[c.type] || TYPES115.autre)[0]}</div><div class="rt"><b>${esc(c.four || c.mot)}</b><span class="cts115 ${s.k}">${esc(s.txt)}</span></div>${c.reel != null ? `<div class="am">${eur(c.reel)}</div>` : ""}</div>`).join("")}${L.length > 3 ? `<div class="hint" style="margin:6px 12px">+ ${L.length - 3} autre(s)…</div>` : ""}</div>`;
+}
+function openContrat115(c, pre) {
+  const fx = fixesVue114().filter(f => f.mont > 0), p = c || pre || {}, t = p.type || "autre";
+  openSheet(`<h3>📄 ${c ? "Contrat" : "Nouveau contrat"}</h3>
+    <input type="hidden" id="ctC" value="${esc(c ? c.cid : "")}">
+    <label>Charge fixe concernée</label><select id="ctL"><option value="">Choisir dans la liste…</option>${fx.map(f => `<option value="${esc(motFixe114(f.lib, fx))}">${esc(sansTag114(f.lib))}</option>`).join("")}</select>
+    <label>Mot-clé du libellé</label><input type="text" id="ctM" autocomplete="off" value="${esc(p.mot || "")}" placeholder="ex. GMF">
+    <div class="vy2"><div><label>Type</label><select id="ctT">${Object.keys(TYPES115).map(k => `<option value="${k}"${k === t ? " selected" : ""}>${TYPES115[k][0]} ${TYPES115[k][1]}</option>`).join("")}</select></div><div><label>Fournisseur</label><input type="text" id="ctF" autocomplete="off" value="${esc(p.four || "")}" placeholder="ex. GMF"></div></div>
+    <div class="vy2"><div><label>Souscrit le</label><input type="date" id="ctS" value="${esc(p.souscrit || "")}"></div><div><label>Fin d'engagement / échéance</label><input type="date" id="ctE" value="${esc(p.echeance || "")}"></div></div>
+    <label>Renégociable à partir du (facultatif)</label><input type="date" id="ctD" value="${esc(p.depuis || "")}">
+    <div class="hint">Laisse vide : je calcule (assurances : 1 an après la souscription ; autres : fin d'engagement, sinon tout de suite).</div>
+    <div class="vy2"><div><label>Prix réel (€/mois)</label><input type="text" inputmode="decimal" id="ctP" autocomplete="off" value="${p.reel != null && p.reel !== "" ? String(p.reel).replace(".", ",") : ""}"></div><div><label>Prix lissé (€/mois)</label><input type="text" inputmode="decimal" id="ctQ" autocomplete="off" value="${p.lisse != null && p.lisse !== "" ? String(p.lisse).replace(".", ",") : ""}" placeholder="ex. 53"></div></div>
+    <label>Garanties (lien Drive)</label><input type="url" id="ctU" autocomplete="off" value="${esc(p.lien || "")}" placeholder="https://drive.google.com/…">
+    <label>Note (facultatif)</label><input type="text" id="ctN" autocomplete="off" value="${esc(p.note || "")}">
+    <button class="btn" id="ctSave">Enregistrer</button>${c ? `<button class="btn sec" id="ctDel" style="margin-top:8px;color:#e63e11">Supprimer ce contrat</button>` : ""}`);
+}
+function resumeContrat115(c) {
+  const T = TYPES115[c.type] || TYPES115.autre, d = depuis115(c);
+  return [`Contrat ${T[1].toLowerCase()} : ${c.four || c.mot}`, c.reel != null ? `Prix actuel : ${String(c.reel).replace(".", ",")} €/mois` : "", c.souscrit ? `Souscrit le ${fr115(c.souscrit)}` : "", d.date ? `Renégociable depuis le ${fr115(d.date)}` : "", c.lien ? `Garanties : ${c.lien}` : "", c.note ? `Note : ${c.note}` : ""].filter(Boolean).join("\n");
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-act=gocontrats]"); if (a) { S.tab = "contrats"; render(); window.scrollTo(0, 0); return; }
+  const t = e.target.closest("[data-ct],#ctSave,#ctDel,#fxCt"); if (!t) return;
+  const L = contratsVue115(), cid = t.dataset && t.dataset.cid, c = cid ? L.find(x => x.cid === cid) : null;
+  if (t.id === "fxCt") { const f = fx114; if (!f) return; const ex = contratDeFixe115(f, L); closeSheet(); if (ex) openContrat115(ex); else { const fx = fixesVue114().filter(x => x.mont > 0); openContrat115(null, { mot: motFixe114(f.lib, fx), reel: f.mont, four: titreDesc114(f.lib).titre }); } return; }
+  if (t.dataset.ct === "add") { openContrat115(null); return; }
+  if (t.dataset.ct === "fiche") { const f = fixesVue114().find(x => x.lib === t.dataset.flib); if (f) { const fx = fixesVue114().filter(x => x.mont > 0); openContrat115(null, { mot: motFixe114(f.lib, fx), reel: f.mont, four: titreDesc114(f.lib).titre }); } return; }
+  if (t.dataset.ct === "edit" && c) { openContrat115(c); return; }
+  if (t.dataset.ct === "ctrl" && c) { enqueue("contratcontrole", { cid: c.cid }); toast("Noté : contrôlé aujourd'hui"); return; }
+  if (t.dataset.ct === "unctrl" && c) { enqueue("contratcontrole", { cid: c.cid, efface: true }); return; }
+  if (t.dataset.ct === "copy" && c) { const txt = resumeContrat115(c); (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("Résumé copié"), () => toast("Copie impossible sur cet appareil")); return; }
+  if (t.id === "ctDel") { const id = $("#ctC").value; if (id && confirm("Supprimer ce contrat ?")) { enqueue("contratsup", { cid: id }); closeSheet(); toast("Contrat supprimé"); } return; }
+  if (t.id === "ctSave") {
+    const mot = $("#ctM").value.trim(), reel = $("#ctP").value.trim(), lisse = $("#ctQ").value.trim(), lien = $("#ctU").value.trim(), s = $("#ctS").value, ech = $("#ctE").value, dep = $("#ctD").value;
+    if (!mot) { toast("Quelle charge fixe ?"); return; }
+    if (reel !== "" && nb115(reel) == null) { toast("Prix réel invalide"); return; }
+    if (lisse !== "" && nb115(lisse) == null) { toast("Prix lissé invalide"); return; }
+    if (lien !== "" && !/^https?:\/\//i.test(lien)) { toast("Le lien doit commencer par http"); return; }
+    if (s && ech && ech < s) { toast("L'échéance est avant la souscription"); return; }
+    enqueue("contratsave", { cid: $("#ctC").value, mot, type: $("#ctT").value, four: $("#ctF").value.trim(), souscrit: s, echeance: ech, depuis: dep, reel: String(reel).replace(",", "."), lisse: String(lisse).replace(",", "."), lien, note: $("#ctN").value.trim() });
+    closeSheet(); toast("Contrat enregistré");
+  }
+});
+document.addEventListener("change", e => {
+  if (e.target && e.target.id === "ctL" && e.target.value) { const m = $("#ctM"); if (m) m.value = e.target.value; const f = $("#ctF"); if (f && !f.value) f.value = e.target.value.split(" - ")[0]; }
+});
+
+// ---------- 📉 bourse : un titre est passé sous ton PRU ----------
+function alerteBourse115() {
+  if (!estG()) return "";
+  const d = S.bo && S.bo.data; if (!d || !d.positions) return "";
+  const bas = d.positions.filter(p => p.parts > 0 && p.pru > 0 && p.cours > 0 && p.cours < p.pru);
+  if (!bas.length) return "";
+  return `<div class="card brs115"><div class="row" style="border:0;padding:0"><div class="ic">📉</div><div class="rt"><b>Sous ton PRU</b>${bas.map(p => `<span>${esc(p.titre)} (${esc(p.compte)}) : cours ${eur(p.cours)} · PRU ${eur(p.pru)} · ${String(Math.round((p.cours / p.pru - 1) * 1000) / 10).replace(".", ",")} %</span>`).join("")}<span>Un investissement bonus est possible depuis l'écran Bourse.</span></div></div></div>`;
+}
+
+// ---------- 🔗 adresse de l'appli (pour le lien de Mathilde, dans le menu du Sheet) et quotas ----------
+function communiquerAdresse115() {
+  if (S.roleM || S.offline || !S.base || !S.base.v115) return;
+  const u = location.origin + location.pathname.replace(/[^/]*$/, "");
+  if (!/^https:\/\//.test(u)) return;
+  const cle = u + "|" + S.cfg.url; if (LS.get("bf.appurl", "") === cle) return;
+  LS.set("bf.appurl", cle); enqueue("appurl", { url: u });
+}
+function quotaInfo115() {
+  const V = S.base && S.base.v115; if (!V) return "";
+  const Q = V.quota, sec = ms => (ms / 1000).toFixed(0) + " s";
+  return (Q && Q.jour ? `<div class="hint">Aujourd'hui côté Sheet : ${Q.n} actualisation${Q.n > 1 ? "s" : ""}, ${sec(Q.ms)} de calcul cumulé${Q.hist && Q.hist.length ? " · hier : " + sec(Q.hist[Q.hist.length - 1].ms) : ""}.</div>` : "")
+    + `<div class="hint">🔔 Notifications (contrats à revoir, bourse sous le PRU) : ${V.ntfy ? "actives" : "désactivées · dans le Sheet, menu « 🔔 Notifications (ntfy) »"}.</div>`;
+}
 
 // ---------- événements ----------
 document.addEventListener("click", e => {

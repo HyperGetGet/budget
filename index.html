@@ -318,7 +318,6 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .gl{display:flex;gap:8px;margin-top:10px}.gl div{flex:1;background:var(--chip);border-radius:12px;padding:9px 10px;min-width:0}.gl div.auj{outline:1px solid var(--acc)}.gl span{display:block;font-size:12px;color:var(--mut)}.gl b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pagrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.pagrid label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:4px}.pagrid input{width:100%;text-align:center;font-family:var(--num);font-size:17px;padding:10px 4px}
 .obj .objv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:8px}.obj .objv span{font-size:13px;color:var(--mut)}.obj .objv b{font-family:var(--num);font-size:26px;color:var(--acc)}.obj .objl{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--mut);margin-top:4px}.obj .objl b{color:var(--ink);font-family:var(--num)}
-.afs{background:var(--card);border-radius:14px;margin-bottom:12px;overflow:hidden}.af{border-bottom:1px solid var(--line)}.af:last-child{border-bottom:0}.af summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;min-height:48px}.af summary::-webkit-details-marker{display:none}.af summary:after{content:"›";color:var(--mut);font-size:20px;transition:transform .15s}.af[open] summary:after{transform:rotate(90deg)}.af>.card,.af>h2+.card{margin:0;border-radius:0;background:none;padding-top:0}.af>h2{display:none}
 </style>
 </head>
 <body>
@@ -343,8 +342,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.18.2";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 39;       // version du script que cette appli attend
+const APP_VERSION = "1.19.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 40;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -556,6 +555,7 @@ async function flush() {
         S.queue.shift(); saveQueue();
         if (r.courses) { fusionCourses(r.courses); }
         else if (r.conges) { S.cg = { data: r.conges, at: Date.now() }; LS.set("bf.cg", S.cg); }
+        else if (r.gtasks) { S.gt = { data: r.gtasks, at: Date.now() }; }
         else if (r.bourse) { S.bo = { data: r.bourse, at: Date.now() }; LS.set("bf.bo", S.bo); }
         else if (r.v19) { S.base.v19 = Object.assign({}, S.base.v19, r.v19); saveBase(); }
         else if (r.v110) { S.base.v110 = Object.assign({}, S.base.v110, r.v110); saveBase(); }
@@ -583,7 +583,7 @@ async function flush() {
 }
 
 // actions réservées à Gaétan (le serveur les refuse aussi au profil Mathilde)
-const RESERVE_G = ["regleajout", "reglesup", "fixemod", "contratsave", "contratsup", "contratcontrole", "annuelmod", "annuelsup", "annuelajout", "congepose", "congemod", "pontetat", "appurl"];
+const RESERVE_G = ["regleajout", "reglesup", "fixemod", "contratsave", "contratsup", "contratcontrole", "annuelmod", "annuelsup", "annuelajout", "congepose", "congemod", "pontetat", "appurl", "gtvue"];
 function enqueue(type, payload) {
   if (S.roleM && RESERVE_G.includes(type)) { toast("Réservé à Gaétan"); return; }
   S.queue.push({ id: uid(), type, payload, ts: Date.now() });
@@ -663,8 +663,9 @@ function payerChips(id, cur, attr) {
 }
 function viewPerso(v) {
   const P = (v.perso || {})[S.who];
-  if (!P) return whoBar() + `<div class="empty">L'onglet ${esc(S.who)} n'est pas encore disponible.<br>Mets à jour le script du Sheet (v19) puis appuie sur ⟳.</div>`;
-  let h = whoBar();
+  const mes = (S.who === "Gaétan") === estG() ? gtCartes("G") : "";   // « Mes tâches » (Google Tasks) : sur l'onglet de la personne du profil affiché
+  if (!P) return whoBar() + mes + `<div class="empty">L'onglet ${esc(S.who)} n'est pas encore disponible.<br>Mets à jour le script du Sheet (v19) puis appuie sur ⟳.</div>`;
+  let h = whoBar() + mes;
   h += `<div class="hero"><small>Reste à vivre · ${esc(S.who)}</small><div class="big ${P.resteAVivre < 0 ? "neg" : ""}">${eur(P.resteAVivre)}</div>
     <div class="sub">Salaire ${eur(P.salaire)} · dépenses fixes ${eur(P.fixes)}</div></div>`;
   h += `<div class="grid">` + [["courses", "Courses", "🛒"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]].map(([k, nom, ic]) => {
@@ -951,15 +952,6 @@ function handleFormInput(e) {
   }
 }
 
-// bloc « À faire » de l'accueil : une ligne par sujet, qui se déroule quand on la touche (l'état ouvert / fermé est gardé dans S.af)
-function aFaire() {
-  const nT = (() => { try { return v19().taches.filter(t => !t.faite).length; } catch (e) { return 0; } })();
-  const L = [["taches", "Tâches" + (nT ? " · " + nT : ""), tachesAccueil()], ["contrats", "Contrats à revoir", contratsAccueil115()], ["voyages", "Voyages", voyAccueil()], ["idees", "Boîte à idées", ideesAccueil()]].filter(x => x[2]);
-  if (!L.length) return "";
-  S.af = S.af || LS.get("bf.af", {});
-  return `<h2>À faire</h2><div class="afs">` + L.map(([k, t, html]) => `<details class="af" data-af="${k}"${S.af[k] ? " open" : ""}><summary>${esc(t)}</summary>${html}</details>`).join("") + `</div>`;
-}
-document.addEventListener("toggle", e => { const d = e.target; if (d && d.dataset && d.dataset.af) { S.af = S.af || {}; S.af[d.dataset.af] = d.open; LS.set("bf.af", S.af); } }, true);
 // ligne LDDS sous le solde du compte commun (le LDDS est le compte de lissage du foyer)
 function lddsLigne(v) {
   const l = v.ldds; if (!l) return "";
@@ -1004,7 +996,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += paieCard() + tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + aFaire() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += paieCard() + tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + contratsAccueil115() + tachesAccueil() + gtCartes("GM") + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -3051,6 +3043,7 @@ function viewTaches() {
   h += L.length ? `<div class="card" style="padding:4px 14px">${L.map(tacheLigne).join("")}</div>` : `<div class="empty">Rien à faire 🎉</div>`;
   const faites = x.taches.filter(t => t.faite).sort((a, b) => a.faite < b.faite ? 1 : -1);
   if (faites.length) h += `<details style="margin-top:10px"><summary>Faites ces 14 derniers jours (${faites.length})</summary><div class="card" style="padding:4px 14px;margin-top:6px">${faites.map(tacheLigne).join("")}</div></details>`;
+  h += gtEcran();
   return h + `<div class="hint" style="margin:10px 4px">Touche le rond quand c'est fait : la tâche disparaît chez vous deux. Touche le texte pour la modifier ou la supprimer.</div>`;
 }
 function addTache() {
@@ -3348,6 +3341,49 @@ document.addEventListener("click", e => {
     enqueue("objectif", { compte: S.obj.compte, date, cible, mensuel, taux }); closeSheet(); toast("Objectif enregistré"); return;
   }
   if (t.id === "obReset" && S.obj) { enqueue("objectif", { compte: S.obj.compte, efface: true }); closeSheet(); toast("Valeurs par défaut rétablies"); }
+});
+// =====================================================================
+// ✅ LISTES GOOGLE TASKS dans l'appli : « Mes tâches » sur l'onglet de Gaétan, les listes partagées (« Choses à faire jardin »…) pour les deux profils.
+//    Lues en direct dans Google Tasks (action « gtasks »), cochées depuis l'appli (« gtcheck »), réglées dans Plus › Tâches (« gtvue », Gaétan).
+// =====================================================================
+const gtData = () => { const d = S.gt && S.gt.data; if (!d) return null; const o = JSON.parse(JSON.stringify(d));
+  S.queue.forEach(op => { if (op.type === "gtcheck") o.listes.forEach(l => { if (l.id === op.payload.lid) l.taches = l.taches.filter(t => t.gid !== op.payload.gid); });
+    if (op.type === "gtvue") o.toutes.forEach(l => { if (l.id === op.payload.lid) l.vue = op.payload.vue; }); });
+  return o; };
+async function chargerGt(force) {
+  if (!configured() || chargerGt.busy || (!force && S.gt && Date.now() - S.gt.at < 120000)) return;
+  if ((Number(S.base && S.base.scriptVersion) || 0) < 40) return;
+  chargerGt.busy = true;
+  try { const r = await call("gtasks", { force: !!force }, 30000); if (r.ok) { S.gt = { data: r.gtasks, at: Date.now() }; LS.set("bf.gt", S.gt); if (!renduDiffere()) render(); } } catch (e) {}
+  chargerGt.busy = false;
+}
+try { S.gt = LS.get("bf.gt", null); } catch (e) {}
+function gtLigne(l, t) {
+  const auj = todayISO(), retard = t.quand && t.quand < auj;
+  return `<div class="row tache"><button class="tck" data-gtck="${esc(t.gid)}" data-gtl="${esc(l.id)}" aria-label="Fait"></button><div class="rt"><b>${esc(t.txt)}</b><span>${t.quand ? `<b style="color:${retard ? "var(--bad)" : "var(--mut)"}">${retard ? "en retard · " : ""}pour le ${dateCourte(t.quand)}</b>` : ""}${t.quand && t.note ? " · " : ""}${esc(t.note)}</span></div></div>`;
+}
+// cartes de l'accueil : vue = "GM" (accueil commun, les deux profils) ou "G" (onglet personnel)
+function gtCartes(vue) {
+  chargerGt();
+  const d = gtData(); if (!d || !d.actif) return "";
+  return d.listes.filter(l => l.vue === vue && l.taches.length).map(l => `<div class="card"><div class="mh" style="display:flex;justify-content:space-between;align-items:center"><b>${esc(l.titre)} (${l.taches.length})</b><button class="linkbtn" style="margin:0" data-act="gotaches">Tout voir</button></div>${l.taches.slice(0, 4).map(t => gtLigne(l, t)).join("")}<div class="hint" style="margin-top:6px">Liste Google Tasks${vue === "G" ? " · visible par toi seul" : " · visible par vous deux"}</div></div>`).join("");
+}
+// écran Plus › Tâches : toutes les listes visibles, et le réglage « pour qui » (Gaétan)
+function gtEcran() {
+  chargerGt();
+  const d = gtData(); if (!d || !d.actif) return "";
+  let h = d.listes.map(l => `<h2>${esc(l.titre)} · Google Tasks</h2>` + (l.taches.length ? `<div class="card" style="padding:4px 14px">${l.taches.map(t => gtLigne(l, t)).join("")}</div>` : `<div class="empty">Rien dans cette liste</div>`)).join("");
+  if (!S.roleM && estG() && d.toutes.length) {
+    h += `<h2>Listes Google Tasks affichées</h2><div class="card">` + d.toutes.map(l => `<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${esc(l.titre)}</b><div class="tchips" style="margin-top:6px">${[["", "Pas affichée"], ["G", "Moi seul"], ["GM", "Nous deux"]].map(([k, t]) => `<button class="cat ${l.vue === k ? "on" : ""}" data-gtvue="${k}" data-gtl="${esc(l.id)}">${t}</button>`).join("")}</div></div>`).join("") + `<button class="linkbtn" data-gtmaj="1">Relire Google Tasks</button></div>`;
+  }
+  return h;
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-gtck],[data-gtvue],[data-gtmaj]"); if (!t) return;
+  const d = t.dataset;
+  if (d.gtck) { enqueue("gtcheck", { lid: d.gtl, gid: d.gtck, fait: true }); toast("C'est noté dans Google Tasks"); return; }
+  if (d.gtvue !== undefined) { enqueue("gtvue", { lid: d.gtl, vue: d.gtvue }); return; }
+  if (d.gtmaj) { toast("Lecture de Google Tasks…"); chargerGt(true); }
 });
 // =====================================================================
 // v1.10.0 : 💡 BOÎTE À IDÉES : bugs, idées, questions notés de n'importe quel écran,

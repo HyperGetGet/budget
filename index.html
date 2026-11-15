@@ -317,6 +317,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .paie{display:flex;align-items:center;justify-content:space-between;gap:12px}.paie span{font-size:12px;color:var(--mut);display:block}.paie b{font-family:var(--num);font-size:20px}.paie i{font-style:normal;font-size:13px;color:var(--mut)}
 .gl{display:flex;gap:8px;margin-top:10px}.gl div{flex:1;background:var(--chip);border-radius:12px;padding:9px 10px;min-width:0}.gl div.auj{outline:1px solid var(--acc)}.gl span{display:block;font-size:12px;color:var(--mut)}.gl b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pagrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.pagrid label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:4px}.pagrid input{width:100%;text-align:center;font-family:var(--num);font-size:17px;padding:10px 4px}
+.obj .objv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:8px}.obj .objv span{font-size:13px;color:var(--mut)}.obj .objv b{font-family:var(--num);font-size:26px;color:var(--acc)}.obj .objl{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--mut);margin-top:4px}.obj .objl b{color:var(--ink);font-family:var(--num)}
+.afs{background:var(--card);border-radius:14px;margin-bottom:12px;overflow:hidden}.af{border-bottom:1px solid var(--line)}.af:last-child{border-bottom:0}.af summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:600;display:flex;justify-content:space-between;align-items:center;min-height:48px}.af summary::-webkit-details-marker{display:none}.af summary:after{content:"›";color:var(--mut);font-size:20px;transition:transform .15s}.af[open] summary:after{transform:rotate(90deg)}.af>.card,.af>h2+.card{margin:0;border-radius:0;background:none;padding-top:0}.af>h2{display:none}
 </style>
 </head>
 <body>
@@ -341,8 +343,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.17.1";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 36;       // version du script que cette appli attend
+const APP_VERSION = "1.18.2";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 39;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -949,6 +951,15 @@ function handleFormInput(e) {
   }
 }
 
+// bloc « À faire » de l'accueil : une ligne par sujet, qui se déroule quand on la touche (l'état ouvert / fermé est gardé dans S.af)
+function aFaire() {
+  const nT = (() => { try { return v19().taches.filter(t => !t.faite).length; } catch (e) { return 0; } })();
+  const L = [["taches", "Tâches" + (nT ? " · " + nT : ""), tachesAccueil()], ["contrats", "Contrats à revoir", contratsAccueil115()], ["voyages", "Voyages", voyAccueil()], ["idees", "Boîte à idées", ideesAccueil()]].filter(x => x[2]);
+  if (!L.length) return "";
+  S.af = S.af || LS.get("bf.af", {});
+  return `<h2>À faire</h2><div class="afs">` + L.map(([k, t, html]) => `<details class="af" data-af="${k}"${S.af[k] ? " open" : ""}><summary>${esc(t)}</summary>${html}</details>`).join("") + `</div>`;
+}
+document.addEventListener("toggle", e => { const d = e.target; if (d && d.dataset && d.dataset.af) { S.af = S.af || {}; S.af[d.dataset.af] = d.open; LS.set("bf.af", S.af); } }, true);
 // ligne LDDS sous le solde du compte commun (le LDDS est le compte de lissage du foyer)
 function lddsLigne(v) {
   const l = v.ldds; if (!l) return "";
@@ -993,7 +1004,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += paieCard() + tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + contratsAccueil115() + tachesAccueil() + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += paieCard() + tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + aFaire() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -1326,6 +1337,29 @@ function reglePaieProchaine(qui, auj, perso) {
 function reglePaieJourQuestion(qui, ym, perso) {
   return Math.max(1, +reglePaieDate(qui, +ym.slice(0, 4), +ym.slice(5, 7) - 1, perso).slice(8, 10) - 1);
 }
+
+// ---------- Projection d'un placement (objectifs PEA / CTO) ----------
+// Hypothèses : rendement annuel constant, versement identique chaque mois, valeur BRUTE (ni inflation ni impôts). Indicatif, jamais une promesse.
+function regleTauxMensuel(tauxAn) { return Math.pow(1 + tauxAn / 100, 1 / 12) - 1; }
+// valeur dans nMois, en partant de « valeur » et en versant « mensuel » chaque mois
+function regleProjection(valeur, mensuel, tauxAn, nMois) {
+  var r = regleTauxMensuel(tauxAn), f = Math.pow(1 + r, nMois);
+  return valeur * f + (r === 0 ? mensuel * nMois : mensuel * (f - 1) / r);
+}
+// nombre de mois pour atteindre « cible » (null si pas atteint en 60 ans)
+function regleMoisPourCible(valeur, mensuel, tauxAn, cible) {
+  if (valeur >= cible) { return 0; }
+  for (var n = 1; n <= 720; n++) { if (regleProjection(valeur, mensuel, tauxAn, n) >= cible) { return n; } }
+  return null;
+}
+// versement mensuel nécessaire pour atteindre « cible » dans nMois
+function regleMensuelPourCible(valeur, tauxAn, nMois, cible) {
+  var r = regleTauxMensuel(tauxAn), f = Math.pow(1 + r, nMois), reste = cible - valeur * f;
+  if (reste <= 0) { return 0; }
+  return r === 0 ? reste / nMois : reste * r / (f - 1);
+}
+// nombre de mois entre deux mois « AAAA-MM »
+function regleMoisEntre(a, b) { return (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7)); }
 // =====================================================================
 // 🍽 REPAS : menus de la semaine, fiches recettes, liste de courses partagée, fond de tiroir (v1.6.0)
 // =====================================================================
@@ -2683,7 +2717,7 @@ document.addEventListener("change", e => {
 // v1.9.0 : PROFILS VERROUILLÉS, SALAIRE ET CARTES DU MOIS, BOURSE PAR COMPTE (+ PEA de Mathilde),
 //          TÂCHES COMMUNES, PLACARD DE BASE, TIROIR AVEC GEMINI EN TEXTE LIBRE, QUANTITÉ DES AJOUTS
 // =====================================================================
-const V19_TYPES = ["tache", "placard", "salaire", "moisrep", "paiedates"];
+const V19_TYPES = ["tache", "placard", "salaire", "moisrep", "paiedates", "objectif"];
 const P_NOM = p => p === "M" ? "Mathilde" : "Gaétan";
 const LIB_COMPTE = { "CTO Léo": "CTO Gaétan · pour Léo" };
 const libCompte = c => LIB_COMPTE[c] || c;
@@ -2710,6 +2744,7 @@ const v19Pret = () => !!(S.base && S.base.v19);
 function v19Apply(v, op) {
   const p = op.payload; if (!v.v19) return;
   const x = v19(v);
+  if (op.type === "objectif") { x.objectifs = Object.assign({}, x.objectifs); if (p.efface) delete x.objectifs[p.compte]; else x.objectifs[p.compte] = { date: p.date || "", cible: Number(String(p.cible || 0).replace(",", ".")) || 0, mensuel: p.mensuel === "" || p.mensuel == null ? null : Number(String(p.mensuel).replace(",", ".")), taux: p.taux === "" || p.taux == null ? 7 : Number(String(p.taux).replace(",", ".")) }; return; }
   if (op.type === "paiedates") { x.paie = x.paie || { G: {}, M: {} }; const q = p.qui === "M" ? "M" : "G"; x.paie[q] = Object.assign({}, x.paie[q]); if (p.efface) delete x.paie[q][String(p.an)]; else x.paie[q][String(p.an)] = p.jours; return; }
   if (op.type === "tache") {
     if (p.op === "add") x.taches.push({ id: p.tid, txt: p.txt, pour: p.pour, ajout: todayISO(), par: p.par, quand: p.quand || "", faite: "", fpar: "" });
@@ -2858,6 +2893,7 @@ function viewBourse() {
   h += `<div class="hero">${marcheHtml()}<small>📈 ${P === "M" ? (S.roleM ? "Ma bourse" : "Bourse de Mathilde") : "Bourse"} · PEA et CTO pour Léo</small><div class="big">${eur(val + esp)}</div>
     <div class="sub">${pv >= 0 ? "+" : ""}${eur(pv)} (${pv >= 0 ? "+" : ""}${cout > 0 ? String(Math.round(pv / cout * 1000) / 10).replace(".", ",") : 0} %) · ${eur(verse)} versés · ${eur(esp)} d'espèces</div></div>`;
   h += etatComptesHtml(d, P);
+  h += objectifsHtml(d, P);
   h += `${boBoutonDca()}`;
   h += `<h2>Positions</h2>` + (d.positions.length ? d.positions.map(p => `<div class="card pos"><div class="mh"><b>${esc(p.titre)}</b><span>${esc(libCompte(p.compte))}</span></div>
     <div class="mk"><div><b>${String(p.parts).replace(".", ",")}</b>parts</div><div><b>${pru3(p.pru)}</b>PRU</div><div><b>${p.cours ? eur(p.cours) : "?"}</b>cours</div><div><b>${eur(p.valeur)}</b>valeur</div>
@@ -2892,7 +2928,8 @@ function openBoInit() {
     <div class="hint">Dans l'appli de la banque, sur la ligne de l'ETF : le nombre de parts et le PRU (prix de revient unitaire). Vérifie aussi le nom exact de l'ETF.</div>
     <label>Nom de l'ETF</label><input type="text" id="biT" value="${esc(S.boi.titre)}" autocomplete="off">
     <label>Symbole Google Finance (pour le cours)</label><input type="text" id="biS" value="${esc(S.boi.symbole)}" autocomplete="off">
-    <div class="two"><div><label>Parts détenues</label><input type="text" inputmode="decimal" id="biP" autocomplete="off"></div><div><label>PRU (€)</label><input type="text" inputmode="decimal" id="biR" autocomplete="off"></div></div>
+    <div class="two"><div><label>Parts détenues</label><input type="text" inputmode="decimal" id="biP" value="5400" autocomplete="off"></div><div><label>PRU (€)</label><input type="text" inputmode="decimal" id="biR" value="6,67" autocomplete="off"></div></div>
+    <div class="hint">Valeurs approximatives déjà remplies (environ 36 000 €) : valide tel quel, puis corrige plus tard avec « ✏️ Corriger » quand tu auras les vrais chiffres.</div>
     <label>Total versé sur le PEA (€, facultatif)</label><input type="text" inputmode="decimal" id="biV" placeholder="sinon parts × PRU" autocomplete="off">
     <button class="btn" data-v19="boinitsave">Enregistrer</button>
     <div class="hint">Ça ajoute une ligne « PEA Mathilde » dans « Positions » et la position de départ dans le « Journal des opérations » du fichier des investissements.</div>`);
@@ -3232,6 +3269,85 @@ document.addEventListener("click", e => {
     enqueue("paiedates", { qui: S.paie.qui, an: S.paie.an, jours }); closeSheet(); toast("Dates de paie " + S.paie.an + " enregistrées"); return;
   }
   if (t.id === "paReset" && S.paie) { enqueue("paiedates", { qui: S.paie.qui, an: S.paie.an, efface: true }); closeSheet(); toast("Calendrier par défaut rétabli"); }
+});
+// =====================================================================
+// 🎯 OBJECTIFS des comptes de bourse : projection à une date, montant visé (calculs dans src/commun/regles.js)
+//    PEA de Gaétan : capital pour une retraite anticipée (54 ans en mars 2048, ou 56 ans). CTO : capital de Léo à ses 18 ans (août 2044).
+// =====================================================================
+const OBJ_DEFAUT = {
+  "PEA Gaëtan": { date: "2048-03", nom: "retraite à 54 ans", autres: [["2050-03", "à 56 ans"]] },
+  "CTO Léo": { date: "2044-08", nom: "18 ans de Léo", autres: [] }
+};
+const objStock = () => { try { return v19().objectifs || {}; } catch (e) { return {}; } };
+const objMois = ym => { const s = moisLong(ym); return s.charAt(0).toLowerCase() + s.slice(1); };
+// versement du plan du fichier des investissements : base mensuelle + primes de l'année lissées sur 12 mois
+function objMensuelPlan(d, compte) {
+  const k = /^PEA/.test(compte) ? "peaPrevu" : "ctoPrevu", ym = todayISO().slice(0, 7);
+  if (/Mathilde/.test(compte)) return 0;
+  const L = (d.mois || []).filter(m => m.m >= ym).slice(0, 12).map(m => m[k] || 0).filter(x => x > 0);
+  if (!L.length) return 0;
+  const base = Math.min(...L), primes = L.reduce((s, x) => s + (x - base), 0);
+  return Math.round((base + primes / 12) * 100) / 100;
+}
+function objDe(d, compte) {
+  const st = objStock()[compte] || {}, df = OBJ_DEFAUT[compte] || { date: "", nom: "", autres: [] };
+  const valeur = d.positions.filter(p => p.compte === compte).reduce((s, p) => s + p.valeur, 0) + ((d.comptes.find(c => c.compte === compte) || {}).especes || 0);
+  const plan = objMensuelPlan(d, compte);
+  return { compte, valeur, date: st.date || df.date, nom: st.date && st.date !== df.date ? "" : df.nom, autres: st.date && st.date !== df.date ? [] : df.autres,
+    cible: st.cible || 0, mensuel: st.mensuel != null ? st.mensuel : plan, plan, taux: st.taux != null ? st.taux : 7, regle: !!objStock()[compte] };
+}
+function objectifsHtml(d, P) {
+  const comptes = [...new Set(d.positions.map(p => p.compte))];
+  if (!comptes.length) return "";
+  const ym = todayISO().slice(0, 7), a0 = x => e0(Math.round(x / 100) * 100);
+  return `<h2>Objectifs</h2>` + comptes.map(c => {
+    const o = objDe(d, c), n = o.date ? regleMoisEntre(ym, o.date) : 0;
+    let h = `<div class="card obj"><div class="mh"><b>${esc(libCompte(c))}</b><button class="linkbtn" style="padding:0" data-obj="${esc(c)}">Régler</button></div>`;
+    if (c === "PEA Gaëtan" && d.retraite && !o.regle) return h + objRetraite(d.retraite, o.valeur) + `</div>`;
+    if (!o.date || n <= 0) return h + `<div class="hint">Pas encore d'échéance : touche « Régler » pour fixer une date et, si tu veux, un montant à atteindre.</div></div>`;
+    const fv = regleProjection(o.valeur, o.mensuel, o.taux, n);
+    h += `<div class="objv"><span>${o.nom ? esc(o.nom.charAt(0).toUpperCase() + o.nom.slice(1)) + " · " : ""}${esc(objMois(o.date))}</span><b>≈ ${a0(fv)}</b></div>`;
+    o.autres.forEach(([dt, nom]) => { h += `<div class="objl"><span>${esc(nom)} · ${esc(objMois(dt))}</span><b>≈ ${a0(regleProjection(o.valeur, o.mensuel, o.taux, regleMoisEntre(ym, dt)))}</b></div>`; });
+    if (o.cible > 0) {
+      const pct = Math.min(100, Math.round(o.valeur / o.cible * 100)), m = regleMoisPourCible(o.valeur, o.mensuel, o.taux, o.cible);
+      h += `<div class="bar" style="margin:10px 0 6px"><i style="width:${pct}%"></i></div><div class="objl"><span>Objectif ${a0(o.cible)} · ${pct} % aujourd'hui</span><b>${m === null ? "pas atteint" : m === 0 ? "atteint" : "vers " + esc(objMois(addMois(ym, m)))}</b></div>`;
+      if (fv < o.cible) h += `<div class="hint">À la date prévue il manquerait ${a0(o.cible - fv)} : il faudrait verser environ ${eur(Math.ceil(regleMensuelPourCible(o.valeur, o.taux, n, o.cible)))} par mois.</div>`;
+    }
+    return h + `<div class="hint">Avec ${eur(o.mensuel)} par mois${o.mensuel === o.plan && o.plan ? " (ton plan, primes lissées)" : ""} et ${String(o.taux).replace(".", ",")} % par an. Estimation brute, sans inflation ni impôts : la bourse ne monte pas en ligne droite.</div></div>`;
+  }).join("");
+}
+// PEA de Gaétan : les chiffres viennent de l'onglet « Stratégie retraite » du fichier des investissements (son propre modèle), tant qu'il n'a rien réglé à la main
+function objRetraite(R, valeur) {
+  const s = R.scenarios.find(x => x.nom === R.retenu) || R.scenarios[0], pct = s.necessaire > 0 ? Math.min(100, Math.round(valeur / s.necessaire * 100)) : 0;
+  let h = `<div class="objv"><span>Retraite à ${esc(s.nom)}${s.depart ? " · " + esc(objMois(s.depart)) : ""}</span><b>≈ ${e0(s.projete)}</b></div>
+    <div class="bar" style="margin:10px 0 6px"><i style="width:${pct}%"></i></div>
+    <div class="objl"><span>Capital nécessaire ${e0(s.necessaire)} · ${pct} % aujourd'hui</span><b>${s.atteint ? "vers " + esc(objMois(s.atteint)) : ""}</b></div>
+    <div class="objl"><span>Revenu à la retraite, en euros d'aujourd'hui</span><b>${e0(s.revenu)} / mois${s.ecart ? " (" + (s.ecart > 0 ? "+" : "") + e0(s.ecart) + ")" : ""}</b></div>`;
+  R.scenarios.filter(x => x !== s).forEach(x => { h += `<div class="objl"><span>${esc(x.nom)}${x.depart ? " · " + esc(objMois(x.depart)) : ""}</span><b>≈ ${e0(x.projete)} pour ${e0(x.necessaire)} nécessaires</b></div>`; });
+  return h + `<div class="hint">Chiffres de ton onglet « Stratégie retraite » (augmentations, primes et fin du prêt comprises). Pour changer de scénario, modifie-le dans le tableau ; « Régler » remplace ces chiffres par une projection simple.</div>`;
+}
+function openObjectif(compte) {
+  const d0 = S.bo && S.bo.data; if (!d0) return;
+  const o = objDe(boVue(d0, profCode()), compte); S.obj = { compte };
+  openSheet(`<h3>Objectif · ${esc(libCompte(compte))}</h3>
+    <label>Échéance (mois)</label><input type="month" id="obD" value="${esc(o.date)}">
+    <label>Montant à atteindre (facultatif)</label><input type="text" inputmode="decimal" id="obC" value="${o.cible ? o.cible : ""}" placeholder="ex. 300000">
+    <label>Versement par mois</label><input type="text" inputmode="decimal" id="obM" value="${String(o.mensuel).replace(".", ",")}">
+    <div class="hint">${o.plan ? "Ton plan actuel donne " + eur(o.plan) + " par mois, primes de juin et décembre lissées sur l'année." : "Aucun plan trouvé pour ce compte : indique ce que tu verses en moyenne."}</div>
+    <label>Rendement supposé (% par an)</label><input type="text" inputmode="decimal" id="obT" value="${String(o.taux).replace(".", ",")}">
+    <button class="btn" id="obSave">Enregistrer</button>${o.regle ? `<button class="btn sec" id="obReset">Revenir aux valeurs par défaut</button>` : ""}`);
+}
+document.addEventListener("click", e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.obj) { openObjectif(t.dataset.obj); return; }
+  if (t.id === "obSave" && S.obj) {
+    const n = id => Number(String($(id).value || "").replace(/\s/g, "").replace(",", "."));
+    const date = $("#obD").value, cible = $("#obC").value.trim() === "" ? 0 : n("#obC"), mensuel = n("#obM"), taux = n("#obT");
+    if (!/^\d{4}-\d{2}$/.test(date) || date <= todayISO().slice(0, 7)) { toast("Choisis un mois dans le futur"); return; }
+    if (!(cible >= 0) || !(mensuel >= 0) || !(taux >= 0 && taux <= 20)) { toast("Vérifie les montants (rendement entre 0 et 20 %)"); return; }
+    enqueue("objectif", { compte: S.obj.compte, date, cible, mensuel, taux }); closeSheet(); toast("Objectif enregistré"); return;
+  }
+  if (t.id === "obReset" && S.obj) { enqueue("objectif", { compte: S.obj.compte, efface: true }); closeSheet(); toast("Valeurs par défaut rétablies"); }
 });
 // =====================================================================
 // v1.10.0 : 💡 BOÎTE À IDÉES : bugs, idées, questions notés de n'importe quel écran,

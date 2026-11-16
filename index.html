@@ -364,8 +364,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.22.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 43;       // version du script que cette appli attend
+const APP_VERSION = "1.23.1";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 45;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -1027,7 +1027,7 @@ function viewHome(v) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
   }
-  h += paieCard() + tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + contratsAccueil115() + tachesAccueil() + gtCartes("GM") + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
+  h += paieCard() + tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + contratsAccueil115() + planAccueil() + tachesAccueil() + gtCartes("GM") + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
@@ -2581,6 +2581,7 @@ function viewConges() {
   const prochains = d.demandes.filter(x => x.au >= today && !x.annule).sort((a, b) => a.du < b.du ? -1 : 1);
   h += `<h2>Mes congés à venir</h2>` + (prochains.length ? `<div class="card" style="padding:4px 14px">` + prochains.map(x => `<div class="row" data-cgdem="${esc(x.du + "|" + x.au + "|" + x.compteur)}" style="cursor:pointer"><div class="rt"><b>${esc(longD(x.du))}${x.au !== x.du ? " → " + esc(longD(x.au)) : ""}</b><span>${esc(x.compteur)} · ${esc(dureeDemande(x, d))}${x.note ? " · " + esc(x.note) : ""}${x.prevenir ? " · Mathilde prévenue" : ""}</span></div><span class="tag" style="font-size:12px;border-radius:99px;padding:4px 10px;background:${x.statut === "Validé" ? "#0e9f6e22" : x.statut === "Demandé" ? "#d98a0022" : "var(--chip)"}">${x.attente ? "⏳ " : ""}${esc(x.statut)}</span></div>`).join("") + `</div>` : `<div class="empty">Aucun congé à venir.</div>`);
   h += pontsCard(d);
+  h += planCongesHtml(d);   // v1.23 : voyages, quand rendre les vœux du plan prévisionnel
   h += `<h2>Ce que tu dois faire</h2><div class="card" style="padding:4px 14px">` + d.pilote.map(x => `<details class="row" style="display:block;padding:10px 0"><summary style="font-weight:600;cursor:pointer">${esc(x.titre)}</summary><div class="hint" style="margin-top:6px;font-size:13px;line-height:1.45">${esc(x.texte)}</div></details>`).join("") + `</div>`;
   const tous = (d.ponts || []).filter(p => p.au >= today);
   if (tous.length) h += `<details class="card"><summary style="font-weight:600;cursor:pointer">Tous les ponts à venir (${tous.length})</summary>${tous.map(p => pontHtml(Object.assign({}, p, { fait: (d.demandes || []).some(x => !x.annule && x.du <= p.au && x.au >= p.du) }), false)).join("")}</details>`;
@@ -2734,6 +2735,77 @@ document.addEventListener("change", e => {
 });
 
 
+// =====================================================================
+// 📅 v1.23 : PLAN PRÉVISIONNEL DES CONGÉS : quand demander les congés d'un voyage
+//    Circulaire DGPN du 26 janvier 2022 (plan prévisionnel annuel des départs en congés), point 2 :
+//    - plan en 1 période : du 15 mars N au 14 mars N+1, validé au plus tard le 15 mars N ;
+//    - plan en 2 périodes : du 15 février au 15 octobre N (validé au plus tard le 15 février N)
+//      et du 16 octobre N au 14 février N+1 (validé au plus tard le 15 octobre N) ;
+//    - les vœux sont rendus au plus tard 15 jours avant la date de validation.
+//    Le choix 1 ou 2 périodes est fait chaque année par le service (CSA) : réglage « Plan prévisionnel du service »
+//    dans Paramètres du fichier congés (« 1 », « 2 » ou vide = inconnu : on prend la date la plus tôt des deux).
+//    À ne pas confondre avec la « période » des HP (1er mai – 31 octobre), qui ne sert qu'aux jours hors période.
+// =====================================================================
+const MOIS_L = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+const moisAnMaj = iso => { const m = MOIS_L[Number(iso.slice(5, 7)) - 1]; return m[0].toUpperCase() + m.slice(1) + " " + iso.slice(0, 4); };
+const isoJ = (a, m, j) => a + "-" + String(m).padStart(2, "0") + "-" + String(j).padStart(2, "0");
+// le plan qui couvre une date, pour un mode donné (1 ou 2 périodes)
+function planCouvrant(iso, mode) {
+  const a = Number(iso.slice(0, 4)), md = iso.slice(5);
+  if (mode === 1) {
+    const n = md >= "03-15" ? a : a - 1;
+    return { mode: 1, nom: "plan " + n + "-" + (n + 1), du: isoJ(n, 3, 15), au: isoJ(n + 1, 3, 14), valid: isoJ(n, 3, 15) };
+  }
+  if (md >= "02-15" && md <= "10-15") return { mode: 2, nom: "1re période " + a, du: isoJ(a, 2, 15), au: isoJ(a, 10, 15), valid: isoJ(a, 2, 15) };
+  const n = md >= "10-16" ? a : a - 1;
+  return { mode: 2, nom: "2e période " + n + "-" + (n + 1), du: isoJ(n, 10, 16), au: isoJ(n + 1, 2, 14), valid: isoJ(n, 10, 15) };
+}
+// ce qu'il faut savoir pour un séjour du « dep » au « ret »
+function planPourSejour(dep, ret, d) {
+  const reg = String((d && d.plan) || "").trim(), mode = /^1/.test(reg) ? 1 : /^2/.test(reg) ? 2 : 0;
+  const cas = (mode ? [mode] : [2, 1]).map(m => { const p = planCouvrant(dep, m); p.voeux = addDays(p.valid, -15); return p; });
+  const tot = cas.slice().sort((x, y) => x.voeux < y.voeux ? -1 : 1)[0];
+  const billets = addDays(dep, -335);   // ≈ 11 mois avant le départ
+  const enPeriode = dep.slice(5) >= "05-01" && dep.slice(5) <= "10-31" && (ret || dep).slice(5) <= "10-31";
+  const j = ret ? joursOuvres(dep, addDays(ret, -1), d) : 0;
+  return { mode, cas, tot, billets, enPeriode, j };
+}
+const dLong = iso => { const x = dOf(iso); return x.getDate() + " " + MOIS_L[x.getMonth()] + " " + x.getFullYear(); };
+function planVoyageHtml(t, d, court) {
+  if (!t.dep) return "";
+  const P = planPourSejour(t.dep, t.ret, d), auj = todayISO();
+  const etat = auj > P.tot.valid ? "Plan déjà validé : congés hors plan, à demander à ton chef." : auj >= addDays(P.tot.voeux, -75) ? "⏰ C'est le moment : rends ton vœu au plus tard le " + dLong(P.tot.voeux) + "." : "Pas encore : le recueil des vœux s'ouvre en général quelques semaines avant.";
+  const modes = P.mode ? `Plan de ton service en ${P.mode} période${P.mode > 1 ? "s" : ""} : ${esc(P.tot.nom)} (du ${esc(dateCourte(P.tot.du))} au ${esc(dateCourte(P.tot.au))}).`
+    : `Ton service n'est pas encore indiqué (1 ou 2 périodes) : ${P.cas.map(c => (c.mode === 2 ? "en 2 périodes, vœu avant le " : "en 1 période, vœu avant le ") + esc(dateCourte(c.voeux))).join(" ; ")}. Date retenue : la plus tôt.`;
+  const lignes = [
+    `<b>Vœu à rendre au plus tard le ${esc(dLong(P.tot.voeux))}</b> · plan validé au plus tard le ${esc(dLong(P.tot.valid))}.`,
+    esc(etat),
+    modes,
+    `Billets : réservables vers ${esc(MOIS_L[dOf(P.billets).getMonth()])} ${dOf(P.billets).getFullYear()} (11 mois avant), donc avant la validation. Prends un tarif modifiable, ou attends la validation : l'assurance « congés modifiés par l'employeur » demande en général des congés déjà accordés à l'achat.`,
+    P.j ? `Environ ${P.j} jour${P.j > 1 ? "s" : ""} ouvré${P.j > 1 ? "s" : ""} à poser du ${esc(dateCourte(t.dep))} au ${esc(dateCourte(addDays(t.ret, -1)))} (dates à affiner).` : "",
+    P.enPeriode ? "Séjour entre le 1er mai et le 31 octobre : ces CA ne comptent pas pour les jours hors période (HP)." : "Une partie du séjour est hors du 1er mai – 31 octobre : ces CA comptent pour les jours hors période (HP)."
+  ].filter(Boolean);
+  if (court) return `<div class="hint" style="margin-top:6px;line-height:1.45">📅 ${lignes[0]}<br>${lignes[1]}</div>`;
+  return `<div class="card" style="padding:12px 14px"><b>${esc(t.ic || "✈️")} ${esc(t.nom)} · ${esc(moisAnMaj(t.dep))}</b>${lignes.map(l => `<div class="hint" style="margin:6px 0 0;line-height:1.45">${l}</div>`).join("")}</div>`;
+}
+// écran Congés : une carte par voyage à venir
+function planCongesHtml(d) {
+  let V; try { V = voy(); } catch (e) { return ""; }
+  const L = ((V && V.voyages) || []).filter(t => t.dep && voyActif(t)).sort((a, b) => a.dep < b.dep ? -1 : 1);
+  if (!L.length) return "";
+  return `<h2>Voyages : quand demander tes congés</h2>` + L.map(t => planVoyageHtml(t, d, false)).join("") +
+    `<div class="hint" style="margin:6px 4px 0;line-height:1.45">Plan prévisionnel (circulaire DGPN du 26 janvier 2022) : en 1 période du 15 mars au 14 mars, ou en 2 périodes (15 février – 15 octobre, puis 16 octobre – 14 février). Les vœux sont rendus au moins 15 jours avant la validation. Aucun texte ne fixe de date « au plus tôt » : c'est ton service qui ouvre le recueil des vœux. Rien n'empêche de prévenir ton chef dès maintenant, par écrit.</div>`;
+}
+// accueil (Gaétan) : rappel 75 jours avant la date limite du vœu
+function planAccueil() {
+  if (!estG()) return "";
+  const d = cgData(); if (!d) return "";
+  let V; try { V = voy(); } catch (e) { return ""; }
+  const auj = todayISO();
+  return ((V && V.voyages) || []).filter(t => t.dep && voyActif(t)).map(t => ({ t, P: planPourSejour(t.dep, t.ret, d) }))
+    .filter(x => auj >= addDays(x.P.tot.voeux, -75) && auj <= x.P.tot.voeux)
+    .map(x => `<div class="card" style="padding:12px 14px"><b>📅 Congés ${esc(x.t.nom)} · ${esc(moisAnMaj(x.t.dep))}</b><div class="hint" style="margin:6px 0 0">Rends ton vœu au plan prévisionnel avant le ${esc(dLong(x.P.tot.voeux))}.</div></div>`).join("");
+}
 // =====================================================================
 // v1.8.0 : STATISTIQUES DES COURSES (+ note A à E), BOURSE (DCA), ÉTAT DE L'APPLI, JOURNAL D'ERREURS
 // =====================================================================
@@ -3870,7 +3942,8 @@ S.vy = Object.assign({ id: null, sec: "budget" }, LS.get("bf.vy", {}), { id: nul
 const saveVy = () => LS.set("bf.vy", { sec: S.vy.sec });
 const v111Pret = () => !!(S.base && S.base.v111) && (Number(S.base.scriptVersion) || 0) >= 28;
 const MOIS_C = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
-const moisAn = iso => iso ? MOIS_C[Number(iso.slice(5, 7)) - 1] + " " + iso.slice(0, 4) : "";
+// v1.23 : mois en toutes lettres avec majuscule (« Mai 2028 », « Août 2027 ») : les dates exactes des voyages sont encore des hypothèses
+const moisAn = iso => { if (!iso) return ""; const m = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"][Number(iso.slice(5, 7)) - 1]; return m[0].toUpperCase() + m.slice(1) + " " + iso.slice(0, 4); };
 const eur0 = n => new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Math.round(Number(n) || 0));
 
 // ---------- données : celles du script + les modifications en attente ----------
@@ -3985,6 +4058,8 @@ function viewVoyage(V, t) {
   let h = `<button class="linkbtn" data-v111="vlist">← Voyages</button>`;
   h += `<div class="hero vyhero"><small>${esc(t.ic)} ${esc(t.nom)}</small><div class="big">${eur0(c.total)}</div>
     <div class="sub">${t.dep ? esc(moisAn(t.dep)) + (t.ret ? " (" + Math.max(1, Math.round((dOf(t.ret) - dOf(t.dep)) / 86400000)) + " nuits)" : "") + " · " : ""}${t.ad} adulte${t.ad > 1 ? "s" : ""}${t.en ? " + " + t.en + " enfant" + (t.en > 1 ? "s" : "") : ""} · ${VOY_STATS.find(x => x[0] === t.statut)[1]}</div></div>`;
+  // v1.23 : quand demander les congés de ce voyage (profil Gaétan, fichier congés chargé)
+  if (estG() && t.statut !== "fait" && t.dep) { const dC = cgData(); if (dC) h += planVoyageHtml(t, dC, false); }
   h += `<div class="card"><div class="vybar big"><i style="width:${c.pct}%"></i></div><div class="vynum"><span>Épargné <b>${eur0(t.epargne)}</b></span><span>Reste <b>${eur0(c.reste)}</b></span>
     <span>Effort <b>${c.effort ? eur0(c.effort) + "/mois" : "aucun"}</b></span></div>
     <div class="hint">${c.effort ? "Pour que la cagnotte couvre chaque paiement à sa date (voir le calendrier)" + (c.moisDep != null ? ", sur " + c.moisDep + " mois avant le départ." : ".") : (c.total > 0 ? "Cagnotte suffisante pour tout payer." : "")} L'épargné compte tout ce qui a été mis de côté, y compris ce qui a déjà servi à payer.</div>

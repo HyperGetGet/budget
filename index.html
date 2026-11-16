@@ -364,8 +364,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.23.1";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 45;       // version du script que cette appli attend
+const APP_VERSION = "1.24.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 46;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -784,9 +784,10 @@ function openAmzJour(bloc) {
 
 // ---------- soins et entrées d'argent ----------
 const ENTREE_CATS = [["Soin", "🩺"], ["Remboursement", "↩️"], ["Salaire", "💼"], ["Courses", "🛒"], ["Animaux", "🐾"], ["Bébé", "🍼"], ["Loisirs", "🎉"], ["Autre", "📦"]];
-const ETAPES = [["adeclarer", "1 · À déclarer", "Aucune démarche faite"], ["demande", "2 · En attente de remboursement", "Télétransmis ou envoyé, j'attends"], ["rembourse", "3 · Remboursé", "Reçu en partie ou en totalité"], ["clos", "4 · Clos", "Dossier fini, reste à charge définitif"]];
-const etapeDef = s => (s.statut === "solde" || s.statut === "clos" || s.statut === "nonremb") ? "clos" : ((s.recu.secu + s.recu.mut + s.recu.autre) > 0 ? "rembourse" : "demande");
-const etapeOf = s => s.etape || etapeDef(s);
+// v1.24 : « Remboursé » = tout l'argent avancé est revenu (se met tout seul) ; « Terminé » = plus rien à attendre, une partie reste à ta charge
+const ETAPES = [["adeclarer", "1 · À déclarer", "Aucune démarche faite."], ["demande", "2 · En attente de remboursement", "Envoyé ou télétransmis, j'attends l'argent (y compris quand une partie est déjà arrivée)."], ["rembourse", "3 · Remboursé", "Tout l'argent avancé est revenu. Se met tout seul quand tu enregistres le remboursement."], ["clos", "4 · Terminé, reste à ma charge", "Plus rien à attendre, mais une partie ne sera jamais remboursée (franchise, forfait, dépassement)."]];
+const etapeDef = s => s.statut === "solde" ? "rembourse" : (s.statut === "clos" || s.statut === "nonremb") ? "clos" : "demande";
+const etapeOf = s => s.statut === "solde" ? "rembourse" : s.statut === "clos" ? "clos" : (s.etape === "rembourse" ? "demande" : (s.etape || etapeDef(s)));
 const ORGS = [["secu", "Sécu"], ["mut", "Mutuelle"], ["autre", "Autre"]];
 const r2 = x => Math.round(x * 100) / 100;
 const daysSince = iso => Math.max(0, Math.round((new Date(todayISO()) - new Date(iso)) / 86400000));
@@ -957,6 +958,8 @@ function toggleESoin(id) {
     const att = soinAttendu(s, f.org);
     const want = att !== null ? att : s.reste;
     f.alloc[id] = String(r2(Math.min(remaining > 0 ? remaining : want, want || s.reste, s.reste))).replace(".", ",");
+    // v1.24 : l'argent arrive en principe sur le compte de celui qui a avancé le soin (sauf si tu as choisi le compte toi-même)
+    if (!f.compteChoisi && (s.payePar === "Gaétan" || s.payePar === "Mathilde")) { f.compte = s.payePar; document.querySelectorAll("#eCompte .cat").forEach(b => b.classList.toggle("on", b.dataset.ecompte === f.compte)); }
   }
   renderESoins();
 }
@@ -4003,10 +4006,13 @@ function voyPlan(V, today) {
   });
   return { seg, pic: seg.length ? seg[0].total : 0, A };
 }
+// v1.24 : ce qu'on peut retirer du LDDS sans qu'aucun mois à venir de l'onglet Prélèvements Annuel passe sous le seuil
+// = solde prévu le plus bas des mois à venir − seuil (et non plus le solde d'aujourd'hui − seuil)
 function lddsSurplus() {
   const v = computeView(), l = v && v.ldds; if (!l || !(l.soldeReel > 0)) return null;
   const est = l.soldeEstime != null ? l.soldeEstime : l.soldeReel, seuil = Number(l.seuil) || 0;
-  return { est, seuil, surplus: Math.max(0, Math.round(est - seuil)) };
+  const bas = typeof l.plusBas === "number" ? Math.min(l.plusBas, est) : est;
+  return { est, seuil, bas, basMois: l.plusBasMois || "", surplus: Math.max(0, Math.round(bas - seuil)) };
 }
 
 // ---------- vignettes ----------
@@ -4046,7 +4052,7 @@ function viewVoyages() {
   }
   h += estG() ? `<button class="linkbtn" data-v111="vcap">${cap > 0 ? "Capacité d'épargne voyages : " + eur0(cap) + "/mois · modifier" : "Définir ma capacité d'épargne par mois ›"}</button>` : "";
   h += `</div>`;
-  if (ld && ld.surplus > 0 && estG()) h += `<div class="card v19c"><div class="row" style="border:0;padding:0"><div class="ic">💙</div><div class="rt"><b>LDDS : ${eur0(ld.surplus)} au-dessus du seuil</b><span>Solde estimé ${eur0(ld.est)}, seuil de sécurité ${eur0(ld.seuil)}. Réaffecter ce surplus aux voyages est à débattre : rien n'est fait tant que tu ne le demandes pas dans un voyage.</span></div></div></div>`;
+  if (ld && ld.surplus > 0 && estG()) h += `<div class="card v19c"><div class="row" style="border:0;padding:0"><div class="ic">💙</div><div class="rt"><b>LDDS : ${eur0(ld.surplus)} disponibles pour les voyages</b><span>Le solde prévu le plus bas est ${eur0(ld.bas)}${ld.basMois ? " en " + esc(moisAn(ld.basMois)) : ""}, pour un seuil de sécurité de ${eur0(ld.seuil)}. On peut donc retirer ${eur0(ld.surplus)} sans qu'aucun mois de l'onglet Prélèvements Annuel passe sous le seuil. Rien n'est retiré tant que tu ne le demandes pas dans un voyage.</span></div></div></div>`;
   h += V.voyages.map(t => voyCarte(V, t)).join("");
   if (estG()) h += `<button class="btn" data-v111="vnew">＋ Nouveau voyage</button>` + (V.voyages.length < 2 ? `<button class="btn sec" data-v111="vseed">Recharger Irlande et Maurice (si supprimés)</button>` : "");
   return h;
@@ -4836,7 +4842,7 @@ document.addEventListener("click", e => {
   if (t.dataset.spay) { S.form.payePar = t.dataset.spay; document.querySelectorAll("#sPay .cat").forEach(b => b.classList.toggle("on", b.dataset.spay === S.form.payePar)); return; }
   if (t.dataset.ecat) { S.form.cat = t.dataset.ecat; document.querySelectorAll("#eCats .cat").forEach(b => b.classList.toggle("on", b.dataset.ecat === S.form.cat)); $("#eSoWrap").style.display = S.form.cat === "Soin" ? "" : "none"; return; }
   if (t.dataset.eorg) { S.form.org = t.dataset.eorg; document.querySelectorAll("#eOrg .cat").forEach(b => b.classList.toggle("on", b.dataset.eorg === S.form.org)); renderESoins(); return; }
-  if (t.dataset.ecompte) { S.form.compte = t.dataset.ecompte; document.querySelectorAll("#eCompte .cat").forEach(b => b.classList.toggle("on", b.dataset.ecompte === S.form.compte)); return; }
+  if (t.dataset.ecompte) { S.form.compte = t.dataset.ecompte; S.form.compteChoisi = true; document.querySelectorAll("#eCompte .cat").forEach(b => b.classList.toggle("on", b.dataset.ecompte === S.form.compte)); return; }
   if (t.dataset.eso) { toggleESoin(t.dataset.eso); return; }
   if (t.id === "sSave") { saveSoin(); return; }
   if (t.id === "eSave") { saveEntree(); return; }

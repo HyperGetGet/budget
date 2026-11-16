@@ -63,7 +63,7 @@ nav button span{display:grid;place-items:center;height:24px}nav button svg{width
 #sheet.open{transform:none}
 #sheet h3{margin:0 0 12px;font-size:18px}
 label{display:block;font-size:12px;color:var(--mut);margin:12px 0 4px}
-input[type=text],input[type=date],input[type=password],input[type=url],input[type=number]{font-family:inherit;width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+input[type=text],input[type=date],input[type=password],input[type=url],input[type=number],input[type=time]{font-family:inherit;width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .cats{display:flex;flex-wrap:wrap;gap:8px}
 .cat{border:1px solid var(--line);background:var(--chip);color:var(--ink);border-radius:99px;padding:8px 12px;font-size:14px;cursor:pointer}
 .cat.on{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
@@ -364,8 +364,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.21.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 42;       // version du script que cette appli attend
+const APP_VERSION = "1.22.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 43;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -1111,11 +1111,13 @@ function render() {
 function openSheet(html) {
   // dernière fenêtre ouverte : contexte joint aux remarques de la boîte à idées
   try { if (!S.ibOuvert) { const m = String(html).match(/<h3[^>]*>([\s\S]*?)<\/h3>/); if (m) S.derFen = { t: m[1].replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim().slice(0, 60), at: Date.now() }; } } catch (e) {}
-  $("#sheet").innerHTML = html; $("#ov").style.display = "block"; requestAnimationFrame(() => $("#sheet").classList.add("open"));
+  // v1.22 : une fermeture demandée avant l'image suivante n'est plus annulée par l'ouverture différée
+  const tok = S.sheetTok = (S.sheetTok || 0) + 1;
+  $("#sheet").innerHTML = html; $("#ov").style.display = "block"; requestAnimationFrame(() => { if (S.sheetTok === tok) $("#sheet").classList.add("open"); });
 }
 function closeSheet() {
   if (S.ibOuvert && S.derFen) S.derFen.at = Date.now(); S.ibOuvert = false;
-  $("#sheet").classList.remove("open"); $("#ov").style.display = "none"; S.edit = null; S.form = null; if (S.wake) { try { S.wake.release(); } catch (e) {} S.wake = null; } }
+  S.sheetTok = (S.sheetTok || 0) + 1; $("#sheet").classList.remove("open"); $("#ov").style.display = "none"; S.edit = null; S.form = null; if (S.wake) { try { S.wake.release(); } catch (e) {} S.wake = null; } }
 
 // ---------- lecture d'un ticket ----------
 function loadImage(file) {
@@ -2490,12 +2492,14 @@ const longD = iso => dOf(iso).toLocaleDateString("fr-FR", { weekday: "short", da
 // ---------- compteur conseillé ----------
 function conseilCompteur(d, du, au) {
   const an = du.slice(0, 4), mois = Number(du.slice(5, 7)), horsPeriode = mois <= 4 || mois >= 11;
-  const ok = (d.compteurs || []).filter(c => c.unite === "jours" && c.reste > 0 && (!/\d{4}$/.test(c.n) || c.n.slice(-4) <= an) && (!c.limite || au <= c.limite));
+  // v1.22 : RPS et HS (en heures) proposés aussi pour des journées entières (8 h par jour), après les compteurs en jours
+  const ok = (d.compteurs || []).filter(c => (c.unite === "jours" || c.unite === "heures") && c.reste > 0 && (!/\d{4}$/.test(c.n) || c.n.slice(-4) <= an) && (!c.limite || au <= c.limite));
   const score = c => {
     const hp = (d.hp || []).find(h => h.n === c.n);
     if (horsPeriode && c.n === "CA " + an && hp && /encore/i.test(hp.palier)) return { s: 0, r: "hors période : compte pour tes HP (" + hp.palier.toLowerCase() + ")" };
     if (/^ARTT/.test(c.n) && c.limite && c.limite.slice(0, 4) === an) return { s: 1, r: "non reportables : perdus au " + courtD(c.limite) + "/" + c.limite.slice(0, 4) + " (sauf CET)" };
     if (c.n === "CET") return { s: 9, r: "à garder pour un long voyage" };
+    if (c.unite === "heures") return { s: 8, r: "compteur en heures : " + ((d.hpj || 8) + " h").replace(".", ",") + " par jour posé" };
     return { s: 2 + (c.limite ? Number(c.limite.replace(/-/g, "")) / 1e8 : 5), r: c.limite ? "à poser avant le " + courtD(c.limite) + "/" + c.limite.slice(0, 4) : "" };
   };
   return ok.map(c => Object.assign({ c }, score(c))).sort((a, b) => a.s - b.s);
@@ -2575,7 +2579,7 @@ function viewConges() {
   h += `<h2>Mes compteurs</h2><div class="kpis" style="grid-template-columns:repeat(3,1fr)">` + d.compteurs.filter(c => c.reste > 0 || c.prevu > 0).map(c =>
     `<div class="kpi"><b>${String(Math.round(c.reste * 100) / 100).replace(".", ",")}${c.unite === "heures" ? " h" : " j"}</b><span>${esc(c.n)}${c.limite ? "<br>avant le " + courtD(c.limite) + "/" + c.limite.slice(2, 4) : ""}${c.prevu ? "<br>dont " + c.prevu + " prévus" : ""}</span></div>`).join("") + `</div>`;
   const prochains = d.demandes.filter(x => x.au >= today && !x.annule).sort((a, b) => a.du < b.du ? -1 : 1);
-  h += `<h2>Mes congés à venir</h2>` + (prochains.length ? `<div class="card" style="padding:4px 14px">` + prochains.map(x => `<div class="row" data-cgdem="${esc(x.du + "|" + x.au + "|" + x.compteur)}" style="cursor:pointer"><div class="rt"><b>${esc(longD(x.du))}${x.au !== x.du ? " → " + esc(longD(x.au)) : ""}</b><span>${esc(x.compteur)} · ${x.jours} j${x.note ? " · " + esc(x.note) : ""}${x.prevenir ? " · Mathilde prévenue" : ""}</span></div><span class="tag" style="font-size:12px;border-radius:99px;padding:4px 10px;background:${x.statut === "Validé" ? "#0e9f6e22" : x.statut === "Demandé" ? "#d98a0022" : "var(--chip)"}">${x.attente ? "⏳ " : ""}${esc(x.statut)}</span></div>`).join("") + `</div>` : `<div class="empty">Aucun congé à venir.</div>`);
+  h += `<h2>Mes congés à venir</h2>` + (prochains.length ? `<div class="card" style="padding:4px 14px">` + prochains.map(x => `<div class="row" data-cgdem="${esc(x.du + "|" + x.au + "|" + x.compteur)}" style="cursor:pointer"><div class="rt"><b>${esc(longD(x.du))}${x.au !== x.du ? " → " + esc(longD(x.au)) : ""}</b><span>${esc(x.compteur)} · ${esc(dureeDemande(x, d))}${x.note ? " · " + esc(x.note) : ""}${x.prevenir ? " · Mathilde prévenue" : ""}</span></div><span class="tag" style="font-size:12px;border-radius:99px;padding:4px 10px;background:${x.statut === "Validé" ? "#0e9f6e22" : x.statut === "Demandé" ? "#d98a0022" : "var(--chip)"}">${x.attente ? "⏳ " : ""}${esc(x.statut)}</span></div>`).join("") + `</div>` : `<div class="empty">Aucun congé à venir.</div>`);
   h += pontsCard(d);
   h += `<h2>Ce que tu dois faire</h2><div class="card" style="padding:4px 14px">` + d.pilote.map(x => `<details class="row" style="display:block;padding:10px 0"><summary style="font-weight:600;cursor:pointer">${esc(x.titre)}</summary><div class="hint" style="margin-top:6px;font-size:13px;line-height:1.45">${esc(x.texte)}</div></details>`).join("") + `</div>`;
   const tous = (d.ponts || []).filter(p => p.au >= today);
@@ -2586,21 +2590,62 @@ function viewConges() {
 // ---------- poser un congé ----------
 function openPoser(du, au, compteur) {
   const d = cgData(); if (!d) { toast("Données congés pas encore chargées"); chargerConges(true); return; }
-  S.rf = { cg: true, du: du || todayISO(), au: au || du || todayISO(), compteur: compteur || "", etat: "Prévu", prevenir: false, choisir: !du };
+  S.rf = { cg: true, du: du || todayISO(), au: au || du || todayISO(), compteur: compteur || "", etat: "Prévu", prevenir: false, choisir: !du, mode: "jours" };
   renderPoser();
+}
+// ---------- v1.22 : poser des heures (RPS, HS) : demi-journée, départ avancé, prise retardée ----------
+const hmMin = t => { const m = /^(\d{1,2}):(\d{2})/.exec(t || ""); return m ? Number(m[1]) * 60 + Number(m[2]) : NaN; };
+const fmtH = h => String(Math.round(h * 100) / 100).replace(".", ",") + " h";
+const heuresDemande = (x, d) => Math.round((x.jours || 0) * ((d && d.hpj) || 8) * 100) / 100;
+const dureeDemande = (x, d) => x.heures ? fmtH(heuresDemande(x, d)) + (/^\d{2}:\d{2}/.test(x.heures) ? " · " + x.heures : "") : x.jours + " j";
+function compteursHeures(d) { return (d.compteurs || []).filter(c => c.unite === "heures" && c.reste > 0); }
+function renderPoserHeures() {
+  const x = S.rf, d = cgData(), L = compteursHeures(d);
+  x.au = x.du;
+  if (!x.de || !x.a) { let mem = {}; try { mem = JSON.parse(localStorage.getItem("bf.cgHeures") || "{}"); } catch (e) {} x.de = x.de || mem.de || "13:00"; x.a = x.a || mem.a || "17:00"; if (!x.compteur && mem.c) x.compteur = mem.c; }
+  if (!x.compteur || !L.some(c => c.n === x.compteur)) x.compteur = L.length ? L[0].n : "";
+  const hpj = d.hpj || 8, calc = x.journee ? hpj : (hmMin(x.a) - hmMin(x.de)) / 60;
+  if (x.journee) { x.dur = hpj; x.durManuelle = false; } else if (!x.durManuelle) x.dur = calc > 0 ? Math.round(calc * 100) / 100 : 0;
+  const sel = L.find(c => c.n === x.compteur), apres = sel ? sel.reste - (x.dur || 0) : null;
+  const ouvre = joursOuvres(x.du, x.du, d) > 0;
+  const choixJournee = `<div class="tchips" style="margin-top:8px">${[["", "Quelques heures"], ["1", "Journée entière · " + fmtH(hpj)]].map(([k, t]) => `<button class="cat ${(x.journee ? "1" : "") === k ? "on" : ""}" data-cgjournee="${k}">${t}</button>`).join("")}</div>`;
+  if (x.journee) return choixJournee + `<label>Le</label><input type="date" id="cgDu" value="${esc(x.du)}">
+    <div class="hint">${fmtH(hpj)} posées sur la journée (comme dans ton logiciel).${ouvre ? "" : " ⚠ Ce jour est un week-end ou un férié."} Pour plusieurs jours de suite, choisis « Journée(s) » puis le compteur ${esc(x.compteur || "RPS")}.</div>
+    <label>Compteur</label>
+    <div class="tchips">${L.map(c => `<button class="cat ${c.n === x.compteur ? "on" : ""}" data-cgcpt="${esc(c.n)}">${esc(c.n)} · ${fmtH(c.reste)}</button>`).join("") || `<span class="hint">Aucun compteur en heures avec un solde.</span>`}</div>
+    ${sel ? `<div class="hint">reste après : ${fmtH(apres)}${apres < 0 ? " ⚠ solde insuffisant" : ""}</div>` : ""}`;
+  return choixJournee + `<div class="two"><div><label>Le</label><input type="date" id="cgDu" value="${esc(x.du)}"></div><div><label>Durée (heures)</label><input type="number" id="cgDur" inputmode="decimal" step="0.25" min="0.25" max="12" value="${x.dur || ""}"></div></div>
+    <div class="two"><div><label>De</label><input type="time" id="cgDe" value="${esc(x.de)}"></div><div><label>À</label><input type="time" id="cgA" value="${esc(x.a)}"></div></div>
+    <div class="hint">${calc > 0 ? "De " + esc(x.de) + " à " + esc(x.a) + " : " + fmtH(calc) + (x.durManuelle && Math.abs(calc - x.dur) > 0.01 ? " · durée corrigée à la main : " + fmtH(x.dur) + " (pause déjeuner…)" : "") + "." : "L'heure de fin doit être après l'heure de début."}${ouvre ? "" : " ⚠ Ce jour est un week-end ou un férié."}</div>
+    <label>Compteur</label>
+    <div class="tchips">${L.map(c => `<button class="cat ${c.n === x.compteur ? "on" : ""}" data-cgcpt="${esc(c.n)}">${esc(c.n)} · ${fmtH(c.reste)}</button>`).join("") || `<span class="hint">Aucun compteur en heures avec un solde.</span>`}</div>
+    ${sel ? `<div class="hint">${esc(sel.regle || "")}${apres !== null ? (sel.regle ? " · " : "") + "reste après : " + fmtH(apres) : ""}${apres < 0 ? " ⚠ solde insuffisant" : ""}</div>` : ""}`;
 }
 function renderPoser() {
   const x = S.rf, d = cgData();
   if (x.au < x.du) x.au = x.du;
+  const H = x.mode === "heures", aHeures = compteursHeures(d).length > 0;
+  const modes = aHeures ? `<div class="tchips" style="margin-bottom:4px">${[["jours", "Journée(s)"], ["heures", "Heures (RPS, HS)"]].map(([k, t]) => `<button class="cat ${x.mode === k ? "on" : ""}" data-cgmode="${k}">${t}</button>`).join("")}</div>` : "";
+  if (H) {
+    const corps = renderPoserHeures(), ok = x.compteur && x.dur > 0;
+    openSheet(`<h3>🏖 Poser un congé</h3>${modes}${corps}
+    <label>État</label><div class="tchips">${["Prévu", "Demandé", "Validé"].map(e => `<button class="cat ${x.etat === e ? "on" : ""}" data-cgetat="${e}">${e}</button>`).join("")}</div>
+    <div class="hint">Prévu = noté seulement · Demandé = saisi dans ton logiciel · Validé = accordé.</div>
+    <label class="row" style="padding:10px 0;cursor:pointer"><div class="rt"><b>Prévenir Mathilde</b><span>invitation dans son agenda + mail</span></div><div class="tg ${x.prevenir ? "on" : ""}" data-cgprev="1"></div></label>
+    <label>Note (facultatif)</label><input type="text" id="cgNote" value="${esc(x.note || "")}" placeholder="Rendez-vous, départ avancé…" autocomplete="off">
+    <button class="btn" data-cgsave="1" ${ok ? "" : "disabled"}>Poser ${ok ? fmtH(x.dur) : "?"} en ${esc(x.compteur || "?")}</button>
+    <div class="hint">Écrit dans l'onglet « Demandes » de ton fichier congés (colonne « Heures (appli) »), puis ajouté à ton agenda ${x.journee ? "sur la journée" : "de " + esc(x.de) + " à " + esc(x.a)}. Si ton tableau refuse, rien n'est gardé et tu as le message.</div>`);
+    return;
+  }
   const j = joursOuvres(x.du, x.au, d), cons = conseilCompteur(d, x.du, x.au);
   if (!x.compteur || !cons.some(c => c.c.n === x.compteur)) x.compteur = cons.length ? cons[0].c.n : "";
-  const sel = cons.find(c => c.c.n === x.compteur), apres = sel ? sel.c.reste - j : null;
-  openSheet(`<h3>🏖 Poser un congé</h3>
+  const sel = cons.find(c => c.c.n === x.compteur), enH = sel && sel.c.unite === "heures", apres = sel ? sel.c.reste - j * (enH ? (d.hpj || 8) : 1) : null;
+  openSheet(`<h3>🏖 Poser un congé</h3>${modes}
     <div class="two"><div><label>Du</label><input type="date" id="cgDu" value="${esc(x.du)}"></div><div><label>Au</label><input type="date" id="cgAu" value="${esc(x.au)}"></div></div>
     <div class="hint">${j} jour(s) ouvré(s) à poser (sans week-ends ni fériés)${j === 0 ? " : rien à poser sur ces dates." : "."}</div>
     <label>Compteur ${sel ? `<span class="hint">· conseillé : ${esc(cons[0].c.n)}</span>` : ""}</label>
-    <div class="tchips">${cons.map(c => `<button class="cat ${c.c.n === x.compteur ? "on" : ""}" data-cgcpt="${esc(c.c.n)}">${esc(c.c.n)} · ${String(c.c.reste).replace(".", ",")} j</button>`).join("") || `<span class="hint">Aucun compteur disponible pour ces dates.</span>`}</div>
-    ${sel ? `<div class="hint">${esc(sel.r)}${apres !== null ? " · reste après : " + String(Math.round(apres * 100) / 100).replace(".", ",") + " j" : ""}${apres < 0 ? " ⚠ solde insuffisant" : ""}</div>` : ""}
+    <div class="tchips">${cons.map(c => `<button class="cat ${c.c.n === x.compteur ? "on" : ""}" data-cgcpt="${esc(c.c.n)}">${esc(c.c.n)} · ${c.c.unite === "heures" ? fmtH(c.c.reste) : String(c.c.reste).replace(".", ",") + " j"}</button>`).join("") || `<span class="hint">Aucun compteur disponible pour ces dates.</span>`}</div>
+    ${sel ? `<div class="hint">${esc(sel.r)}${apres !== null ? " · reste après : " + (enH ? fmtH(apres) : String(Math.round(apres * 100) / 100).replace(".", ",") + " j") : ""}${apres < 0 ? " ⚠ solde insuffisant" : ""}</div>` : ""}
     <label>État</label><div class="tchips">${["Prévu", "Demandé", "Validé"].map(e => `<button class="cat ${x.etat === e ? "on" : ""}" data-cgetat="${e}">${e}</button>`).join("")}</div>
     <div class="hint">Prévu = noté seulement · Demandé = saisi dans ton logiciel · Validé = accordé.</div>
     <label class="row" style="padding:10px 0;cursor:pointer"><div class="rt"><b>Prévenir Mathilde</b><span>invitation dans son agenda + mail</span></div><div class="tg ${x.prevenir ? "on" : ""}" data-cgprev="1"></div></label>
@@ -2609,7 +2654,16 @@ function renderPoser() {
     <div class="hint">Écrit dans l'onglet « Demandes » de ton fichier congés, puis ajouté à ton agenda. Si ton tableau refuse (solde, date limite…), rien n'est gardé et tu as le message.</div>`);
 }
 function savePoser() {
-  const x = S.rf, d = cgData(), j = joursOuvres(x.du, x.au, d);
+  const x = S.rf, d = cgData();
+  if (x.mode === "heures") {
+    x.note = ($("#cgNote") || {}).value || "";
+    if (!x.compteur || !(x.dur > 0)) return;
+    const plage = !x.journee && hmMin(x.a) > hmMin(x.de) ? x.de + "–" + x.a : "";
+    try { localStorage.setItem("bf.cgHeures", JSON.stringify({ de: x.de, a: x.a, c: x.compteur })); } catch (e) {}
+    enqueue("congepose", { du: x.du, au: x.du, compteur: x.compteur, etat: x.etat, prevenir: x.prevenir, note: x.note.trim(), heures: x.dur, plage });
+    closeSheet(); toast("🏖 Congé envoyé : " + fmtH(x.dur) + " en " + x.compteur); return;
+  }
+  const j = joursOuvres(x.du, x.au, d);
   if (!j || !x.compteur) return;
   x.note = ($("#cgNote") || {}).value || "";
   enqueue("congepose", { du: x.du, au: x.au, compteur: x.compteur, etat: x.etat, prevenir: x.prevenir, note: x.note.trim() });
@@ -2619,7 +2673,7 @@ function openDemande(cle) {
   const d = cgData(); if (!d) return;
   const [du, au, compteur] = cle.split("|"), x = d.demandes.find(y => y.du === du && y.au === au && y.compteur === compteur); if (!x) return;
   S.rf = { dem: x };
-  openSheet(`<h3>${esc(longD(du))}${au !== du ? " → " + esc(longD(au)) : ""}</h3><div class="hint">${esc(compteur)} · ${x.jours} j · contrôle : ${esc(x.controle)}${x.note ? " · " + esc(x.note) : ""}</div>
+  openSheet(`<h3>${esc(longD(du))}${au !== du ? " → " + esc(longD(au)) : ""}</h3><div class="hint">${esc(compteur)} · ${esc(dureeDemande(x, d))} · contrôle : ${esc(x.controle)}${x.note ? " · " + esc(x.note) : ""}</div>
     <label>État</label><div class="tchips">${["Prévu", "Demandé", "Validé"].map(e => `<button class="cat ${x.etat === e ? "on" : ""}" data-cgmetat="${e}">${e}</button>`).join("")}</div>
     <label class="row" style="padding:10px 0;cursor:pointer"><div class="rt"><b>Prévenir Mathilde</b><span>invitation + mail</span></div><div class="tg ${x.prevenir ? "on" : ""}" data-cgmprev="1"></div></label>
     <button class="btn sec" data-cgannule="1" style="color:var(--bad)">Annuler ce congé</button>
@@ -2640,7 +2694,7 @@ function accueilPerso() {
 
 // ---------- événements ----------
 document.addEventListener("click", e => {
-  const t = e.target.closest("#prof,[data-prof],[data-cgposer],[data-cgcpt],[data-cgetat],[data-cgprev],[data-cgsave],[data-cgdem],[data-cgmetat],[data-cgmprev],[data-cgannule],[data-cgpont],[data-cgfait],[data-cgnon],[data-cgmaj],[data-gvue],[data-act=goconges],[data-act=gogarde],[data-act=gobourse]");
+  const t = e.target.closest("#prof,[data-prof],[data-cgposer],[data-cgcpt],[data-cgetat],[data-cgprev],[data-cgsave],[data-cgdem],[data-cgmetat],[data-cgmprev],[data-cgannule],[data-cgpont],[data-cgfait],[data-cgnon],[data-cgmaj],[data-gvue],[data-cgmode],[data-cgjournee],[data-act=goconges],[data-act=gogarde],[data-act=gobourse]");
   if (!t) return;
   const dd = t.dataset;
   if (t.id === "prof") { openSheet(`<h3>Ce téléphone est celui de…</h3><div class="hint">Gaétan voit tout (administrateur). Mathilde a sa version : budget, repas, garde de Léo.</div><div class="duo" style="margin-top:14px"><button class="btn ${estG() ? "" : "sec"}" data-prof="G" style="margin:0">Gaétan</button><button class="btn ${estG() ? "sec" : ""}" data-prof="M" style="margin:0">Mathilde</button></div>`); return; }
@@ -2651,8 +2705,10 @@ document.addEventListener("click", e => {
   if (dd.cgmaj) { toast("🔄 Lecture du fichier congés…"); chargerConges(true); return; }
   if (dd.gvue) { S.gardeVue = dd.gvue; render(); return; }
   if (dd.cgposer !== undefined) { openPoser(dd.cgposer); return; }
-  if (dd.cgcpt) { S.rf.compteur = dd.cgcpt; renderPoser(); return; }
-  if (dd.cgetat) { S.rf.etat = dd.cgetat; renderPoser(); return; }
+  if (dd.cgjournee !== undefined) { S.rf.journee = dd.cgjournee === "1"; S.rf.note = ($("#cgNote") || {}).value; renderPoser(); return; }
+  if (dd.cgmode) { S.rf.mode = dd.cgmode; S.rf.compteur = ""; S.rf.note = ($("#cgNote") || {}).value; if (dd.cgmode === "heures") S.rf.au = S.rf.du; renderPoser(); return; }
+  if (dd.cgcpt) { S.rf.compteur = dd.cgcpt; S.rf.note = ($("#cgNote") || {}).value; renderPoser(); return; }
+  if (dd.cgetat) { S.rf.etat = dd.cgetat; S.rf.note = ($("#cgNote") || {}).value; renderPoser(); return; }
   if (dd.cgprev) { e.preventDefault(); S.rf.prevenir = !S.rf.prevenir; S.rf.note = ($("#cgNote") || {}).value; renderPoser(); return; }
   if (dd.cgsave) { savePoser(); return; }
   if (dd.cgdem) { openDemande(dd.cgdem); return; }
@@ -2664,9 +2720,15 @@ document.addEventListener("click", e => {
   if (dd.cgnon) { enqueue("pontetat", { occ: dd.cgnon, etat: "non" }); toast("Pont masqué"); return; }
 });
 document.addEventListener("change", e => {
-  if ((e.target.id === "cgDu" || e.target.id === "cgAu") && S.rf && S.rf.cg) {
+  const ouverte = $("#sheet").classList.contains("open");   // v1.22 : un champ qui perd le focus après la fermeture ne rouvre pas la fenêtre
+  if ((e.target.id === "cgDu" || e.target.id === "cgAu") && S.rf && S.rf.cg && ouverte) {
     S.rf[e.target.id === "cgDu" ? "du" : "au"] = e.target.value || S.rf.du;
     if (e.target.id === "cgDu" && S.rf.au < S.rf.du) S.rf.au = S.rf.du;
+    S.rf.note = ($("#cgNote") || {}).value; renderPoser();
+  }
+  if (["cgDe", "cgA", "cgDur"].includes(e.target.id) && S.rf && S.rf.cg && ouverte) {
+    if (e.target.id === "cgDur") { S.rf.dur = Math.round((Number(String(e.target.value).replace(",", ".")) || 0) * 100) / 100; S.rf.durManuelle = true; }
+    else { S.rf[e.target.id === "cgDe" ? "de" : "a"] = e.target.value; S.rf.durManuelle = false; }
     S.rf.note = ($("#cgNote") || {}).value; renderPoser();
   }
 });

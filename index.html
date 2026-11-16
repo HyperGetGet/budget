@@ -340,6 +340,14 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .ctd-t{font-size:12px;font-weight:600;color:var(--mut);letter-spacing:.3px;text-transform:uppercase;margin:4px 2px 8px}
 .ctd-dot{width:10px;height:10px;border-radius:99px;flex:none;display:block}
 .ctd-conf{margin-top:12px;padding:14px;border-radius:14px;background:#2a1c1a;border:1px solid #5a3530;display:flex;flex-direction:column;gap:10px}.ctd-conf span{font-size:13px;color:#e3c9c4;line-height:1.45}
+/* v1.25 : carte de tiers payant de Léo */
+.ctp-bulle{display:flex;align-items:center;gap:10px;width:100%;margin:6px 0 4px;padding:12px 14px;border:0;border-radius:16px;background:var(--acc);color:var(--onacc);font:inherit;font-size:16px;text-align:left;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.ctp-bulle span{font-size:22px}.ctp-bulle b{flex:1}.ctp-bulle i{font-style:normal;font-size:22px;opacity:.8}
+.ctp-img{display:block;width:100%;border-radius:10px;border:1px solid var(--line,#ddd);cursor:zoom-in;background:#fff}
+.ctp-plein{position:fixed;inset:0;z-index:10000;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.ctp-plein img{width:min(96vh,276vw);max-width:none;transform:rotate(90deg)}
+@media (orientation:landscape){.ctp-plein img{width:96vw;max-height:96vh;object-fit:contain;transform:none}}
+.ctp-plein span{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#666;font-size:13px}
 </style>
 </head>
 <body>
@@ -364,8 +372,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.24.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 46;       // version du script que cette appli attend
+const APP_VERSION = "1.25.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 47;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -849,6 +857,7 @@ function viewSoins(v) {
   const avance = all.reduce((t, x) => t + x.mont, 0);
   const net = all.reduce((t, x) => t + x.mont - (x.recu.secu + x.recu.mut + x.recu.autre) - soinARecevoir(x), 0);
   const old = att.length ? Math.max(...att.map(x => x.jours || 0)) : 0;
+  h += carteTpBulle();
   h += `<div class="hero"><small>Soins · Gaétan et Léo</small><div class="big">${eur(aRec)}</div>
     <div class="sub">à récupérer · ${att.length} soin(s) en attente${att.length ? " · plus ancien : " + old + " j" : ""}</div></div>
     <div class="chips"><div class="chip"><b>${eur(avance)}</b><span>Avancé</span></div><div class="chip"><b>${eur(recu)}</b><span>Déjà remboursé</span></div><div class="chip"><b>${eur(net)}</b><span>Reste à charge estimé</span></div></div>
@@ -3715,6 +3724,68 @@ document.addEventListener("click", e => {
   if (d.gtvue !== undefined) { enqueue("gtvue", { lid: d.gtl, vue: d.gtvue }); return; }
   if (d.gtmaj) { toast("Lecture de Google Tasks…"); chargerGt(true); }
 });
+// ---------- v1.25 : carte de tiers payant de Léo ----------
+// Le fichier reste dans le Drive (dossier « Documents santé ») et passe par le script avec le code de l'appli :
+// rien sur GitHub. L'image est gardée sur le téléphone pour s'ouvrir même sans réseau (à la pharmacie).
+const CTP_CLE = "bf.carteTP";
+function carteTpBulle() {
+  return `<button type="button" class="ctp-bulle" data-act="carteTP"><span>💳</span><b>Carte tiers payant Léo</b><i>›</i></button>`;
+}
+function carteTpCorps(c, etat) {
+  const img = c && c.b64 ? `<img class="ctp-img" id="ctpImg" data-act="ctpPlein" alt="Carte tiers payant de Gaétan et Léo" src="data:image/jpeg;base64,${c.b64}">
+    <p class="hint" style="margin:6px 2px 0">Touche la carte pour l'afficher en grand.</p>` : "";
+  const msg = etat === "charge" ? `<div class="empty" style="padding:22px 6px">Chargement de la carte…</div>`
+    : etat === "absente" ? `<div class="empty" style="padding:22px 6px">Carte introuvable dans le dossier Drive « Documents santé ».</div>`
+    : etat === "horsligne" ? `<div class="empty" style="padding:22px 6px">Pas de réseau : la carte n'a encore jamais été chargée sur ce téléphone.</div>` : "";
+  return img + msg;
+}
+function carteTpHtml(c, etat) {
+  return `<h3>💳 Carte tiers payant · Léo</h3><div id="ctpCorps">${carteTpCorps(c, etat)}</div>
+    <button class="btn sec" id="ctpPdf" style="margin-top:12px">📄 Ouvrir le PDF</button>
+    ${estG() ? `<p class="hint" style="margin:10px 2px 0">Nouvelle carte : remplace les deux fichiers du dossier Drive « Documents santé » (mêmes noms). L'appli la reprendra toute seule.</p>` : ""}
+    <button class="btn sec" data-act="ctpFermer" style="margin-top:10px">Fermer</button>`;
+}
+async function carteTpOuvrir() {
+  const c = LS.get(CTP_CLE, null);
+  openSheet(carteTpHtml(c, c ? "" : "charge"));
+  const tok = S.sheetTok;
+  if (!configured()) return;
+  try {
+    const r = await call("cartetp", { maj: c ? c.maj : "" }, 45000);
+    const corps = () => S.sheetTok === tok ? $("#ctpCorps") : null;
+    if (!r.ok) { if (!c && corps()) corps().innerHTML = `<div class="empty" style="padding:22px 6px">⚠ ${esc(r.error || "erreur")}</div>`; return; }
+    const k = r.carte || {};
+    if (k.absente) { if (!c && corps()) corps().innerHTML = carteTpCorps(null, "absente"); return; }
+    if (k.inchange || !k.b64) return;
+    const n = { maj: k.maj, b64: k.b64 }; LS.set(CTP_CLE, n);
+    if (corps()) corps().innerHTML = carteTpCorps(n, "");
+  } catch (e) { if (!c && S.sheetTok === tok && $("#ctpCorps")) $("#ctpCorps").innerHTML = carteTpCorps(null, "horsligne"); }
+}
+// plein écran : la carte tournée d'un quart de tour pour occuper toute la hauteur du téléphone
+function carteTpPleinEcran() {
+  const c = LS.get(CTP_CLE, null); if (!c || !c.b64) return;
+  const d = document.createElement("div"); d.className = "ctp-plein"; d.id = "ctpPlein";
+  d.innerHTML = `<img alt="Carte tiers payant" src="data:image/jpeg;base64,${c.b64}"><span>Touche pour fermer</span>`;
+  d.addEventListener("click", () => d.remove());
+  document.body.appendChild(d);
+}
+async function carteTpPdf(btn) {
+  if (S.ctpPdfUrl) { carteTpOuvrirLien(S.ctpPdfUrl); return; }
+  const lib = btn.textContent; btn.textContent = "Chargement du PDF…"; btn.disabled = true;
+  try {
+    const r = await call("cartetp", { quoi: "pdf" }, 45000);
+    const k = r.ok && r.carte;
+    if (!k || !k.b64) { toast(r.ok ? "PDF introuvable dans le dossier « Documents santé »" : "⚠ " + (r.error || "erreur")); return; }
+    const oct = Uint8Array.from(atob(k.b64), ch => ch.charCodeAt(0));
+    S.ctpPdfUrl = URL.createObjectURL(new Blob([oct], { type: "application/pdf" }));
+    carteTpOuvrirLien(S.ctpPdfUrl);
+  } catch (e) { toast("Pas de réseau : le PDF ne peut pas être chargé (l'image de la carte, elle, marche sans réseau)"); }
+  finally { btn.textContent = lib; btn.disabled = false; }
+}
+function carteTpOuvrirLien(url) {
+  const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; a.download = "Carte tiers payant Léo.pdf";
+  document.body.appendChild(a); a.click(); a.remove();
+}
 // =====================================================================
 // v1.10.0 : 💡 BOÎTE À IDÉES : bugs, idées, questions notés de n'importe quel écran,
 //           avec le contexte (écran, versions, profil, dernière erreur) et une capture facultative.
@@ -4857,6 +4928,10 @@ document.addEventListener("click", e => {
   }
   if (t.dataset.payer) { S.form.qui = t.dataset.payer; document.querySelectorAll("#fQui .cat").forEach(b => b.classList.toggle("on", b.dataset.payer === S.form.qui)); const l = $("#fLddsLine"); if (l) l.style.display = S.form.qui === "Commun" ? "flex" : "none"; return; }
   if (t.dataset.tqui) { S.form.qui = t.dataset.tqui; document.querySelectorAll("#tQui .cat").forEach(b => b.classList.toggle("on", b.dataset.tqui === S.form.qui)); return; }
+  if (t.dataset.act === "carteTP") { carteTpOuvrir(); return; }
+  if (t.dataset.act === "ctpFermer") { closeSheet(); return; }
+  if (t.dataset.act === "ctpPlein") { carteTpPleinEcran(); return; }
+  if (t.id === "ctpPdf") { carteTpPdf(t); return; }
   if (t.dataset.act === "goplus") { S.tab = "plus"; render(); window.scrollTo(0, 0); return; }
   if (t.dataset.act === "goamz") { S.tab = "amazon"; render(); window.scrollTo(0, 0); return; }
   if (t.dataset.act === "goreg") { S.tab = "reglages"; render(); window.scrollTo(0, 0); return; }

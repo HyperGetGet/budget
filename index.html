@@ -284,10 +284,10 @@ a.btn.ibln{display:block;text-align:center;text-decoration:none;box-sizing:borde
 .vy2{display:flex;gap:10px}.vy2>div{flex:1;min-width:0}
 img.vyimg{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin:8px 0}
 .hero{position:relative}
-.mkt{position:absolute;top:12px;right:14px;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.16);color:#fff}
+.mkt{position:static;margin-bottom:10px;display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.16);color:#fff}
 .mkt i{width:8px;height:8px;border-radius:50%;background:#ff6b5a;box-shadow:0 0 0 2px rgba(255,107,90,.3)}
 .mkt.on i{background:#4ade80;box-shadow:0 0 0 2px rgba(74,222,128,.35)}
-.hero .mkt+small{display:block;padding-right:150px}
+.hero .mkt+small{display:block}
 .bocorr{display:block;margin:8px 0 0;font-size:13px}
 .pl.bo{background:rgba(124,92,255,.14);color:#6b4fe0}
 .mode113{margin:0 0 8px}
@@ -318,6 +318,28 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .gl{display:flex;gap:8px;margin-top:10px}.gl div{flex:1;background:var(--chip);border-radius:12px;padding:9px 10px;min-width:0}.gl div.auj{outline:1px solid var(--acc)}.gl span{display:block;font-size:12px;color:var(--mut)}.gl b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pagrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.pagrid label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:4px}.pagrid input{width:100%;text-align:center;font-family:var(--num);font-size:17px;padding:10px 4px}
 .obj .objv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:8px}.obj .objv span{font-size:13px;color:var(--mut)}.obj .objv b{font-family:var(--num);font-size:26px;color:var(--acc)}.obj .objl{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--mut);margin-top:4px}.obj .objl b{color:var(--ink);font-family:var(--num)}
+/* v1.21 : liste de courses en tuiles */
+.cplats-t{font-size:12px;font-weight:600;color:var(--mut);letter-spacing:.3px;text-transform:uppercase;margin:16px 4px 8px}
+.cplats{display:flex;gap:8px;overflow-x:auto;padding:0 2px 4px;scrollbar-width:none}.cplats::-webkit-scrollbar{display:none}
+.cplat{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:40px;padding:0 13px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:500 13px Inter,system-ui,sans-serif;cursor:pointer}
+.cplat.on{border-color:var(--acc);background:var(--chip)}.cplat i{width:9px;height:9px;border-radius:99px;display:inline-block}
+.crayon{text-transform:none;font-size:15px;color:var(--ink);font-weight:600;letter-spacing:0;margin:18px 2px 8px}.crayon span+span{font-size:12px;color:var(--mut);font-weight:400}
+.ctiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ctile{position:relative;min-height:108px;border-radius:14px;border:1.5px solid #2c3844;background:#1c2631;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 6px;font-family:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;transition:opacity .15s,border-color .15s}
+.ctile b{font-size:13px;font-weight:600;line-height:1.15;text-align:center;overflow-wrap:anywhere}
+.ctile small{font-size:12px;color:var(--mut);line-height:1.15;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ctile .tl{font-family:var(--num);font-weight:700;line-height:1}
+.ctile.achete,.ctile.maison{background:#131a21;border-color:#1c2631;opacity:.5}
+.ctile.eteinte{opacity:.22}.ctile.achete.eteinte,.ctile.maison.eteinte{opacity:.15}
+.ctile:active{transform:scale(.97)}
+.cdots{position:absolute;top:8px;left:8px;display:flex;gap:3px}.cdots i{width:7px;height:7px;border-radius:99px;display:block}
+.cok{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:99px;background:#7bd88f;display:flex;align-items:center;justify-content:center}.cok.maison{background:transparent;font-size:13px}
+.ctd-h{display:flex;align-items:center;gap:14px;margin-bottom:12px}.ctd-h .rt span{font-size:13px;color:var(--mut)}
+.ctd-ic{width:64px;height:64px;flex:none;border-radius:16px;background:#1c2631;border:1.5px solid #2c3844;display:flex;align-items:center;justify-content:center}.ctd-ic .tl{font-family:var(--num);font-weight:700}
+.ctd-p{font-family:var(--num);font-size:20px;margin-left:auto}
+.ctd-t{font-size:12px;font-weight:600;color:var(--mut);letter-spacing:.3px;text-transform:uppercase;margin:4px 2px 8px}
+.ctd-dot{width:10px;height:10px;border-radius:99px;flex:none;display:block}
+.ctd-conf{margin-top:12px;padding:14px;border-radius:14px;background:#2a1c1a;border:1px solid #5a3530;display:flex;flex-direction:column;gap:10px}.ctd-conf span{font-size:13px;color:#e3c9c4;line-height:1.45}
 </style>
 </head>
 <body>
@@ -342,8 +364,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.19.1";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 41;       // version du script que cette appli attend
+const APP_VERSION = "1.21.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 42;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -519,6 +541,12 @@ async function call(action, payload, ms) {
 const configured = () => !!(S.cfg.url && S.cfg.key);
 
 async function refresh(silent) {
+  // v1.20 : une seule lecture à la fois ; une demande qui arrive pendant une lecture en cours est inutile (la réponse sera fraîche)
+  if (refresh.enCours) return;
+  refresh.enCours = true;
+  try { await refreshUneFois(silent); } finally { refresh.enCours = false; }
+}
+async function refreshUneFois(silent) {
   // une actualisation de fond (« calme ») ne montre l'étiquette orange que si elle dépasse 4 s ; la durée est gardée pour Réglages
   const t0 = performance.now(), calme = !!silent && !S.queue.length;
   S.loadingSilent = calme; S.loadT0 = Date.now();
@@ -665,16 +693,17 @@ function payerChips(id, cur, attr) {
 }
 function viewPerso(v) {
   const P = (v.perso || {})[S.who];
-  const mes = (S.who === "Gaétan") === estG() ? gtCartes("G") : "";   // « Mes tâches » (Google Tasks) : sur l'onglet de la personne du profil affiché
+  // « Mes tâches » (Google Tasks) : uniquement sur l'onglet de Gaétan, profil Gaétan (v1.20 : ne s'affichait plus chez Mathilde par erreur)
+  const mes = S.who === "Gaétan" && estG() && !S.roleM ? gtCartes("G") : "";
   if (!P) return whoBar() + mes + `<div class="empty">L'onglet ${esc(S.who)} n'est pas encore disponible.<br>Mets à jour le script du Sheet (v19) puis appuie sur ⟳.</div>`;
-  let h = whoBar() + mes;
+  let h = whoBar();
   h += `<div class="hero"><small>Reste à vivre · ${esc(S.who)}</small><div class="big ${P.resteAVivre < 0 ? "neg" : ""}">${eur(P.resteAVivre)}</div>
     <div class="sub">Salaire ${eur(P.salaire)} · dépenses fixes ${eur(P.fixes)}</div></div>`;
   h += `<div class="grid">` + [["courses", "Courses", "🛒"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]].map(([k, nom, ic]) => {
     const e = P.enveloppes[k]; const tot = e.restant + e.depense;
     return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div><div class="v" style="color:${e.restant < 0 ? "var(--bad)" : "inherit"}">${eur(e.restant)}</div>${pctBar(e.depense, tot)}<div class="s">${eur(e.depense)} sur ${eur(tot)}</div></div>`;
   }).join("") + `<div class="env"><div class="t"><span>📦 Hors budget</span></div><div class="v">${eur(P.horsBudget)}</div><div class="s">ce mois</div></div></div>`;
-  h += persoList(P);
+  h += (mes ? `<div style="margin-top:12px">${mes}</div>` : "") + persoList(P);
   return h;
 }
 function persoList(P) {
@@ -694,8 +723,8 @@ function viewPlus() {
     T("💡", "Boîte à idées", "bugs, idées, questions", "goidees") +
     T("📊", "Statistiques", "courses, prix, note A à E", "gostats") +
     T("📒", "Bilan", "mois par mois, moyennes", "gobilan") +
-    T("🔁", "Prélèvements", "règles par période", "goregles") +
-    T("📄", "Contrats", "renégociation, garanties", "gocontrats") +
+    (estG() ? T("🔁", "Prélèvements", "règles par période", "goregles") : "") +
+    (estG() ? T("📄", "Contrats", "renégociation, garanties", "gocontrats") : "") +
     (estG() ? T("📈", "Bourse", "PEA, CTO pour Léo, DCA", "gobourse") : T("📈", S.roleM ? "Ma bourse" : "Bourse de Mathilde", "PEA, CTO pour Léo", "gobourse")) +
     T("🍽️", "Menus et courses", "recettes, liste partagée", "", 'data-rr="gorepas"') +
     T("⚙️", "Réglages", "connexion, mise à jour", "goreg") + `</div>`;
@@ -1054,6 +1083,7 @@ function viewReglages() {
 
 function render() {
   try { v19Role(); } catch (e) {}
+  if (!estG() && ["conges", "regles", "contrats"].includes(S.tab)) S.tab = "plus";   // v1.20 : écrans réservés à Gaétan
   const v = computeView();
   const el = $("#view");
   const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches", "idees", "voyages", "bilan", "regles", "contrats"].includes(S.tab);
@@ -1648,20 +1678,17 @@ function viewCourses(v) {
   const groupes = {};
   L.lignes.forEach(l => { (groupes[l.rayon] = groupes[l.rayon] || []).push(l); });
   const ordre = Object.keys(groupes).sort((a, b) => (a === RAYON_PLACARD) - (b === RAYON_PLACARD) || (a === RAYON_MAISON) - (b === RAYON_MAISON) || a.localeCompare(b, "fr"));
+  // v1.21 : tuiles par rayon (module 12), pastilles des plats en haut
+  const PS = platsSemaine(v, d.jours);
+  if (S.rp.plat && !PS.plats.some(p => p.id === S.rp.plat)) S.rp.plat = "";
+  h += coursesPlatsHtml(PS);
   ordre.forEach(ray => {
     const items = groupes[ray].sort((a, b) => (!!a.etat - !!b.etat) || a.produit.localeCompare(b.produit, "fr"));
     const reste = items.filter(l => !l.etat).length;
-    h += `<div class="rayon"><span>${esc(ray === RAYON_PLACARD ? "À vérifier au placard" : ray)}</span><span>${reste ? reste + " à prendre" : "✓"}</span></div><div class="card" style="padding:2px 14px">`;
-    items.forEach(l => {
-      h += `<div class="citem ${l.etat}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}"><div class="ck">${l.etat === "achete" ? "✓" : l.etat === "maison" ? "🏠" : ""}</div>
-        <div class="rt"><b>${esc(l.produit)}</b><span>${l.placard ? "normalement à la maison" : esc(l.achat) + (l.choisi ? " (choisi)" : "") + (l.besoin ? " · il faut " + esc(l.besoin) : "") + (l.kilo ? " · " + f2(l.kilo) + " €/kg" : "") + (l.source && !l.manuel ? " · " + esc(l.source === "estimé" ? "prix estimé" : l.source) : "")}</span></div>
-        ${l.placard ? "" : l.manuel ? `<div class="am" data-rman="${esc(l.produit)}" style="text-decoration:underline dotted;text-underline-offset:3px">${l.prix ? eur(l.prix) : "prix ?"}</div>` : `<div class="am" data-rprix="${esc(l.produit)}" style="text-decoration:underline dotted;text-underline-offset:3px">${eur(l.prix)}</div>`}
-        ${l.manuel ? `<button class="mini" data-rdel="${esc(l.produit)}" aria-label="Retirer">✕</button>` : l.placard ? "" : `<button class="mini" data-rmaison="${esc(l.produit)}" aria-label="Déjà à la maison">🏠</button>`}</div>`;
-    });
-    h += `</div>`;
+    h += `<div class="rayon crayon"><span>${esc(ray === RAYON_PLACARD ? "À vérifier au placard" : ray)}</span><span>${reste ? reste + " à prendre" : "✓ tout est pris"}</span></div>` + coursesTuilesHtml(items, PS);
   });
   h += `<button class="btn" data-rr="fincourses" style="margin-top:16px">✅ J'ai fini les courses : scanner le ticket</button><div class="hint" style="text-align:center">Photo ou PDF du ticket : la dépense est enregistrée une seule fois, et comparée à la liste.</div>`;
-  return h + `<div class="hint" style="margin:10px 4px">Touche un article quand il est dans le caddie (il se coche aussi chez l'autre). 🏠 = déjà à la maison, il sort du total. Touche un prix pour modifier la quantité, la contenance (bouteille de 2 L…) ou le prix : contenance et prix sont retenus pour les prochaines listes.</div>`;
+  return h + `<div class="hint" style="margin:10px 4px">Touche une tuile quand l'article est dans le caddie (elle se coche aussi chez l'autre). Appui long sur une tuile : plats concernés, prix, quantité, « déjà à la maison ». Les points de couleur disent à quels plats sert l'article ; touche un plat en haut pour allumer ses ingrédients.</div>`;
 }
 function viewRecettes(v) {
   const pm = prodMap(v), q = norm(S.rp.q || ""), f = S.rp.filt || "";
@@ -2247,13 +2274,175 @@ setInterval(pollCourses, 8000);
 
 
 // =====================================================================
+// 🛒 v1.21 : LISTE DE COURSES EN TUILES (maquette A/B choisie par Gaétan le 16/11)
+//    Tuiles par rayon (icône au trait, nom, quantité), points de couleur = plats de la semaine qui utilisent l'article,
+//    pastilles des plats en haut (toucher = allumer ses ingrédients), appui long = détail (plats, prix, à la maison, retirer).
+//    Toucher une tuile = dans le caddie (même opération « repascoche » qu'avant : la liste reste partagée en direct).
+// =====================================================================
+const PLAT_COULEURS = ["#6FC3FF", "#F58AB8", "#FF9F43", "#7BD88F", "#B79CFF", "#5ED6C8", "#FFD27A"];
+// icônes au trait (24×24), dessinées pour l'appli ; associées aux produits par mots-clés (sans accents, en minuscules)
+const ICONES_COURSES = [
+  [/pomme de terre|potatoe/, "M6 9c1-4 6-5 9-4s5 4 4 8-5 6-9 5-5-5-4-9zM9 10h.01M13 9h.01M12 14h.01"],
+  [/carotte/, "M14 6L5 19l1 1 13-9c1-3-2-6-5-5zM16 4l1-2M18 6l2-1M17 5l3-3"],
+  [/oignon|echalote/, "M12 3v3M12 6c-4 2-7 5-7 9a7 6 0 0 0 14 0c0-4-3-7-7-9zM12 6c-2 3-3 6-3 9M12 6c2 3 3 6 3 9"],
+  [/\bail\b/, "M12 3c0 3-6 5-6 11a6 6 0 0 0 12 0c0-6-6-8-6-11zM12 8v12M9 10c-1 3-1 7 0 10M15 10c1 3 1 7 0 10"],
+  [/poireau|cive/, "M10 21V9M14 21V9M10 9c0-3-3-5-5-6M14 9c0-3 3-5 5-6M12 9V3M10 15h4"],
+  [/champignon/, "M4 12a8 7 0 0 1 16 0zM10 12v6a2 2 0 0 0 4 0v-6"],
+  [/courgette|concombre/, "M5 19c-2-2-1-5 2-8l6-6c3-3 6-3 7-2s1 4-2 7l-6 6c-3 3-6 3-7 3zM18 3l2-1"],
+  [/poivron/, "M12 6c-1-2 0-3 1-4M7 7c-3 1-3 6-2 9 1 4 3 5 5 4h4c2 1 4 0 5-4 1-3 1-8-2-9-2-1-3 0-5 0s-3-1-5 0z"],
+  [/potimarron|courge|potiron|butternut/, "M12 6c-5 0-8 3-8 7s3 7 8 7 8-3 8-7-3-7-8-7zM12 6V3M12 6c-2 3-2 11 0 14M12 6c2 3 2 11 0 14"],
+  [/salade|laitue|epinard|persil|coriandre|basilic/, "M12 20c-5 0-8-4-8-9 3 0 5 2 6 4 0-4 1-7 2-10 1 3 2 6 2 10 1-2 3-4 6-4 0 5-3 9-8 9z"],
+  [/citron|orange\b|clementine/, "M5 12c0-4 3-7 7-7s7 3 7 7-3 7-7 7-7-3-7-7zM3 12h2M19 12h2"],
+  [/pomme/, "M12 7c-2-2-7-2-7 4s3 9 5 9c1 0 1-1 2-1s1 1 2 1c2 0 5-3 5-9s-5-6-7-4zM12 7V4M12 5c1-2 3-2 4-2"],
+  [/banane/, "M4 6c0 8 6 13 14 12 2 0 2-2 0-2-6 0-11-4-11-11 0-1.5-3-1.5-3 1zM4 6L3 4"],
+  [/tomate/, "M5 13a7 7 0 1 0 14 0 7 7 0 1 0-14 0M9 6l3 2 3-2M12 8V4"],
+  [/poulet|volaille|dinde/, "M14 4a6 6 0 0 1 4 9c-2 2-5 2-7 1l-4 4a2 2 0 1 1-3-1 2 2 0 1 1 1-3l4-4c-1-2-1-5 1-7a6 6 0 0 1 4 1z"],
+  [/saucisse|chipolata|merguez/, "M6 18c-3-3 0-7 4-11s8-5 10-3-1 7-5 11-6 6-9 3zM5 19l-2 2M19 5l2-2"],
+  [/hache|boeuf|porc|veau|steak|viande/, "M4 12c0-4 4-7 9-7 4 0 7 3 7 6s-3 7-8 7c-5 0-8-2-8-6zM14 10a2 2 0 1 0 .01 0"],
+  [/colin|lieu|saumon|cabillaud|poisson|thon/, "M3 12c3-4 7-6 11-6 3 0 5 3 7 6-2 3-4 6-7 6-4 0-8-2-11-6zM3 12L2 9M3 12l-1 3M16 11h.01"],
+  [/lardon/, "M4 9h6v6H4zM14 6h6v6h-6zM10 15h6v6h-6z"],
+  [/jambon/, "M4 8c0-2 3-4 8-4s8 2 8 4v8c0 2-3 4-8 4s-8-2-8-4zM4 8c0 2 3 4 8 4s8-2 8-4"],
+  [/lait de coco|concass|boite|conserve|haricots rouges|mais\b/, "M6 6h12v14H6zM6 9h12M6 17h12M10 13h4"],
+  [/\blait\b/, "M8 3h8v3l2 3v12H6V9l2-3zM6 13h12"],
+  [/creme|pesto|sauce/, "M7 8h10l-1 12H8L7 8zM6 5h12v3H6z"],
+  [/beurre/, "M3 10l4-4h14v8l-4 4H3zM3 10h14v8M17 10l4-4"],
+  [/gruyere|parmesan|fromage|emmental|mozzarella|comte/, "M3 17l18-8v8H3zM8 14h1M14 13h1M12 16h1"],
+  [/\boeuf/, "M12 3c3 0 6 5 6 10a6 6 0 0 1-12 0c0-5 3-10 6-10z"],
+  [/yaourt|fromage blanc|compote/, "M6 7h12l-2 13H8zM5 4h14v3H5z"],
+  [/lasagne/, "M4 6h16v4H4zM4 14h16v4H4z"],
+  [/gnocchi/, "M5 9a3 2 0 1 0 6 0 3 2 0 1 0-6 0M13 9a3 2 0 1 0 6 0 3 2 0 1 0-6 0M9 15a3 2 0 1 0 6 0 3 2 0 1 0-6 0"],
+  [/pate a|pizza|tortilla|brisee|feuilletee/, "M4 12a8 8 0 1 0 16 0 8 8 0 1 0-16 0M12 12h.01M9 9h.01M15 14h.01"],
+  [/pates|spaghetti|nouille|tagliatelle|coquillette/, "M5 4c0 6 2 12 7 16M9 4c0 6 1 12 3 16M15 4c0 6-1 12-3 16M19 4c0 6-2 12-7 16"],
+  [/riz|semoule|quinoa|farine|sucre|lentille|boulgour/, "M7 4h10l2 4v12H5V8l2-4zM5 8h14M10 13h4"],
+  [/avoine|cereale|muesli/, "M3 11h18c0 5-4 9-9 9s-9-4-9-9zM8 8c1-2 3-3 4-3M14 7c1-1 2-1 3-1"],
+  [/jus|eau|soda|sirop/, "M10 2h4v3l2 3v14H8V8l2-3z"],
+  [/surgele/, "M12 2v20M3 7l18 10M21 7L3 17"],
+  [/pain|brioche|baguette/, "M5 10c-2 0-2-5 2-6 3-1 7-1 10 0 4 1 4 6 2 6v10H5z"],
+  [/piment/, "M17 5c2 0 3 2 2 4-2 7-9 11-15 11 5-2 9-7 10-12 1-2 2-3 3-3zM17 5c0-1 1-2 2-2"],
+  [/papier|essuie|mouchoir/, "M4 8a4 4 0 1 0 8 0 4 4 0 1 0-8 0M8 4h10v14H8M8 12v6"],
+  [/liquide|lessive|gel douche|shampo|savon|adoucissant|nettoyant|javel/, "M9 2h6v3H9zM8 5h8l1 4v13H7V9z"],
+  [/sac/, "M5 8h14l-1 13H6zM9 8c0-3 1-5 3-5s3 2 3 5"],
+  [/eponge/, "M4 8h16v8H4zM4 12h16"],
+  [/film|aluminium|cuisson/, "M4 8a3 3 0 1 0 0 6h14a3 3 0 1 0 0-6zM4 14v2h14"]
+];
+const sansAccent = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/œ/g, "oe").toLowerCase();
+function iconeCourse(nom) { const n = sansAccent(nom); const x = ICONES_COURSES.find(([re]) => re.test(n)); return x ? x[1] : ""; }
+function tuileVisuel(nom, taille, coul) {
+  const d = iconeCourse(nom);
+  if (d) return `<svg aria-hidden="true" width="${taille}" height="${taille}" viewBox="0 0 24 24" fill="none" stroke="${coul}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
+  return `<span class="tl" style="font-size:${Math.round(taille * .85)}px;color:${coul}">${esc((String(nom).trim()[0] || "?").toUpperCase())}</span>`;
+}
+// les plats de la semaine (dans l'ordre des jours) et, pour chaque produit, les plats qui l'utilisent
+function platsSemaine(v, jours) {
+  const k = reg(v).coef || 1, plats = [], parProduit = {};
+  (jours || []).slice().sort((a, b) => a.date < b.date ? -1 : 1).forEach(j => {
+    if (j.type !== "cuisine" && j.type !== "reporte") return;
+    const r = recette(v, j.id); if (!r) return;
+    let pl = plats.find(x => x.id === r.id);
+    if (!pl) { pl = { id: r.id, nom: r.nom, dates: [], c: PLAT_COULEURS[plats.length % PLAT_COULEURS.length] }; plats.push(pl); }
+    pl.dates.push(j.date);
+    const f = (Number(j.portions) || 4) / 4 * k;
+    r.ings.forEach(([n, q]) => { const L = parProduit[n] = parProduit[n] || []; let e = L.find(x => x.id === r.id); if (!e) { e = { id: r.id, q: 0, dates: [] }; L.push(e); } e.q += q * f; e.dates.push(j.date); });
+  });
+  return { plats, parProduit };
+}
+// nom court d'un plat pour les pastilles : avant la première virgule ou « et », 24 caractères au plus
+const nomCourtPlat = n => { let t = String(n).split(/,| et | & /)[0].trim(); return t.length > 24 ? t.slice(0, 23).trim() + "…" : t; };
+const jourCourtPlat = d => { const x = dOf(d); return ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."][x.getDay()] + " " + x.getDate(); };
+// pastilles des plats en haut de la liste
+function coursesPlatsHtml(PS) {
+  if (!PS.plats.length) return "";
+  const sel = S.rp.plat || "";
+  return `<div class="cplats-t">Les plats de la semaine</div><div class="cplats">` +
+    `<button class="cplat ${!sel ? "on" : ""}" data-rplat="">Tout</button>` +
+    PS.plats.map(p => `<button class="cplat ${sel === p.id ? "on" : ""}" data-rplat="${esc(p.id)}" style="${sel === p.id ? "border-color:" + p.c : ""}"><i style="background:${p.c}"></i>${esc(nomCourtPlat(p.nom))} · ${esc(jourCourtPlat(p.dates[0]))}</button>`).join("") + `</div>`;
+}
+// grille de tuiles d'un rayon
+function coursesTuilesHtml(items, PS) {
+  const sel = S.rp.plat || "", coulDe = {}; PS.plats.forEach(p => { coulDe[p.id] = p.c; });
+  const platSel = PS.plats.find(p => p.id === sel);
+  return `<div class="ctiles">` + items.map(l => {
+    const plats = (PS.parProduit[l.produit] || []).filter(x => coulDe[x.id]);
+    const dans = !sel || plats.some(x => x.id === sel);
+    const etat = l.etat, coul = etat ? "var(--mut)" : "var(--acc)";
+    const q = l.placard ? "à vérifier" : etat === "maison" ? "pas à acheter" : l.manuel ? l.achat : (l.achat || "").replace(/^≈ /, "");
+    const cls = ["ctile", etat, !dans ? "eteinte" : "", sel && dans && platSel ? "allumee" : ""].filter(Boolean).join(" ");
+    return `<button class="${cls}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}" data-tuile="${esc(l.produit)}" style="${sel && dans && platSel ? "border-color:" + platSel.c : ""}" aria-label="${esc(l.produit + (etat === "achete" ? ", dans le caddie" : etat === "maison" ? ", pas à acheter" : ", à prendre"))}">
+      ${plats.length ? `<span class="cdots">${plats.map(x => `<i style="background:${coulDe[x.id]}"></i>`).join("")}</span>` : ""}
+      ${etat === "achete" ? `<span class="cok" aria-hidden="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0e1318" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></span>` : etat === "maison" ? `<span class="cok maison" aria-hidden="true">🏠</span>` : ""}
+      ${tuileVisuel(l.produit, 38, coul)}<b>${esc(l.produit)}</b><small>${esc(q)}</small></button>`;
+  }).join("") + `</div>`;
+}
+// appui long : fenêtre de détail d'un article
+function openTuile(nom) {
+  const v = computeView(), sem = semaineOff(S.rp.wk), d = semData(v, sem), L = construireListe(v, sem, d.jours);
+  const l = L.lignes.find(x => x.produit === nom); if (!l) return;
+  const PS = platsSemaine(v, d.jours), pm = prodMap(v), p = pm[nom], coulDe = {}; PS.plats.forEach(x => { coulDe[x.id] = x; });
+  const plats = (PS.parProduit[nom] || []).filter(x => coulDe[x.id]);
+  S.ctuile = { nom, manuel: !!l.manuel, sem, plats: plats.map(x => coulDe[x.id].nom), confirmer: false };
+  const detailQ = l.placard ? "normalement à la maison" : (l.achat || "") + (l.besoin ? " · il faut " + l.besoin : "");
+  openSheet(`<div class="ctd">
+    <div class="ctd-h"><div class="ctd-ic">${tuileVisuel(nom, 40, "var(--acc)")}</div><div class="rt"><h3 style="margin:0">${esc(nom)}</h3><span>${esc(detailQ)}</span></div>${l.placard ? "" : `<b class="ctd-p">${l.prix ? eur(l.prix) : "prix ?"}</b>`}</div>
+    ${plats.length ? `<div class="ctd-t">Pour ces plats</div><div class="card" style="padding:2px 14px;margin:0">${plats.map(x => `<div class="row"><i class="ctd-dot" style="background:${coulDe[x.id].c}"></i><div class="rt"><b style="white-space:normal">${esc(coulDe[x.id].nom)}</b></div><span class="hint" style="margin:0">${p ? esc(fmtQte(x.q, p.u)) : ""} · ${esc(x.dates.map(jourCourtPlat).join(", "))}</span></div>`).join("")}</div>`
+      : `<div class="hint">${l.manuel ? "Article ajouté à la main." : "Pas lié à un plat de la semaine (petit-déjeuner, fruits, maison)."}</div>`}
+    ${!l.manuel && !l.placard && l.source ? `<div class="hint">${esc(l.source === "estimé" ? "Prix estimé" : "Prix : " + l.source)}${l.kilo ? " · " + f2(l.kilo) + " €/kg" : ""}</div>` : ""}
+    <div class="two" style="margin-top:12px">
+      ${l.manuel ? `<button class="btn sec" style="margin:0" data-ctact="prixman">Changer le prix</button>` : l.placard ? "" : `<button class="btn sec" style="margin:0" data-ctact="maison">${l.etat === "maison" ? "Finalement à acheter" : "Déjà à la maison"}</button>`}
+      ${l.placard ? "" : l.manuel ? `<button class="btn sec" style="margin:0" data-ctact="caddie">${l.etat === "achete" ? "Pas encore pris" : "Dans le caddie"}</button>` : `<button class="btn sec" style="margin:0" data-ctact="qte">Changer la quantité</button>`}
+    </div>
+    ${l.etat === "maison" && !l.manuel ? "" : `<button class="linkbtn" style="color:var(--bad);display:block;margin:12px auto 0" data-ctact="retirer">Retirer de la liste</button>`}
+    <div id="ctConf"></div></div>`);
+}
+function ctConfirmer() {
+  const x = S.ctuile, el = $("#ctConf"); if (!x || !el) return;
+  const qui = x.plats.length === 1 ? x.plats[0] + " en a besoin." : x.plats.slice(0, -1).join(", ") + " et " + x.plats[x.plats.length - 1] + " en ont besoin.";
+  el.innerHTML = `<div class="ctd-conf"><b>Retirer « ${esc(x.nom)} » ?</b><span>${esc(qui)} Si vous en avez déjà, choisis plutôt « Déjà à la maison ».</span>
+    <div class="two"><button class="btn sec" style="margin:0" data-ctact="annuler">Annuler</button><button class="btn" style="margin:0;background:var(--bad);color:var(--onacc)" data-ctact="retirerok">Retirer quand même</button></div></div>`;
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-ctact],[data-rplat]"); if (!t) return;
+  if (t.dataset.rplat !== undefined) { S.rp.plat = S.rp.plat === t.dataset.rplat ? "" : t.dataset.rplat; render(); return; }
+  const a = t.dataset.ctact, x = S.ctuile; if (!x) return;
+  e.stopImmediatePropagation();
+  const v = computeView(), sd = semData(v, x.sem);
+  if (a === "qte") { closeSheet(); openArticle(x.nom); return; }
+  if (a === "prixman") { closeSheet(); openManuel(x.nom); return; }
+  if (a === "maison") { const cur = sd.etats[x.nom]; enqueue("repascoche", { semaine: x.sem, produit: x.nom, etat: cur === "maison" ? "" : "maison" }); closeSheet(); return; }
+  if (a === "caddie") { const cur = ((sd.manuels.find(m => m.lib === x.nom) || {}).etat || ""); enqueue("repascoche", { semaine: x.sem, produit: x.nom, etat: cur ? "" : "achete", manuel: true }); closeSheet(); return; }
+  if (a === "annuler") { $("#ctConf").innerHTML = ""; return; }
+  if (a === "retirer") {
+    if (x.manuel) { enqueue("repasajout", { semaine: x.sem, lib: x.nom, suppr: true }); closeSheet(); toast("Retiré de la liste"); return; }
+    if (x.plats.length) { ctConfirmer(); return; }
+  }
+  if (a === "retirer" || a === "retirerok") {
+    // article calculé d'après les menus : il sort de la liste et du total (même effet que « déjà à la maison »)
+    enqueue("repascoche", { semaine: x.sem, produit: x.nom, etat: "maison" }); closeSheet(); toast("Retiré de la liste de cette semaine");
+  }
+}, true);
+// appui long sur une tuile (0,5 s) : détail ; le toucher qui suit n'est pas compté comme « dans le caddie »
+(function () {
+  let tm = null, x0 = 0, y0 = 0, cible = null;
+  const stop = () => { clearTimeout(tm); tm = null; };
+  document.addEventListener("pointerdown", e => {
+    const t = e.target.closest && e.target.closest("[data-tuile]"); if (!t) return;
+    cible = t; x0 = e.clientX; y0 = e.clientY; stop();
+    tm = setTimeout(() => { tm = null; S.lpTuile = Date.now(); if (navigator.vibrate) navigator.vibrate(20); openTuile(t.dataset.tuile); }, 500);
+  });
+  document.addEventListener("pointermove", e => { if (tm && (Math.abs(e.clientX - x0) > 10 || Math.abs(e.clientY - y0) > 10)) stop(); });
+  ["pointerup", "pointercancel", "scroll"].forEach(ev => document.addEventListener(ev, stop, true));
+  document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest("[data-tuile]")) e.preventDefault(); });
+  document.addEventListener("click", e => {
+    if (S.lpTuile && Date.now() - S.lpTuile < 800 && e.target.closest && e.target.closest("[data-tuile]")) { e.stopImmediatePropagation(); e.preventDefault(); S.lpTuile = 0; }
+  }, true);
+})();
+// =====================================================================
 // v1.7.0 : PROFILS (Gaétan = tout, Mathilde = sa version), CONGÉS, GARDE DE LÉO, PONTS, JOUR DES COURSES
 // =====================================================================
 S.prof = LS.get("bf.prof", "G");
 S.cg = LS.get("bf.cg", null);            // { data, at } : copie locale du fichier congés (lu par le script, cache 10 min)
 S.gardeVue = "14";
 const estG = () => S.prof !== "M";
-function setProf(p) { S.prof = p; LS.set("bf.prof", p); majProf(); if (!estG() && S.tab === "conges") S.tab = "home"; render(); }
+function setProf(p) { S.prof = p; LS.set("bf.prof", p); majProf(); if (!estG() && ["conges", "regles", "contrats"].includes(S.tab)) S.tab = "home"; render(); }
 function majProf() { const b = $("#prof"); if (b) { b.textContent = estG() ? "G" : "M"; b.style.color = estG() ? "" : "#ff8fb8"; } }
 
 // ---------- bandeau « script pas à jour » ----------
@@ -2362,8 +2551,9 @@ function conseilCourses(semCible) {
   const J = gardeJours(d, 0).filter(g => g.date >= deb && g.date <= fin);
   if (!J.length) return "";
   const deux = J.filter(g => libre(g.mathilde) && libre(g.gaetan)).pop();
-  const mat = J.filter(g => libre(g.mathilde) && !libre(g.gaetan)).pop();
-  const gae = J.filter(g => libre(g.gaetan) && !libre(g.mathilde)).pop();
+  // v1.20 : pour une personne seule, son PREMIER jour de repos (avant : le dernier, pour des produits plus frais)
+  const mat = J.find(g => libre(g.mathilde) && !libre(g.gaetan));
+  const gae = J.find(g => libre(g.gaetan) && !libre(g.mathilde));
   let t = "";
   if (deux) t = `📅 <b>${esc(longD(deux.date))}</b> : vous êtes tous les deux en repos, courses à deux (magasin ou drive).`;
   else if (mat) t = `📅 <b>${esc(longD(mat.date))}</b> : Mathilde est en repos, seule avec Léo : <b>drive conseillé</b>.`;
@@ -2887,8 +3077,8 @@ function viewBourse() {
   h += `<div class="hero">${marcheHtml()}<small>📈 ${P === "M" ? (S.roleM ? "Ma bourse" : "Bourse de Mathilde") : "Bourse"} · PEA et CTO pour Léo</small><div class="big">${eur(val + esp)}</div>
     <div class="sub">${pv >= 0 ? "+" : ""}${eur(pv)} (${pv >= 0 ? "+" : ""}${cout > 0 ? String(Math.round(pv / cout * 1000) / 10).replace(".", ",") : 0} %) · ${eur(verse)} versés · ${eur(esp)} d'espèces</div></div>`;
   h += etatComptesHtml(d, P);
+  h += boBoutonDca();   // v1.20 : juste sous les deux portefeuilles du mois
   h += objectifsHtml(d, P);
-  h += `${boBoutonDca()}`;
   h += `<h2>Positions</h2>` + (d.positions.length ? d.positions.map(p => `<div class="card pos"><div class="mh"><b>${esc(p.titre)}</b><span>${esc(libCompte(p.compte))}</span></div>
     <div class="mk"><div><b>${String(p.parts).replace(".", ",")}</b>parts</div><div><b>${pru3(p.pru)}</b>PRU</div><div><b>${p.cours ? eur(p.cours) : "?"}</b>cours</div><div><b>${eur(p.valeur)}</b>valeur</div>
     <div><b style="color:${p.pv >= 0 ? "#2f9e6e" : "#e63e11"}">${p.pv >= 0 ? "+" : ""}${eur(p.pv)}</b>plus-value</div><div><b>${eur(p.frais)}</b>frais payés</div></div>${p.cours ? "" : `<div class="hint">Cours introuvable : vérifie le symbole (ex. EPA:WPEA) dans « Positions » du fichier des investissements.</div>`}${boCorrLien(p)}</div>`).join("") : `<div class="empty">Aucune position.</div>`);
@@ -3374,7 +3564,8 @@ function gtCartes(vue) {
 function gtEcran() {
   chargerGt();
   const d = gtData(); if (!d || !d.actif) return "";
-  let h = d.listes.map(l => `<h2>${esc(l.titre)} · Google Tasks</h2>` + (l.taches.length ? `<div class="card" style="padding:4px 14px">${l.taches.map(t => gtLigne(l, t)).join("")}</div>` : `<div class="empty">Rien dans cette liste</div>`)).join("");
+  // profil Mathilde (même sur le téléphone de Gaétan) : seulement les listes partagées
+  let h = d.listes.filter(l => estG() && !S.roleM ? true : l.vue === "GM").map(l => `<h2>${esc(l.titre)} · Google Tasks</h2>` + (l.taches.length ? `<div class="card" style="padding:4px 14px">${l.taches.map(t => gtLigne(l, t)).join("")}</div>` : `<div class="empty">Rien dans cette liste</div>`)).join("");
   if (!S.roleM && estG() && d.toutes.length) {
     h += `<h2>Listes Google Tasks affichées</h2><div class="card">` + d.toutes.map(l => `<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${esc(l.titre)}</b><div class="tchips" style="margin-top:6px">${[["", "Pas affichée"], ["G", "Moi seul"], ["GM", "Nous deux"]].map(([k, t]) => `<button class="cat ${l.vue === k ? "on" : ""}" data-gtvue="${k}" data-gtl="${esc(l.id)}">${t}</button>`).join("")}</div></div>`).join("") + `<button class="linkbtn" data-gtmaj="1">Relire Google Tasks</button></div>`;
   }
@@ -4014,7 +4205,7 @@ function compteFait113(P, c) {
 function boBoutonDca() {
   const P = profCode(), d = boVue(S.bo && S.bo.data, P);
   const cs = d ? comptesActifs(d, P) : [];
-  if (cs.length && cs.every(c => compteFait113(P, c))) return `<button class="btn" data-bodca="bonus">💎 Investissement bonus</button><div class="hint" style="margin:-4px 4px 8px">Le DCA du mois est fait. Un bonus s'ajoute en plus, marqué « BONUS » dans le journal : il ne compte pas dans le plan.</div>`;
+  if (cs.length && cs.every(c => compteFait113(P, c))) return `<button class="btn" data-bodca="bonus">💎 Investissement bonus</button><div class="hint" style="margin:10px 4px 16px;line-height:1.45">Le DCA du mois est fait. Un bonus s'ajoute en plus, marqué « BONUS » dans le journal : il ne compte pas dans le plan.</div>`;
   return `<button class="btn" data-bodca="1">✅ DCA validé</button>`;
 }
 
@@ -4417,7 +4608,7 @@ function viewContrats() {
 }
 function v115Pret() { return !!(S.base && S.base.v115); }
 function contratsAccueil115() {
-  if (!v115Pret()) return "";
+  if (!v115Pret() || !estG()) return "";   // v1.20 : les contrats ne concernent que Gaétan
   const L = contratsVue115().map(c => ({ c, s: statut115(c) })).filter(x => x.s.k === "libre" || x.s.k === "bientot");
   if (!L.length) return "";
   const libres = L.filter(x => x.s.k === "libre").length;

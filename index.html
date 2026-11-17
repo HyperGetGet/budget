@@ -348,6 +348,31 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .ctp-plein img{width:min(96vh,276vw);max-width:none;transform:rotate(90deg)}
 @media (orientation:landscape){.ctp-plein img{width:96vw;max-height:96vh;object-fit:contain;transform:none}}
 .ctp-plein span{position:absolute;bottom:10px;left:0;right:0;text-align:center;color:#666;font-size:13px}
+/* v1.26 : Léo planning, statut sous le nom */
+.qbadge{display:inline-flex;flex-direction:column;align-items:center;color:#fff;border-radius:14px;padding:4px 12px;min-width:74px;white-space:nowrap;line-height:1.15}.qbadge b{font-size:12.5px;font-weight:600}.qbadge small{font-size:11px;opacity:.9}
+.gl small{display:block;font-size:12px;color:var(--mut)}
+/* v1.26 : ajout d'un article (un seul champ) */
+.ajnew{margin-top:10px;padding:12px 14px}.ajtete{display:flex;align-items:center;gap:12px}.ajtete b{display:block;font-size:17px}.ajtete small{display:block;font-size:12px;color:var(--mut)}
+.ajnb{display:flex;align-items:center;gap:8px}.ajnb b{flex:1;text-align:center;font-family:var(--num);font-size:22px}.ajnb .cat{font-size:20px;padding:6px 16px}
+#rAl .row svg{flex:none;margin-right:10px}
+/* v1.26 : onglet Courses (maquette G) — le texte d'abord : nom en 15 px, détail en 13 px, jamais coupé à une ligne */
+.gcalc{position:sticky;top:calc(60px + env(safe-area-inset-top));z-index:10;display:grid;grid-template-columns:1fr auto;gap:2px 10px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:0 0 10px;box-shadow:0 6px 14px rgba(0,0,0,.25)}
+.gcalc span,.gcalc small{display:block;font-size:12px;color:var(--mut)}.gcalc-l b{display:block;font-family:var(--num);font-size:30px;line-height:1.05;color:#7bd88f}
+.gcalc-r{text-align:right}.gcalc-r b{display:block;font-family:var(--num);font-size:18px}
+.gbar{grid-column:1/-1;height:5px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:6px}.gbar i{display:block;height:100%;background:#7bd88f}
+.gadd{display:flex;align-items:center;gap:8px;width:100%;min-height:46px;margin:8px 0;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:var(--chip);color:var(--mut);font:inherit;font-size:15px;text-align:left;cursor:pointer}
+.gmodes{display:flex;gap:6px;margin-bottom:6px}.gmodes button{flex:1;min-height:36px;border-radius:10px;border:0;background:var(--chip);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}.gmodes button.on{background:var(--acc);color:var(--onacc)}
+.grayon{display:flex;justify-content:space-between;align-items:baseline;padding:14px 2px 6px}.grayon span{font-size:14px;font-weight:650}.grayon small{font-size:12px;color:var(--mut)}.grayon.ok span{color:#7bd88f}
+.gtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.gtiles.p{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.gtile{position:relative;min-height:126px;border-radius:14px;border:1.5px solid #2c3844;background:#1c2631;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 5px 8px;font-family:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.gtile b{font-size:15px;font-weight:650;line-height:1.15;text-align:center;overflow-wrap:anywhere}
+.gtile small{font-size:13px;color:#c4ced7;line-height:1.2;text-align:center;overflow-wrap:anywhere}
+.gtile em{margin-top:auto;font-style:normal;font-family:var(--num);font-size:12px;font-weight:700;color:var(--mut)}.gtile em.reel{color:#7bd88f}
+.gtile.petite{min-height:84px;background:#131a21;border-color:#1c2631;padding:8px 4px 6px}.gtile.petite b{font-size:12.5px;font-weight:600;color:#aeb9c4}
+.gtile:active{transform:scale(.97)}
+.gmaison{margin-top:12px}.gmaison summary{font-size:14px;color:var(--mut);padding:8px 2px;cursor:pointer}
+.grec{display:flex;flex-wrap:wrap;gap:6px}.grec button{display:flex;align-items:center;gap:6px;min-height:40px;padding:0 12px 0 8px;border-radius:99px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
+.ctret{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:14px;color:var(--mut)}.ctret input{width:20px;height:20px;accent-color:var(--acc)}
 </style>
 </head>
 <body>
@@ -361,7 +386,7 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
   <button data-tab="home"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg></span>Accueil</button>
   <button data-tab="repas"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3v8a2 2 0 0 0 4 0V3M8 11v10M17 3c-2 2-3 4-3 7h3v11"/></svg></span>Repas</button>
   <button data-tab="journal"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg></span>Journal</button>
-  <button data-tab="annuels"><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>Annuels</button>
+  <button data-tab="courses"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2 11h11l2-8H6"/><circle cx="9" cy="20" r="1.2"/><circle cx="17" cy="20" r="1.2"/></svg></span>Courses</button>
   <button data-tab="plus"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>Plus</button>
 </nav>
 <div id="ov"></div>
@@ -372,8 +397,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.25.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 47;       // version du script que cette appli attend
+const APP_VERSION = "1.26.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 48;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -564,7 +589,8 @@ async function refreshUneFois(silent) {
     if (S.queue.length) { return await flush(); }
     S.loading = true; setSync();
     try {
-      const r = await call("state");
+      const frais = !!S.frais; S.frais = false;
+      const r = await call("state", frais ? { frais: true } : undefined);
       if (r.ok) { S.base = r.state; saveBase(); S.offline = false; S.error = ""; S.occupe = false; }
       else if (r.retry) { S.occupe = true; clearTimeout(refresh.t); refresh.t = setTimeout(() => refresh(true), 12000); }   // Sheet occupé : on réessaie dans 12 s, sans message d'erreur
       else { S.error = r.error; if (!silent) toast("⚠ " + r.error); }
@@ -721,11 +747,14 @@ function persoList(P) {
 }
 function viewPlus() {
   const T = (ic, nom, sub, act, extra) => `<button class="tile ${act === "soon" ? "soon" : ""}" data-act="${act}" ${extra || ""}><span>${ic}</span>${nom}<small>${sub}</small></button>`;
+  // v1.26 : ordre choisi par Gaétan (17/11) ; Annuels arrive ici (la barre du bas a pris Courses), Amazon descend
   return `<h2>Plus</h2><div class="tiles">` +
-    T("📦", "Amazon P&amp;É", "abonnements du mois", "goamz") +
+    (estG() ? T("📈", "Bourse", "PEA, CTO pour Léo, DCA", "gobourse") : T("📈", S.roleM ? "Ma bourse" : "Bourse de Mathilde", "PEA, CTO pour Léo", "gobourse")) +
     T("🩺", "Soins et mutuelle", "suivi des remboursements", "goso") +
     (estG() ? T("🏖️", "Congés", "compteurs, poser, ponts", "goconges") : "") +
-    T("👶", "Garde de Léo", "qui garde, calendrier", "gogarde") +
+    T("👶", "Léo planning", "qui garde Léo, calendrier", "gogarde") +
+    T("🍽️", "Menus", "menus, recettes, tiroir", "", 'data-rr="gorepas"') +
+    T("🗓️", "Annuels", "prélèvements de l'année", "", 'data-tab="annuels"') +
     T("✅", "Tâches", "à faire à deux", "gotaches") +
     T("✈️", "Voyages", "budget, épargne, idées", "govoyages") +
     T("💡", "Boîte à idées", "bugs, idées, questions", "goidees") +
@@ -733,8 +762,7 @@ function viewPlus() {
     T("📒", "Bilan", "mois par mois, moyennes", "gobilan") +
     (estG() ? T("🔁", "Prélèvements", "règles par période", "goregles") : "") +
     (estG() ? T("📄", "Contrats", "renégociation, garanties", "gocontrats") : "") +
-    (estG() ? T("📈", "Bourse", "PEA, CTO pour Léo, DCA", "gobourse") : T("📈", S.roleM ? "Ma bourse" : "Bourse de Mathilde", "PEA, CTO pour Léo", "gobourse")) +
-    T("🍽️", "Menus et courses", "recettes, liste partagée", "", 'data-rr="gorepas"') +
+    T("📦", "Amazon Prévoyez et économisez", "abonnements du mois", "goamz") +
     T("⚙️", "Réglages", "connexion, mise à jour", "goreg") + `</div>`;
 }
 function viewAmazon(v) {
@@ -1098,14 +1126,15 @@ function render() {
   if (!estG() && ["conges", "regles", "contrats"].includes(S.tab)) S.tab = "plus";   // v1.20 : écrans réservés à Gaétan
   const v = computeView();
   const el = $("#view");
-  const grpPlus = ["plus", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches", "idees", "voyages", "bilan", "regles", "contrats"].includes(S.tab);
+  const grpPlus = ["plus", "annuels", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches", "idees", "voyages", "bilan", "regles", "contrats"].includes(S.tab);
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
-  $("#fab").style.display = (grpPlus || S.tab === "repas") ? "none" : "block";
+  $("#fab").style.display = (grpPlus || S.tab === "repas" || S.tab === "courses") ? "none" : "block";
   if (S.tab === "plus") { el.innerHTML = viewPlus(); return; }
   if (S.tab === "reglages") { if (!el.querySelector("#cfgSave")) { el.innerHTML = viewReglages(); setTimeout(chargerSante, 50); } return; }
   if (!configured()) { S.tab = "reglages"; el.innerHTML = viewReglages(); toast("Configure d'abord la connexion"); return; }
   if (!v) { el.innerHTML = `<div class="empty">${S.loading ? "Chargement…" : "Pas encore de données.<br>Vérifie la connexion puis appuie sur ⟳."}</div>`; return; }
   if (S.tab === "repas") { el.innerHTML = bandeauScript() + viewRepas(v); return; }
+  if (S.tab === "courses") { el.innerHTML = bandeauScript() + viewOngletCourses(v); return; }
   if (S.tab === "conges") { el.innerHTML = viewConges(); return; }
   if (S.tab === "garde") { el.innerHTML = viewGarde(); return; }
   if (S.tab === "stats") { el.innerHTML = bandeauScript() + viewStats(false); return; }
@@ -1496,7 +1525,7 @@ function construireListe(v, sem, jours) {
   });
   (data.manuels || []).forEach(m => {
     const p = pm[m.lib];
-    lignes.push({ produit: m.lib, rayon: m.rayon || (p ? p.r : "Divers"), achat: "× " + (m.qte || 1), prix: m.prix || 0, manuel: true, maison: (m.rayon || (p && p.r)) === RAYON_MAISON, etat: m.etat || "" });
+    lignes.push({ produit: m.lib, rayon: m.rayon || (p ? p.r : "Divers"), achat: m.prec ? ((m.qte || 1) > 1 ? m.qte + " × " : "") + m.prec : "× " + (m.qte || 1), prec: m.prec || "", prix: m.prix || 0, manuel: true, maison: (m.rayon || (p && p.r)) === RAYON_MAISON, etat: m.etat || "" });
   });
   const compte = l => !l.placard && l.etat !== "maison";
   const alim = lignes.filter(l => compte(l) && !l.maison).reduce((s, l) => s + l.prix, 0);
@@ -1560,9 +1589,10 @@ function repasApply(v, op) {
     const x = w(p.semaine);
     if (p.suppr) x.manuels = x.manuels.filter(m => m.lib !== p.lib);
     else if (p.maj) { const m = x.manuels.find(m => m.lib === p.lib); if (m) { m.qte = p.qte; m.prix = p.prix; } }
-    else x.manuels.push({ lib: p.lib, rayon: p.rayon, prix: p.prix, qte: p.qte || 1, etat: "" });
+    else x.manuels.push({ lib: p.lib, rayon: p.rayon, prix: p.prix, qte: p.qte || 1, etat: "", prec: p.prec || "" });
   } else if (op.type === "repasmot") { v.repas.inconnus = (v.repas.inconnus || []).filter(i => i.lib !== p.lib); }
   else if (op.type === "repasreglage") { v.repas.reglages = Object.assign({}, v.repas.reglages, { [p.cle]: p.valeur }); }
+  else if (op.type === "repaspaye") { const x = w(p.semaine); x.payes = x.payes || {}; const k = (p.manuel ? "m:" : "") + p.produit; if (p.total === "" || p.total == null) delete x.payes[k]; else x.payes[k] = Number(p.total); }
   else if (op.type === "repasqte") { const x = w(p.semaine); x.qte = x.qte || {}; if (Number(p.qte) > 0) x.qte[p.produit] = Number(p.qte); else delete x.qte[p.produit]; }
   else if (op.type === "repasproduit") { const x = (v.repas.produits || []).find(q => q.n === p.produit); if (x) { if (p.pas > 0) { x.pas = p.pas; x.c = p.cond || x.c; } if (p.prix > 0) Object.assign(x, { prix: p.prix, appris: true, mag: "saisie manuelle", date: todayISO() }); } }
   else if (op.type === "repasprix") { const x = (v.repas.produits || []).find(q => q.n === p.produit); if (x) Object.assign(x, { prix: p.prix, appris: true, mag: "saisie manuelle", date: todayISO() }); }
@@ -1861,15 +1891,80 @@ function doubler(i) {
 }
 
 // ---------- ajout manuel, partage, articles inconnus, réglages ----------
+// v1.26 : UN seul champ (avant : une recherche en haut et un champ « Article » plus bas, d'où les articles nommés « 1 » et « 2 »).
+// On tape : la liste des produits connus se filtre ; si le nom n'existe pas, un bloc « Nouvel article » apparaît avec
+// précision (marque, taille…), nombre, prix et rayon deviné par mots-clés (glace → Surgelés), corrigeable.
 function openAjout() {
   const v = computeView();
   const prods = (R(v).produits || []).filter(p => !estPlacard(p)).sort((a, b) => (estMaison(b) - estMaison(a)) || a.n.localeCompare(b.n, "fr"));
-  S.rf = { ajout: true };
-  openSheet(`<h3>Ajouter à la liste</h3><input type="text" id="rAq" placeholder="🔎 Papier toilette, lessive, chips…" autocomplete="off">
-    <div class="pick" id="rAl" style="margin-top:8px">${prods.map(p => `<div class="row" data-radd="${esc(p.n)}" data-n="${esc(norm(p.n))}"><div class="rt"><b>${esc(p.n)}</b><span>${esc(p.r)} · ${esc(p.c || "")}</span></div><div class="am">${eur(p.prix)}</div></div>`).join("")}</div>
-    <label>Autre article (texte libre)</label><div class="two"><input type="text" id="rAlib" placeholder="Article" autocomplete="off"><input type="text" id="rAprix" inputmode="decimal" placeholder="Prix €" autocomplete="off"></div>
-    <div class="tchips" style="margin-top:8px"><button class="cat on" data-rary="Divers">🥕 Alimentaire</button><button class="cat" data-rary="${RAYON_MAISON}">🧻 Hygiène & maison</button></div>
-    <button class="btn" data-rr="ajoutlibre">Ajouter</button>`);
+  S.rf = { ajout: true, n: 1, rayonChoisi: false };
+  openSheet(`<h3>Ajouter à la liste</h3><input type="text" id="rAq" placeholder="Que faut-il acheter ? (ex. glace Ben & Jerry's)" autocomplete="off" enterkeyhint="done">
+    <div id="rAnew"></div>
+    <div class="pick" id="rAl" style="margin-top:8px">${prods.map(p => `<div class="row" data-radd="${esc(p.n)}" data-n="${esc(norm(p.n))}">${tuileVisuel(p.n, 26, "var(--acc)")}<div class="rt"><b>${esc(p.n)}</b><span>${esc(p.r)} · ${esc(p.c || "")}</span></div><div class="am">${eur(p.prix)}</div></div>`).join("")}</div>`);
+  setTimeout(() => { const q = $("#rAq"); if (q) q.focus(); }, 250);
+}
+// rayons proposés : ceux des produits connus + Surgelés + Divers
+function rayonsAjout(v) {
+  const s = new Set((R(v).produits || []).filter(p => !estPlacard(p)).map(p => p.r).filter(Boolean));
+  ["Surgelés", RAYON_MAISON, "Divers"].forEach(r => s.add(r));
+  return [...s];
+}
+const RAYON_MOTS = [
+  ["Surgelés", /glace|ben ?(&|et|and)? ?jerr|sorbet|magnum|esquimau|batonnet|surgel|frites|poelee|nuggets|cordon bleu/],
+  ["Hygiène & maison", /papier|lessive|savon|shampo|dentifrice|brosse|eponge|poubelle|litiere|film|aluminium|essuie|couche|lingette|vaisselle|javel|mouchoir|coton|deodorant|gel douche|adoucissant|nettoyant|pile|ampoule|croquette|patee/],
+  ["Boulangerie", /\bpain|baguette|brioche|croissant|viennois|pain au chocolat/],
+  ["Charcuterie", /jambon|saucisson|chorizo|lardon|rillette|\bpate\b.*(campagne|foie)|salami|bacon/],
+  ["Boucherie & volaille", /poulet|boeuf|porc|steak|viande|dinde|saucisse|merguez|veau|agneau|escalope|cuisse/],
+  ["Crèmerie & œufs", /\blait\b|yaourt|fromage|beurre|creme|oeuf|skyr|kiri|babybel|emmental|mozzarella|comte|gruyere|parmesan|dessert lacte|flan|danette/],
+  ["Petit-déjeuner & boissons", /cafe|\bthe\b|cereale|\bjus\b|\beau\b|soda|biere|\bvin\b|sirop|confiture|nutella|biscotte|chocolat en poudre|cacao|coca|limonade/],
+  ["Fruits & légumes", /fruit|legume|salade|tomate|pomme|poire|banane|orange|citron|carotte|oignon|\bail\b|courgette|poireau|persil|cive|piment|poivron|champignon|avocat|raisin|fraise|kiwi|melon|clementine|herbe|coriandre|basilic|concombre|patate|pomme de terre|epinard|chou/],
+  ["Épicerie", /pates|spaghetti|\briz\b|farine|sucre|huile|conserve|biscuit|chips|cacahuete|gateau|bonbon|chocolat|sauce|epice|\bsel\b|poivre|ketchup|mayonnaise|moutarde|vinaigre|semoule|lentille|compote|apero/]
+];
+function rayonDevine(v, nom) {
+  const n = sansAccent(nom).trim(); if (!n) return "Divers";
+  // 1) déjà ajouté à la main une autre semaine : même rayon que la dernière fois
+  let appris = null;
+  Object.values(R(v).semaines || {}).forEach(w => (w.manuels || []).forEach(m => { if (sansAccent(m.lib) === n && m.rayon && m.rayon !== "Divers") appris = m.rayon; }));
+  try { const L = JSON.parse(localStorage.getItem("bf.rayonsAppris") || "{}"); if (L[n]) appris = L[n]; } catch (e) {}
+  if (appris) return appris;
+  // 2) un produit connu dont le nom est contenu dans ce qui est tapé (« lait demi-écrémé » → rayon du lait)
+  const p = (R(v).produits || []).filter(x => !estPlacard(x) && x.r).sort((a, b) => b.n.length - a.n.length).find(x => n.includes(sansAccent(x.n)));
+  if (p) return p.r;
+  // 3) mots-clés
+  const k = RAYON_MOTS.find(([, re]) => re.test(n));
+  return k ? k[0] : "Divers";
+}
+function majAjoutNouveau() {
+  const v = computeView(), box = $("#rAnew"), q = $("#rAq"); if (!box || !q) return;
+  const txt = q.value.trim(), nq = norm(txt);
+  const existe = (R(v).produits || []).some(p => norm(p.n) === nq);
+  if (!txt || existe) { box.innerHTML = ""; return; }
+  const nom = txt.charAt(0).toUpperCase() + txt.slice(1);
+  if (!S.rf.rayonChoisi) S.rf.rayon = rayonDevine(v, txt);
+  if (!box.firstElementChild) {
+    box.innerHTML = `<div class="card ajnew"><div class="ajtete"><span id="rAico"></span><div><b id="rAnom"></b><small id="rAdev"></small></div></div>
+      <label>Précision (marque, taille, parfum… facultatif)</label><input type="text" id="rAprec" placeholder="ex. Ben & Jerry's, pots de 465 ml" autocomplete="off">
+      <div class="two" style="align-items:end"><div><label>Nombre</label><div class="ajnb"><button class="cat" data-ajn="-1" aria-label="Un de moins">−</button><b id="rAn">1</b><button class="cat" data-ajn="1" aria-label="Un de plus">+</button></div></div>
+        <div><label>Prix à la pièce (facultatif)</label><input type="text" id="rAprix" inputmode="decimal" placeholder="€" autocomplete="off"></div></div>
+      <label>Rayon</label><div class="tchips" id="rAray"></div>
+      <button class="btn" data-rr="ajoutlibre" id="rAok"></button></div>`;
+  }
+  $("#rAico").innerHTML = tuileVisuel(txt, 30, "var(--acc)");
+  $("#rAnom").textContent = nom;
+  $("#rAdev").textContent = S.rf.rayonChoisi ? "rayon choisi" : S.rf.rayon === "Divers" ? "rayon pas deviné : choisis-le" : "rayon deviné : " + S.rf.rayon;
+  $("#rAray").innerHTML = rayonsAjout(v).map(r => `<button class="cat ${r === S.rf.rayon ? "on" : ""}" data-rary="${esc(r)}">${esc(r)}</button>`).join("");
+  $("#rAn").textContent = S.rf.n;
+  $("#rAok").textContent = `Ajouter ${S.rf.n} × ${nom}`;
+}
+function ajoutLibre() {
+  const v = computeView(), lib = (($("#rAq") || {}).value || "").trim();
+  if (!lib) { toast("Écris le nom de l'article"); return; }
+  const nom = lib.charAt(0).toUpperCase() + lib.slice(1), n = S.rf.n || 1, pu = num(($("#rAprix") || {}).value) || 0;
+  const prec = (($("#rAprec") || {}).value || "").trim(), rayon = S.rf.rayon || rayonDevine(v, lib);
+  if (S.rf.rayonChoisi) { try { const L = JSON.parse(localStorage.getItem("bf.rayonsAppris") || "{}"); L[sansAccent(lib).trim()] = rayon; localStorage.setItem("bf.rayonsAppris", JSON.stringify(L)); } catch (e) {} }
+  enqueue("repasajout", { semaine: semaineOff(S.rp.wk), lib: nom, qte: n, prix: Math.round(n * pu * 100) / 100, rayon, prec });
+  recentsNoter(nom, rayon, pu, prec);
+  closeSheet(); toast("✔ " + n + " × " + nom + " ajouté (" + rayon + ")");
 }
 function ajouter(lib, prix, rayon) {
   enqueue("repasajout", { semaine: semaineOff(S.rp.wk), lib, prix: Math.round((Number(prix) || 0) * 100) / 100, rayon });
@@ -2196,7 +2291,7 @@ async function openPhotos(id, recherche) {
 
 // ---------- événements Repas ----------
 document.addEventListener("click", e => {
-  const t = e.target.closest("[data-rqk],[data-rpim],[data-rfb],[data-rfs],[data-rtmax],[data-rphk],[data-rprix],[data-rapp],[data-rgapp],[data-rgev],[data-rr],[data-rsub],[data-rwk],[data-rck],[data-rmaison],[data-rdel],[data-rfilt],[data-rti],[data-rsoir],[data-rprep],[data-rcuis],[data-rpick],[data-radd],[data-rary],[data-rinc],[data-rign],[data-rstep]");
+  const t = e.target.closest("[data-rqk],[data-rpim],[data-rfb],[data-rfs],[data-rtmax],[data-rphk],[data-rprix],[data-rapp],[data-rgapp],[data-rgev],[data-rr],[data-rsub],[data-rwk],[data-rck],[data-rmaison],[data-rdel],[data-rfilt],[data-rti],[data-rsoir],[data-rprep],[data-rcuis],[data-rpick],[data-radd],[data-rary],[data-ajn],[data-rinc],[data-rign],[data-rstep]");
   if (!t) return;
   const v = computeView(), d = t.dataset;
   if (d.rsub) { S.rp.sub = d.rsub; saveRp(); if (S.tab !== "repas") S.tab = "repas"; closeSheet(); render(); window.scrollTo(0, 0); if (d.rsub === "courses") pollCourses(); return; }
@@ -2227,7 +2322,8 @@ document.addEventListener("click", e => {
   if (d.rcuis) { S.rp.gen.cuissonMax = Number(d.rcuis); render(); return; }
   if (d.rpick) { const f = S.pick; closeSheet(); if (f) f(d.rpick); return; }
   if (d.radd) { const p = prodMap(v)[d.radd]; ajouter(d.radd, p ? p.prix : 0, p ? p.r : "Divers"); return; }
-  if (d.rary) { S.rf.rayon = d.rary; document.querySelectorAll("[data-rary]").forEach(b => b.classList.toggle("on", b === t)); return; }
+  if (d.ajn) { S.rf.n = Math.max(1, (S.rf.n || 1) + Number(d.ajn)); majAjoutNouveau(); return; }
+  if (d.rary) { S.rf.rayon = d.rary; S.rf.rayonChoisi = true; document.querySelectorAll("[data-rary]").forEach(b => b.classList.toggle("on", b === t)); if ($("#rAdev")) $("#rAdev").textContent = "rayon choisi"; return; }
   if (d.rinc !== undefined) { const x = (R(v).inconnus || [])[Number(d.rinc)], p = $("#rInc" + d.rinc).value; if (!p) { toast("Choisis le produit"); return; } enqueue("repasmot", { lib: x.lib, produit: p }); t.closest(".card").remove(); toast("✔ Associé à " + p); return; }
   if (d.rign !== undefined) { const x = (R(v).inconnus || [])[Number(d.rign)]; enqueue("repasmot", { lib: x.lib, ignorer: true }); t.closest(".card").remove(); return; }
   const a = d.rr, sem = semaineOff(S.rp.wk);
@@ -2258,7 +2354,7 @@ document.addEventListener("click", e => {
   else if (a === "choisirici" && S.rf && S.rf.ctx.onChoose) S.rf.ctx.onChoose(d.id);
   else if (a === "photo") { const k = "bf.ph." + d.id, n = (LS.get(k, 0) || 0) + 1; LS.set(k, n); enqueue("repasphoto", { recette: d.id, rang: n }); closeSheet(); toast("🖼 Nouvelle photo demandée"); }
   else if (a === "ajout") openAjout();
-  else if (a === "ajoutlibre") { const lib = ($("#rAlib").value || "").trim(); if (!lib) { toast("Écris le nom de l'article"); return; } ajouter(lib, num($("#rAprix").value) || 0, (S.rf && S.rf.rayon) || "Divers"); }
+  else if (a === "ajoutlibre") ajoutLibre();
   else if (a === "partager") partager();
   else if (a === "inconnus") openInconnus();
   else if (a === "reglages") openReglages();
@@ -2283,6 +2379,7 @@ document.addEventListener("input", e => {
   if (["aC", "aP", "aK"].includes(e.target.id)) articleCalc(e.target.id);
   if ((e.target.id === "rPpaye" || e.target.id === "rPpoids") && $("#rPcalc")) { const pp = prixDepuisPaye(); $("#rPcalc").textContent = pp ? "→ " + f2(pp.kilo) + " €/kg (" + f2(pp.lot) + " € par lot du tableau)" : ""; }
   if (e.target.id === "rPq" || e.target.id === "rAq") { const q = norm(e.target.value); document.querySelectorAll(e.target.id === "rPq" ? "#rPl .row" : "#rAl .row").forEach(r => { r.style.display = r.dataset.n.includes(q) ? "" : "none"; }); }
+  if (e.target.id === "rAq") majAjoutNouveau();
 });
 setInterval(pollCourses, 8000);
 
@@ -2337,14 +2434,24 @@ const ICONES_COURSES = [
   [/liquide|lessive|gel douche|shampo|savon|adoucissant|nettoyant|javel/, "M9 2h6v3H9zM8 5h8l1 4v13H7V9z"],
   [/sac/, "M5 8h14l-1 13H6zM9 8c0-3 1-5 3-5s3 2 3 5"],
   [/eponge/, "M4 8h16v8H4zM4 12h16"],
-  [/film|aluminium|cuisson/, "M4 8a3 3 0 1 0 0 6h14a3 3 0 1 0 0-6zM4 14v2h14"]
+  [/film|aluminium|cuisson/, "M4 8a3 3 0 1 0 0 6h14a3 3 0 1 0 0-6zM4 14v2h14"],
+  // v1.26 : articles souvent ajoutés à la main
+  [/glace|ben ?(&|et|and)? ?jerr|sorbet|magnum|esquimau/, "M8 10a4 4 0 1 1 8 0M7 10h10l-5 11z"],
+  [/cacahuete|noix|amande|pistache|noisette/, "M9 4a4 4 0 0 1 4 5 4 4 0 0 1 2 7 4 4 0 0 1-7-2 4 4 0 0 1-1-7 4 4 0 0 1 2-3z"],
+  [/litiere|croquette|patee/, "M6 4h12l1 16H5zM9 4v3M15 4v3M9 13h6"],
+  [/couche|lingette/, "M4 8h16v3c0 5-4 8-8 8s-8-3-8-8zM4 8l3 4M20 8l-3 4"],
+  [/chips|biscuit|gateau|cookie|chocolat|bonbon/, "M5 6h14l-1 14H6zM5 6l2-3h10l2 3M9 11h6"],
+  [/cafe|\bthe\b|tisane/, "M4 9h12v6a5 5 0 0 1-10 0zM16 10h2a2 2 0 0 1 0 4h-2M8 3v3M12 3v3"],
+  [/biere|vin\b|cidre|champagne/, "M9 2h6v5l1 3v12H8V10l1-3z"]
 ];
+// article inconnu : une icône neutre (sac) plutôt qu'une grosse lettre, le nom écrit dessous dit ce que c'est
+const ICONE_NEUTRE = "M6 8h12l-1 12H7zM9 8a3 3 0 0 1 6 0";
 const sansAccent = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/œ/g, "oe").toLowerCase();
 function iconeCourse(nom) { const n = sansAccent(nom); const x = ICONES_COURSES.find(([re]) => re.test(n)); return x ? x[1] : ""; }
 function tuileVisuel(nom, taille, coul) {
   const d = iconeCourse(nom);
   if (d) return `<svg aria-hidden="true" width="${taille}" height="${taille}" viewBox="0 0 24 24" fill="none" stroke="${coul}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${d}"/></svg>`;
-  return `<span class="tl" style="font-size:${Math.round(taille * .85)}px;color:${coul}">${esc((String(nom).trim()[0] || "?").toUpperCase())}</span>`;
+  return `<svg aria-hidden="true" width="${taille}" height="${taille}" viewBox="0 0 24 24" fill="none" stroke="${coul}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".7"><path d="${ICONE_NEUTRE}"/></svg>`;
 }
 // les plats de la semaine (dans l'ordre des jours) et, pour chaque produit, les plats qui l'utilisent
 function platsSemaine(v, jours) {
@@ -2391,6 +2498,7 @@ function coursesTuilesHtml(items, PS) {
 function openTuile(nom) {
   const v = computeView(), sem = semaineOff(S.rp.wk), d = semData(v, sem), L = construireListe(v, sem, d.jours);
   const l = L.lignes.find(x => x.produit === nom); if (!l) return;
+  if (l.manuel) { const m = (d.manuels || []).find(y => y.lib === nom) || {}; l.qteMan = m.qte || 1; l.prec = m.prec || ""; }
   const PS = platsSemaine(v, d.jours), pm = prodMap(v), p = pm[nom], coulDe = {}; PS.plats.forEach(x => { coulDe[x.id] = x; });
   const plats = (PS.parProduit[nom] || []).filter(x => coulDe[x.id]);
   S.ctuile = { nom, manuel: !!l.manuel, sem, plats: plats.map(x => coulDe[x.id].nom), confirmer: false };
@@ -2400,9 +2508,10 @@ function openTuile(nom) {
     ${plats.length ? `<div class="ctd-t">Pour ces plats</div><div class="card" style="padding:2px 14px;margin:0">${plats.map(x => `<div class="row"><i class="ctd-dot" style="background:${coulDe[x.id].c}"></i><div class="rt"><b style="white-space:normal">${esc(coulDe[x.id].nom)}</b></div><span class="hint" style="margin:0">${p ? esc(fmtQte(x.q, p.u)) : ""} · ${esc(x.dates.map(jourCourtPlat).join(", "))}</span></div>`).join("")}</div>`
       : `<div class="hint">${l.manuel ? "Article ajouté à la main." : "Pas lié à un plat de la semaine (petit-déjeuner, fruits, maison)."}</div>`}
     ${!l.manuel && !l.placard && l.source ? `<div class="hint">${esc(l.source === "estimé" ? "Prix estimé" : "Prix : " + l.source)}${l.kilo ? " · " + f2(l.kilo) + " €/kg" : ""}</div>` : ""}
-    <div class="two" style="margin-top:12px">
-      ${l.manuel ? `<button class="btn sec" style="margin:0" data-ctact="prixman">Changer le prix</button>` : l.placard ? "" : `<button class="btn sec" style="margin:0" data-ctact="maison">${l.etat === "maison" ? "Finalement à acheter" : "Déjà à la maison"}</button>`}
-      ${l.placard ? "" : l.manuel ? `<button class="btn sec" style="margin:0" data-ctact="caddie">${l.etat === "achete" ? "Pas encore pris" : "Dans le caddie"}</button>` : `<button class="btn sec" style="margin:0" data-ctact="qte">Changer la quantité</button>`}
+    ${l.placard ? "" : blocPaye(l, p, d.payes || {})}
+    <div class="two" style="margin-top:10px">
+      ${l.manuel ? (l.etat === "achete" ? `<button class="btn sec" style="margin:0" data-ctact="caddie">Pas encore pris</button>` : "") : l.placard ? "" : `<button class="btn sec" style="margin:0" data-ctact="maison">${l.etat === "maison" ? "Finalement à acheter" : "Déjà à la maison"}</button>`}
+      ${l.placard || l.manuel ? "" : l.etat === "achete" ? `<button class="btn sec" style="margin:0" data-ctact="caddie">Pas encore pris</button>` : `<button class="btn sec" style="margin:0" data-ctact="qte">Contenance, prix habituel</button>`}
     </div>
     ${l.etat === "maison" && !l.manuel ? "" : `<button class="linkbtn" style="color:var(--bad);display:block;margin:12px auto 0" data-ctact="retirer">Retirer de la liste</button>`}
     <div id="ctConf"></div></div>`);
@@ -2420,9 +2529,10 @@ document.addEventListener("click", e => {
   e.stopImmediatePropagation();
   const v = computeView(), sd = semData(v, x.sem);
   if (a === "qte") { closeSheet(); openArticle(x.nom); return; }
+  if (a === "panier") { ctPanier(); return; }
   if (a === "prixman") { closeSheet(); openManuel(x.nom); return; }
   if (a === "maison") { const cur = sd.etats[x.nom]; enqueue("repascoche", { semaine: x.sem, produit: x.nom, etat: cur === "maison" ? "" : "maison" }); closeSheet(); return; }
-  if (a === "caddie") { const cur = ((sd.manuels.find(m => m.lib === x.nom) || {}).etat || ""); enqueue("repascoche", { semaine: x.sem, produit: x.nom, etat: cur ? "" : "achete", manuel: true }); closeSheet(); return; }
+  if (a === "caddie") { const cur = x.manuel ? ((sd.manuels.find(m => m.lib === x.nom) || {}).etat || "") : (sd.etats[x.nom] || ""); enqueue("repascoche", { semaine: x.sem, produit: x.nom, etat: cur ? "" : "achete", manuel: x.manuel }); closeSheet(); return; }
   if (a === "annuler") { $("#ctConf").innerHTML = ""; return; }
   if (a === "retirer") {
     if (x.manuel) { enqueue("repasajout", { semaine: x.sem, lib: x.nom, suppr: true }); closeSheet(); toast("Retiré de la liste"); return; }
@@ -2449,6 +2559,133 @@ document.addEventListener("click", e => {
     if (S.lpTuile && Date.now() - S.lpTuile < 800 && e.target.closest && e.target.closest("[data-tuile]")) { e.stopImmediatePropagation(); e.preventDefault(); S.lpTuile = 0; }
   }, true);
 })();
+// =====================================================================
+// 🛒 v1.26 : ONGLET COURSES (barre du bas) — maquette G choisie par Gaétan le 17/11
+//    Fonctionnement à la Bring, look de l'appli. En haut la calculatrice (panier réel, reste, prévu) ;
+//    tuiles par rayon : icône simple + NOM LISIBLE + ligne qui dit précisément ce que c'est + prix ;
+//    toucher = dans le panier (section du bas) ; appui long = nombre et prix réellement payé ;
+//    « Récemment ajoutés » pour réajouter d'une touche ; « Avec les menus » / « Liste simple ».
+// =====================================================================
+const RECENTS_CLE = "bf.coursesRecents";
+function recentsNoter(lib, rayon, prixU, prec) {
+  try {
+    const L = JSON.parse(localStorage.getItem(RECENTS_CLE) || "[]").filter(x => x.lib !== lib);
+    L.unshift({ lib, rayon, prixU: Math.round((Number(prixU) || 0) * 100) / 100, prec: prec || "" });
+    localStorage.setItem(RECENTS_CLE, JSON.stringify(L.slice(0, 24)));
+  } catch (e) {}
+}
+// articles à réajouter : ceux ajoutés à la main les semaines d'avant (Sheet, partagé) + ceux notés sur ce téléphone
+function recentsCourses(v, sem, deja) {
+  const vus = new Set(deja), L = [];
+  const pousse = x => { if (!x.lib || vus.has(x.lib)) return; vus.add(x.lib); L.push(x); };
+  Object.keys(R(v).semaines || {}).filter(k => k !== sem).sort().reverse().forEach(k =>
+    (R(v).semaines[k].manuels || []).forEach(m => pousse({ lib: m.lib, rayon: m.rayon, prixU: m.qte ? (m.prix || 0) / m.qte : 0, prec: m.prec || "" })));
+  try { JSON.parse(localStorage.getItem(RECENTS_CLE) || "[]").forEach(pousse); } catch (e) {}
+  return L.slice(0, 14);
+}
+// prix d'une ligne : payé (réel) s'il a été saisi, sinon l'estimation
+function prixLigne(l, payes) {
+  const k = (l.manuel ? "m:" : "") + l.produit;
+  return payes && payes[k] != null ? { v: payes[k], reel: true } : { v: l.prix || 0, reel: false };
+}
+// ligne de détail d'une tuile : ce que c'est précisément (nombre × contenance, poids, précision)
+function detailTuile(l) {
+  if (l.manuel) return l.prec ? ((l.qteMan || 1) > 1 ? l.qteMan + " × " : "") + l.prec : (l.qteMan || 1) + (l.qteMan > 1 ? " pièces" : " pièce");
+  return String(l.achat || "").replace(/^≈ /, "≈ ");
+}
+function tuileG(l, PS, payes, petite) {
+  const coulDe = {}; PS.plats.forEach(p => { coulDe[p.id] = p.c; });
+  const plats = petite ? [] : (PS.parProduit[l.produit] || []).filter(x => coulDe[x.id]);
+  const pr = prixLigne(l, payes), pris = l.etat === "achete";
+  const prix = pr.v ? (pr.reel ? "" : "≈ ") + eur(pr.v) : "prix ?";
+  return `<button class="gtile ${petite ? "petite" : ""} ${pris ? "pris" : ""}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}" data-tuile="${esc(l.produit)}"
+    aria-label="${esc(l.produit + ", " + detailTuile(l) + (pris ? ", dans le panier : toucher pour remettre" : " : toucher pour mettre dans le panier"))}">
+    ${plats.length ? `<span class="cdots">${plats.map(x => `<i style="background:${coulDe[x.id]}"></i>`).join("")}</span>` : ""}
+    ${tuileVisuel(l.produit, petite ? 22 : 30, pris ? "var(--mut)" : "var(--acc)")}
+    <b>${esc(l.produit)}</b>${petite ? "" : `<small>${esc(detailTuile(l))}</small>`}
+    <em class="${pr.reel ? "reel" : ""}">${esc(prix)}</em></button>`;
+}
+function viewOngletCourses(v) {
+  const rp = R(v);
+  if (!rp.installe) return viewRepas(v);
+  const sem = semaineOff(S.rp.wk), d = semData(v, sem), L = construireListe(v, sem, d.jours), PS = platsSemaine(v, d.jours);
+  const simple = S.rp.cmode === "simple", payes = d.payes || {};
+  (d.manuels || []).forEach(m => { const l = L.lignes.find(x => x.manuel && x.produit === m.lib); if (l) { l.qteMan = m.qte || 1; l.prec = m.prec || ""; } });
+  const vis = L.lignes.filter(l => !l.placard && (!simple || l.manuel));
+  const actifs = vis.filter(l => l.etat !== "maison"), pris = actifs.filter(l => l.etat === "achete"), reste = actifs.filter(l => l.etat !== "achete");
+  const somme = T => Math.round(T.reduce((s, l) => s + prixLigne(l, payes).v, 0) * 100) / 100;
+  const panier = somme(pris), resteE = Math.round(reste.reduce((s, l) => s + (l.prix || 0), 0) * 100) / 100, prevu = Math.round(actifs.reduce((s, l) => s + (l.prix || 0), 0) * 100) / 100;
+  const estimes = pris.filter(l => !prixLigne(l, payes).reel).length;
+  const pct = actifs.length ? Math.round(pris.length / actifs.length * 100) : 0;
+  let h = `<div class="gcalc"><div class="gcalc-l"><span>Dans le panier · ${pris.length} / ${actifs.length}</span><b>${eur(panier)}</b>${estimes ? `<small>dont ${estimes} prix estimé${estimes > 1 ? "s" : ""}</small>` : ""}</div>
+    <div class="gcalc-r"><span>reste à prendre</span><b>≈ ${eur(resteE)}</b><small>prévu ${eur(prevu)}</small></div>
+    <div class="gbar"><i style="width:${pct}%"></i></div></div>`;
+  h += weekChips();
+  h += `<button class="gadd" data-rr="ajout"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14zM20 20l-4-4"/></svg>Que faut-il acheter ?</button>`;
+  h += `<div class="gmodes"><button class="${simple ? "" : "on"}" data-cmode="menus">Avec les menus</button><button class="${simple ? "on" : ""}" data-cmode="simple">Liste simple</button></div>`;
+  if (!simple) h += coursesPlatsHtml(PS);
+  const sel = !simple && S.rp.plat;
+  const aPrendre = reste.filter(l => !sel || (PS.parProduit[l.produit] || []).some(x => x.id === sel));
+  if (!aPrendre.length) h += `<div class="empty" style="padding:18px 8px">${actifs.length ? "Tout est dans le panier 🎉" : simple ? "Aucun article ajouté à la main.<br>Touche « Que faut-il acheter ? »." : "Rien à acheter cette semaine.<br>Prépare les menus ou ajoute un article."}</div>`;
+  const parRayon = {}; aPrendre.forEach(l => { (parRayon[l.rayon] = parRayon[l.rayon] || []).push(l); });
+  Object.keys(parRayon).sort((a, b) => (a === RAYON_MAISON) - (b === RAYON_MAISON) || (a === "Divers") - (b === "Divers") || a.localeCompare(b, "fr")).forEach(r => {
+    const T = parRayon[r].sort((a, b) => a.produit.localeCompare(b.produit, "fr"));
+    h += `<div class="grayon"><span>${esc(r)}</span><small>${T.length} à prendre</small></div><div class="gtiles">${T.map(l => tuileG(l, PS, payes)).join("")}</div>`;
+  });
+  if (pris.length) h += `<div class="grayon ok"><span>Dans le panier</span><small>toucher pour remettre</small></div><div class="gtiles p">${pris.map(l => tuileG(l, PS, payes, true)).join("")}</div>`;
+  const maison = vis.filter(l => l.etat === "maison");
+  if (maison.length) h += `<details class="gmaison"><summary>🏠 Déjà à la maison (${maison.length})</summary><div class="gtiles p">${maison.map(l => tuileG(l, PS, payes, true)).join("")}</div></details>`;
+  const rec = recentsCourses(v, sem, L.lignes.filter(l => l.manuel).map(l => l.produit));
+  S.crec = rec;
+  if (rec.length) h += `<div class="grayon"><span>Récemment ajoutés</span><small>toucher pour remettre dans la liste</small></div><div class="grec">${rec.map((x, i) => `<button data-crec="${i}">${tuileVisuel(x.lib, 18, "var(--mut)")}<span>${esc(x.lib)}</span></button>`).join("")}</div>`;
+  h += `<button class="btn sec" data-rr="ajout" style="margin-top:14px">Parcourir le catalogue par rayon</button>`;
+  h += `<div class="hint" style="margin:10px 4px">Toucher un article = dans le panier. Appui long = nombre et prix réellement payé (la calculatrice du haut se met à jour).</div>`;
+  return h;
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-cmode],[data-crec]"); if (!t) return;
+  if (t.dataset.cmode) { S.rp.cmode = t.dataset.cmode; saveRp(); render(); return; }
+  const x = (S.crec || [])[Number(t.dataset.crec)]; if (!x) return;
+  enqueue("repasajout", { semaine: semaineOff(S.rp.wk), lib: x.lib, qte: 1, prix: x.prixU || 0, rayon: x.rayon || "Divers", prec: x.prec || "" });
+  toast("✔ " + x.lib + " remis dans la liste");
+});
+
+// ---------- appui long (maquette I) : nombre pris et prix réellement payé ----------
+function blocPaye(l, p, payes) {
+  const vrac = !l.manuel && p && p.m === "vrac" && (p.u === "g" || p.u === "ml");
+  const lots = l.manuel ? (l.qteMan || 1) : vrac ? 0 : Math.max(1, Math.round((l.prix || 0) / ((p && p.prix) || 1)) || 1);
+  const pr = prixLigne(l, payes);
+  S.ctuile.n = lots; S.ctuile.vrac = vrac; S.ctuile.lots0 = lots; S.ctuile.estimU = lots ? (l.prix || 0) / lots : 0;
+  return `<div class="ctd-t">Nombre et prix payé</div>
+    ${vrac ? "" : `<div class="ajnb"><button class="cat" data-ctn="-1" aria-label="Un de moins">−</button><b id="ctN">${lots}</b><button class="cat" data-ctn="1" aria-label="Un de plus">+</button></div>
+      <div class="hint" style="margin-top:4px">${esc(l.manuel ? (l.prec || "pièce(s)") : (p && p.c) || "")}</div>`}
+    <label>Prix réellement payé pour ${vrac ? "cet article" : "le tout"} (€)</label>
+    <input type="text" id="ctPaye" inputmode="decimal" autocomplete="off" value="${pr.reel ? esc(f2(pr.v)) : ""}" placeholder="estimé ${esc(f2(l.prix || 0))} €">
+    <div class="hint" id="ctPh">${pr.reel ? "Prix payé enregistré." : "Laisse vide pour garder l'estimation."}</div>
+    ${!l.manuel && !vrac ? `<label class="ctret"><input type="checkbox" id="ctRet" checked> Retenir ce prix pour les prochaines fois</label>` : ""}
+    <button class="btn" data-ctact="panier" style="margin-top:12px;background:var(--good,#7bd88f);color:#0e1318">${l.etat === "achete" ? "Enregistrer" : "Dans le panier"}</button>`;
+}
+function ctPanier() {
+  const x = S.ctuile, v = computeView(), sem = x.sem, d = semData(v, sem), L = construireListe(v, sem, d.jours), l = L.lignes.find(y => y.produit === x.nom && !!y.manuel === x.manuel); if (!l) { closeSheet(); return; }
+  const saisi = (($("#ctPaye") || {}).value || "").trim(), paye = saisi === "" ? null : num(saisi), n = x.n || 1;
+  if (saisi !== "" && !(paye >= 0)) { toast("Prix illisible"); return; }
+  if (!x.vrac && n !== x.lots0) {
+    if (x.manuel) { const m = (d.manuels || []).find(y => y.lib === x.nom) || {}; const pu = (m.qte ? (m.prix || 0) / m.qte : 0); enqueue("repasajout", { semaine: sem, lib: x.nom, maj: true, qte: n, prix: Math.round(n * pu * 100) / 100 }); }
+    else enqueue("repasqte", { semaine: sem, produit: x.nom, qte: n, rayon: l.rayon });
+  }
+  if (paye !== null) {
+    enqueue("repaspaye", { semaine: sem, produit: x.nom, total: Math.round(paye * 100) / 100, manuel: x.manuel, rayon: l.rayon });
+    if (!x.manuel && !x.vrac && $("#ctRet") && $("#ctRet").checked && paye > 0) enqueue("repasproduit", { produit: x.nom, pas: 0, prix: Math.round(paye / n * 100) / 100 });
+  } else if ((d.payes || {})[(x.manuel ? "m:" : "") + x.nom] != null) enqueue("repaspaye", { semaine: sem, produit: x.nom, total: "", manuel: x.manuel, rayon: l.rayon });
+  if (l.etat !== "achete") enqueue("repascoche", { semaine: sem, produit: x.nom, etat: "achete", manuel: x.manuel, rayon: l.rayon });
+  if (x.manuel) recentsNoter(x.nom, l.rayon, paye !== null && n ? paye / n : (l.prix || 0) / (n || 1), l.prec);
+  closeSheet(); toast("✔ " + x.nom + (paye !== null ? " : " + eur(paye) : "") + " dans le panier");
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-ctn]"); if (!t || !S.ctuile) return;
+  S.ctuile.n = Math.max(1, (S.ctuile.n || 1) + Number(t.dataset.ctn)); const b = $("#ctN"); if (b) b.textContent = S.ctuile.n;
+  const ph = $("#ctPaye"); if (ph && !ph.value) ph.placeholder = "estimé " + f2(S.ctuile.estimU * S.ctuile.n) + " €";
+});
 // =====================================================================
 // v1.7.0 : PROFILS (Gaétan = tout, Mathilde = sa version), CONGÉS, GARDE DE LÉO, PONTS, JOUR DES COURSES
 // =====================================================================
@@ -2532,29 +2769,43 @@ function pontsCard(d) {
 }
 
 // ---------- garde de Léo ----------
-const QUI_COL = { "Nounou": "#8a94a6", "Mathilde": "#c2457a", "Gaétan": "#2f6fd6", "Vous deux": "#0e9f6e" };
+const QUI_COL = { "Nounou": "#8a94a6", "Mathilde": "#c2457a", "Gaétan": "#2f6fd6", "Nous deux": "#0e9f6e" };
+// v1.26 : l'appli parle en « nous » (Gaétan, 17/11) : « Vous deux » du fichier congés devient « Nous deux »
+const quiNom = q => q === "Vous deux" ? "Nous deux" : (q || "?");
+const statutCourt = x => String(x || "").replace(/\s*\(.*\)\s*$/, "").trim().toLowerCase();
+// statut sous le nom : « repos », « congé »… (rien pour la nounou)
+function quiStatut(g) {
+  const q = quiNom(g.qui);
+  if (q === "Mathilde") return statutCourt(g.mathilde);
+  if (q === "Gaétan") return statutCourt(g.gaetan);
+  if (q === "Nous deux") return /cong/i.test(g.mathilde + " " + g.gaetan) ? "congé" : "repos";
+  return "";
+}
 function gardeJours(d, n) {
   const today = todayISO();
   const L = (d.garde || []).filter(g => g[0] >= today).map(g => ({ date: g[0], mathilde: g[1], gaetan: g[2], nounou: g[3], commun: g[4], qui: g[5], pont: g[6], temps: g[7] }));
   return n ? L.slice(0, n) : L;
 }
-function quiBadge(q) { const c = QUI_COL[q] || "#8a94a6"; return `<span style="background:${c};color:#fff;border-radius:99px;padding:3px 10px;font-size:12px;font-weight:600;white-space:nowrap">${esc(q || "?")}</span>`; }
+function quiBadge(g) {
+  const q = quiNom(g.qui), c = QUI_COL[q] || "#8a94a6", st = quiStatut(g);
+  return `<span class="qbadge" style="background:${c}"><b>${esc(q)}</b>${st ? `<small>${esc(st)}</small>` : ""}</span>`;
+}
 function gardeCard(d) {
   const L = gardeJours(d, 3); if (!L.length) return "";
-  return `<div class="card" data-act="gogarde" style="cursor:pointer"><div style="display:flex;justify-content:space-between"><b>Garde de Léo</b><span class="linkbtn" style="padding:0">Calendrier</span></div>
-    <div class="gl">${L.map((g, i) => `<div class="${i === 0 ? "auj" : ""}"><span>${i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : esc(longD(g.date))}</span><b>${esc(g.qui || "?")}</b></div>`).join("")}</div></div>`;
+  return `<div class="card" data-act="gogarde" style="cursor:pointer"><div style="display:flex;justify-content:space-between"><b>Léo planning</b><span class="linkbtn" style="padding:0">Calendrier</span></div>
+    <div class="gl">${L.map((g, i) => { const st = quiStatut(g); return `<div class="${i === 0 ? "auj" : ""}"><span>${i === 0 ? "Aujourd'hui" : i === 1 ? "Demain" : esc(longD(g.date))}</span><b>${esc(quiNom(g.qui))}</b>${st ? `<small>${esc(st)}</small>` : ""}</div>`; }).join("")}</div></div>`;
 }
 function viewGarde() {
   const d = cgData();
-  if (!d) { chargerConges(); return `<h2>👶 Garde de Léo</h2>${S.cgErreur ? `<div class="alert bad">${esc(S.cgErreur)}</div>` : `<div class="spin"></div>`}`; }
+  if (!d) { chargerConges(); return `<h2>👶 Léo planning</h2>${S.cgErreur ? `<div class="alert bad">${esc(S.cgErreur)}</div>` : `<div class="spin"></div>`}`; }
   const n = S.gardeVue === "14" ? 14 : S.gardeVue === "mois" ? 35 : 0;
   const L = gardeJours(d, n);
-  let h = `<h2>👶 Garde de Léo</h2><div class="tchips" style="margin-bottom:10px">${[["14", "14 jours"], ["mois", "5 semaines"], ["tout", "Tout"]].map(([k, t]) => `<button class="cat ${S.gardeVue === k ? "on" : ""}" data-gvue="${k}">${t}</button>`).join("")}</div>`;
+  let h = `<h2>👶 Léo planning</h2><div class="tchips" style="margin-bottom:10px">${[["14", "14 jours"], ["mois", "5 semaines"], ["tout", "Tout"]].map(([k, t]) => `<button class="cat ${S.gardeVue === k ? "on" : ""}" data-gvue="${k}">${t}</button>`).join("")}</div>`;
   let sem = "";
   L.forEach(g => {
     const s = lundiDe(dOf(g.date));
     if (s !== sem) { if (sem) h += `</div>`; sem = s; h += `<div class="rayon"><span>Semaine ${esc(libSemaine(s))}</span></div><div class="card" style="padding:2px 14px">`; }
-    h += `<div class="row" style="padding:8px 0"><div class="rt"><b>${esc(longD(g.date))}${g.date === todayISO() ? " · aujourd'hui" : ""}</b><span>Mathilde : ${esc(g.mathilde)} · Gaétan : ${esc(g.gaetan)}${g.nounou ? " · nounou " + esc(g.nounou.toLowerCase()) : ""}</span>${estG() && g.temps ? `<span>💡 ${esc(g.temps)}</span>` : ""}</div>${quiBadge(g.qui)}</div>`;
+    h += `<div class="row" style="padding:8px 0"><div class="rt"><b>${esc(longD(g.date))}${g.date === todayISO() ? " · aujourd'hui" : ""}</b><span>Mathilde : ${esc(g.mathilde)} · Gaétan : ${esc(g.gaetan)}${g.nounou ? " · nounou " + esc(g.nounou.toLowerCase()) : ""}</span>${estG() && g.temps ? `<span>💡 ${esc(g.temps)}</span>` : ""}</div>${quiBadge(g)}</div>`;
   });
   if (sem) h += `</div>`;
   return h + `<div class="hint" style="margin:10px 4px">Calculé par ton fichier « Gestion des congés » (planning de Mathilde, tes congés, la nounou). Lu le ${esc(new Date(d.lu).toLocaleString("fr-FR"))}.</div><button class="linkbtn" data-cgmaj="1">🔄 Actualiser</button>`;
@@ -2710,7 +2961,7 @@ document.addEventListener("click", e => {
   const t = e.target.closest("#prof,[data-prof],[data-cgposer],[data-cgcpt],[data-cgetat],[data-cgprev],[data-cgsave],[data-cgdem],[data-cgmetat],[data-cgmprev],[data-cgannule],[data-cgpont],[data-cgfait],[data-cgnon],[data-cgmaj],[data-gvue],[data-cgmode],[data-cgjournee],[data-act=goconges],[data-act=gogarde],[data-act=gobourse]");
   if (!t) return;
   const dd = t.dataset;
-  if (t.id === "prof") { openSheet(`<h3>Ce téléphone est celui de…</h3><div class="hint">Gaétan voit tout (administrateur). Mathilde a sa version : budget, repas, garde de Léo.</div><div class="duo" style="margin-top:14px"><button class="btn ${estG() ? "" : "sec"}" data-prof="G" style="margin:0">Gaétan</button><button class="btn ${estG() ? "sec" : ""}" data-prof="M" style="margin:0">Mathilde</button></div>`); return; }
+  if (t.id === "prof") { openSheet(`<h3>Ce téléphone est celui de…</h3><div class="hint">Gaétan voit tout (administrateur). Mathilde a sa version : budget, repas, Léo planning.</div><div class="duo" style="margin-top:14px"><button class="btn ${estG() ? "" : "sec"}" data-prof="G" style="margin:0">Gaétan</button><button class="btn ${estG() ? "sec" : ""}" data-prof="M" style="margin:0">Mathilde</button></div>`); return; }
   if (dd.prof) { setProf(dd.prof); closeSheet(); toast(estG() ? "Profil Gaétan : tout est visible" : "Profil Mathilde"); return; }
   if (dd.act === "goconges") { S.tab = "conges"; render(); window.scrollTo(0, 0); chargerConges(); return; }
   if (dd.act === "gogarde") { S.tab = "garde"; render(); window.scrollTo(0, 0); chargerConges(); return; }
@@ -3004,12 +3255,20 @@ async function chargerSante(controle) {
   const d2 = iso => { try { return new Date(iso).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }); } catch (e) { return ""; } };
   box.innerHTML = `<b>🩺 État de l'appli</b>
     <div class="hint">Appli ${APP_VERSION} · script ${s.version}${S.base && S.base.scriptVersion ? "" : ""} · ${s.nb7} erreur(s) ces 7 derniers jours</div>
+    ${vitesseHtml(s.vitesse)}
     ${dn ? `<div class="sante ${dn.ok ? "ok" : "bad"}">${dn.ok ? "✅ Tout va bien" : "⚠ " + dn.details.filter(x => !x.ok).length + " point(s) à vérifier"} <small>contrôle du ${d2(dn.d)}</small></div>
       <ul class="ings">${dn.details.map(x => `<li>${x.ok ? "✓" : "✗"} ${esc(x.nom)}<span>${esc(x.info)}</span></li>`).join("")}</ul>` : `<div class="hint">Aucun contrôle encore fait.</div>`}
     <div class="hint">${s.quotidien ? "Contrôle automatique chaque matin" + (s.mail ? ", mail seulement en cas de problème." : " (sans mail).") : "Contrôle automatique pas encore activé : dans le Sheet, menu 🛠️ Gestion Budget → 🩺 Activer le contrôle quotidien (une fois)."}</div>
     ${s.erreurs.length ? `<details><summary>Dernières erreurs notées (${s.erreurs.length})</summary><ul class="ings">${s.erreurs.map(x => `<li style="${x.vue || x.mineure ? "opacity:.55" : ""}"><span style="text-align:left;flex:1">${d2(x.d)} · ${esc(x.ou)}${x.mineure ? " · sans gravité" : x.vue ? " · vue" : ""}<br><small>${esc(x.msg)}</small></span></li>`).join("")}</ul></details>` : ""}
     ${s.erreurs.length && estG() ? `<button class="btn sec" id="santeVu">👁 J'ai vu ces erreurs (elles ne comptent plus)</button>` : ""}
     <button class="btn sec" id="santeGo">🔍 Lancer le contrôle maintenant</button>`;
+}
+
+// v1.26 : combien d'ouvertures de l'appli ont trouvé l'état déjà prêt aujourd'hui
+function vitesseHtml(v) {
+  if (!v || v.jour !== todayISO()) return "";
+  const tot = (v.cache || 0) + (v.calcul || 0); if (!tot) return "";
+  return `<div class="hint">⚡ Aujourd'hui : ${v.cache || 0} chargement(s) rapide(s) sur ${tot}${v.calcul ? ` · ${v.calcul} lent(s) (calcul complet)` : ""} · ${v.avance || 0} préparé(s) à l'avance</div>`;
 }
 
 // ---------- événements ----------
@@ -3794,7 +4053,7 @@ function carteTpOuvrirLien(url) {
 const V110_TYPES = ["idee"];
 const IDEE_TYPES = [["bug", "🐞", "Bug"], ["idee", "💡", "Idée"], ["question", "❓", "Question"]];
 const IDEE_AIDE = { bug: "Ce qui ne marche pas, et ce que tu faisais juste avant…", idee: "Ce que tu aimerais dans l'appli…", question: "Ta question…" };
-const NOMS_ONGLETS = { home: "Accueil", repas: "Repas", journal: "Journal", annuels: "Annuels", plus: "Plus", amazon: "Amazon P&É", soins: "Soins et mutuelle", reglages: "Réglages", conges: "Congés", garde: "Garde de Léo", stats: "Statistiques", bourse: "Bourse", taches: "Tâches", idees: "Boîte à idées" };
+const NOMS_ONGLETS = { home: "Accueil", repas: "Repas", journal: "Journal", annuels: "Annuels", plus: "Plus", amazon: "Amazon Prévoyez et économisez", soins: "Soins et mutuelle", reglages: "Réglages", conges: "Congés", garde: "Léo planning", courses: "Courses", stats: "Statistiques", bourse: "Bourse", taches: "Tâches", idees: "Boîte à idées" };
 const SOUS_REPAS = { menus: "Menus", courses: "Courses", recettes: "Recettes", tiroir: "Tiroir", flemme: "Flemme", stats: "Stats" };
 S.ib = Object.assign({ type: "idee", txt: "", f: "cours", qui: "moi" }, LS.get("bf.ib", {}));
 S.ib.cap = null;                                   // capture jointe (gardée en mémoire seulement : trop lourde pour le brouillon)
@@ -4960,7 +5219,7 @@ document.addEventListener("click", e => {
     enqueue("amazon", { bloc: S.form.bloc, jour: j }); closeSheet(); toast("✔ Jour de débit enregistré"); return;
   }
   if (t.id === "fab") { S.edit = null; openAdd(); return; }
-  if (t.id === "refresh") { if (S.queue.length) flush(); else refresh(); return; }
+  if (t.id === "refresh") { if (S.queue.length) flush(); else { S.frais = true; refresh(); } return; }   // v1.26 : ⟳ = relire le Sheet sans le cache
   if (t.id === "fSave") { saveForm(); return; }
   if (t.id === "fDel") { if (confirm("Supprimer cette dépense ?")) deleteItem(S.edit); return; }
   if (t.dataset.cat) {

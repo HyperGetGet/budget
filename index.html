@@ -414,8 +414,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.28.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 49;       // version du script que cette appli attend
+const APP_VERSION = "1.29.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 50;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -1468,8 +1468,10 @@ const FB_URL = (window.FB_URL_TEST || "https://www.gstatic.com/firebasejs/" + FB
 const FB_TYPES = ["repascoche", "repasajout", "repasqte", "repaspaye"];
 const FB = { m: null, app: null, auth: null, db: null, user: null, membre: null, etat: "eteint", erreur: "", docs: {}, ecoutes: {} };
 
-const directVoulu = () => LS.get("bf.direct", false) === true;
-const directActif = () => directVoulu() && !!FB.membre;
+// v1.29 : plus d'interrupteur ni de fenêtre Google (bloquée sur téléphone : « missing initial state »).
+// L'appli demande son accès à Apps Script avec le code qu'elle a déjà ; Apps Script (clé Firebase rangée dans le script)
+// renvoie un jeton signé « foyer-G » ou « foyer-M », et Firebase garde la connexion sur le téléphone.
+const directActif = () => !!FB.membre;
 
 async function fbCharger() {
   if (FB.m) return FB.m;
@@ -1478,8 +1480,8 @@ async function fbCharger() {
   return FB.m;
 }
 async function fbDemarrer() {
-  if (!directVoulu() || FB.app) return;
-  FB.etat = "chargement"; majDirect();
+  if (!configured() || FB.app) return;
+  FB.etat = "chargement";
   try {
     const { a, au, fs } = await fbCharger();
     FB.app = a.initializeApp(FIREBASE_CONFIG);
@@ -1488,66 +1490,38 @@ async function fbDemarrer() {
     catch (e) { FB.db = fs.getFirestore(FB.app); }   // cache hors ligne indisponible (navigation privée…) : en ligne seulement
     au.onAuthStateChanged(FB.auth, async u => {
       FB.user = u; FB.membre = null;
-      if (!u) { FB.etat = "deconnecte"; majDirect(); return; }
-      FB.etat = "verification"; majDirect();
-      await fbMembre();
-      if (FB.membre) fbEcouter();
-      majDirect();
+      if (!u) { fbConnexion(); return; }
+      try {
+        const t = await u.getIdTokenResult(), role = t.claims && t.claims.role;
+        // le code de l'appli a changé sur ce téléphone (autre profil) : on reprend un accès neuf
+        if (LS.get("bf.fbProfil", "") !== fbProfil()) { await au.signOut(FB.auth); return; }
+        if (!role) { FB.etat = "erreur"; FB.erreur = "accès sans profil"; majDirect(); return; }
+        FB.membre = { role }; FB.etat = "ok"; FB.erreur = ""; fbEcouter(); majDirect();
+      } catch (e) { FB.etat = "erreur"; FB.erreur = "Connexion à la base : " + (e.code || e.message); majDirect(); }
     });
-  } catch (e) { FB.etat = "erreur"; FB.erreur = "Chargement impossible (réseau ?) : " + (e.message || e); majDirect(); }
+  } catch (e) { FB.etat = "erreur"; FB.erreur = "Chargement impossible (réseau ?)"; majDirect(); }
+}
+// empreinte courte du code de l'appli (pour savoir si ce téléphone a changé de profil), sans garder le code lui-même
+function fbProfil() { let h = 7; for (const c of String(S.cfg.key || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return String(h); }
+async function fbConnexion() {
+  if (fbConnexion.enCours || !navigator.onLine) { FB.etat = "horsligne"; majDirect(); return; }
+  fbConnexion.enCours = true; FB.etat = "connexion";
+  try {
+    const r = await call("fbjeton", {}, 30000);
+    if (!r || !r.ok) { FB.etat = "erreur"; FB.erreur = (r && r.error) || "réponse vide"; return; }
+    if (!r.jeton) { FB.etat = "sanscle"; return; }   // clé Firebase pas encore rangée dans le Sheet : l'appli marche comme avant
+    LS.set("bf.fbProfil", fbProfil());
+    await FB.m.au.signInWithCustomToken(FB.auth, r.jeton);   // la suite se fait dans onAuthStateChanged
+  } catch (e) { FB.etat = "erreur"; FB.erreur = "Connexion à la base : " + ((e && (e.code || e.message)) || e); }
+  finally { fbConnexion.enCours = false; majDirect(); }
 }
 function majDirect() {
   try {
     const c = document.getElementById("fbCarte");   // Réglages ne se redessine pas en entier (pour ne pas effacer une saisie) : on met à jour la carte seule
-    if (S.tab === "reglages" && c) { if (document.activeElement && document.activeElement.id === "fbCode") return; c.outerHTML = directCarteHtml(); return; }
+    if (S.tab === "reglages" && c) { c.outerHTML = directCarteHtml(); return; }
     render();
   } catch (e) {}
 }
-
-// ---------- membres : propriétaire (Gaétan) ou invitée (Mathilde) ----------
-async function fbMembre() {
-  const { fs } = FB.m, uidU = FB.user.uid, ref = fs.doc(FB.db, "membres", uidU);
-  try {
-    const s = await fs.getDoc(ref);
-    if (s.exists()) { FB.membre = s.data(); FB.etat = "ok"; return; }
-  } catch (e) { /* pas encore membre : la lecture peut être refusée */ }
-  // pas encore membre : le tout premier compte connecté devient propriétaire du foyer (Gaétan, le soir de l'installation).
-  // Les règles refusent la création de « foyer/proprio » s'il existe déjà : tout autre compte passe par un code d'invitation.
-  try {
-    const pr = await fs.getDoc(fs.doc(FB.db, "foyer", "proprio"));
-    if (!pr.exists()) await fs.setDoc(fs.doc(FB.db, "foyer", "proprio"), { uid: uidU, depuis: fs.serverTimestamp() });
-    else if ((pr.data() || {}).uid !== uidU) { FB.etat = "invitation"; return; }
-    const m = { role: "G", nom: "Gaétan", depuis: fs.serverTimestamp() };
-    await fs.setDoc(ref, m); FB.membre = m; FB.etat = "ok"; return;
-  } catch (e) { FB.etat = "invitation"; }
-}
-async function fbRejoindre(code) {
-  const { fs } = FB.m, c = String(code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (c.length < 6) { toast("Code d'invitation incomplet"); return; }
-  try {
-    const m = { role: "M", nom: "Mathilde", code: c, depuis: fs.serverTimestamp() };
-    await fs.setDoc(fs.doc(FB.db, "membres", FB.user.uid), m);
-    try { await fs.deleteDoc(fs.doc(FB.db, "invitations", c)); } catch (e) {}   // code à usage unique
-    FB.membre = m; FB.etat = "ok"; fbEcouter(); toast("✔ Bienvenue dans le foyer"); majDirect();
-  } catch (e) { toast("Code refusé ou expiré : demande un nouveau code à Gaétan"); }
-}
-async function fbInviter() {
-  const { fs } = FB.m, L = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let c = ""; const r = new Uint32Array(8); crypto.getRandomValues(r); r.forEach(x => { c += L[x % L.length]; });
-  try {
-    await fs.setDoc(fs.doc(FB.db, "invitations", c), { role: "M", expire: fs.Timestamp.fromMillis(Date.now() + 7 * 86400000), cree: fs.serverTimestamp() });
-    S.fbCode = c; majDirect();
-  } catch (e) { toast("Impossible de créer le code : " + (e.code || e.message)); }
-}
-async function fbConnexion() {
-  try { await fbDemarrer(); const { au } = FB.m; await au.signInWithPopup(FB.auth, new au.GoogleAuthProvider()); }
-  catch (e) {
-    if (e && /popup-blocked|operation-not-supported/.test(e.code || "")) { try { const { au } = FB.m; await au.signInWithRedirect(FB.auth, new au.GoogleAuthProvider()); return; } catch (e2) {} }
-    if (e && /popup-closed|cancelled-popup/.test(e.code || "")) return;
-    toast("Connexion impossible : " + ((e && (e.code || e.message)) || e));
-  }
-}
-async function fbDeconnexion() { try { await FB.m.au.signOut(FB.auth); } catch (e) {} }
 
 // ---------- écoute en direct des articles des semaines utiles ----------
 function fbSemainesUtiles() { return [-1, 0, 1, 2].map(semaineOff); }
@@ -1620,39 +1594,23 @@ function fbAppliquer(v) {
   });
 }
 
-// ---------- Réglages : carte « Courses en direct » ----------
+// ---------- Réglages : carte « Base en direct » (état seulement, rien à régler) ----------
 function directCarteHtml() {
-  const on = directVoulu();
-  let corps = "";
-  if (on) {
-    if (FB.etat === "chargement" || FB.etat === "verification") corps = `<div class="hint">⏳ Connexion à la base…</div>`;
-    else if (FB.etat === "erreur") corps = `<div class="alert bad" style="margin-top:8px">${esc(FB.erreur)}</div>`;
-    else if (!FB.user) corps = `<button class="btn" data-act="fbLogin" style="margin-top:10px">Se connecter avec Google</button><div class="hint">Une seule fois par téléphone.</div>`;
-    else if (!FB.membre) corps = `<div class="hint" style="margin-top:8px">Connecté avec Google. Ce compte n'est pas encore dans le foyer : entre le code donné par Gaétan.</div>
-      <input type="text" id="fbCode" placeholder="Code d'invitation (8 caractères)" autocapitalize="characters" autocomplete="off" style="margin-top:8px">
-      <button class="btn" data-act="fbJoin">Rejoindre le foyer</button><button class="linkbtn" data-act="fbLogout">Changer de compte</button>`;
-    else corps = `<div class="hint" style="margin-top:8px">● En direct · ${esc(FB.membre.nom || "")}</div>
-      ${FB.membre.role === "G" ? (S.fbCode ? `<div class="fbcode" title="Code valable 7 jours, une seule fois">${esc(S.fbCode)}</div><div class="hint">À entrer par Mathilde dans Réglages › Courses en direct, après s'être connectée avec Google. Valable 7 jours, une seule fois.</div>` : `<button class="btn sec" data-act="fbInvite" style="margin-top:10px">Inviter Mathilde (code)</button>`) : ""}
-      <button class="linkbtn" data-act="fbLogout">Se déconnecter</button>`;
-  }
-  return `<div class="card" id="fbCarte"><div style="display:flex;align-items:center;gap:10px"><b style="flex:1">⚡ Courses en direct <span class="badge-beta">bêta</span></b>
-    <label class="switch" title="Coches et prix instantanés, partagés en direct entre vos deux téléphones"><input type="checkbox" id="fbOn" ${on ? "checked" : ""}><span></span></label></div>
-    <div class="hint">Les coches, prix payés et ajouts partent tout de suite et apparaissent chez l'autre en une seconde, même sans réseau. Le Sheet reste à jour en arrière-plan. Éteint : fonctionnement d'avant.</div>${corps}</div>`;
+  const E = {
+    ok: `● Connectée${FB.membre ? " · profil " + (FB.membre.role === "M" ? "Mathilde" : "Gaétan") : ""}. Les courses se partagent en direct entre vos téléphones.`,
+    chargement: "⏳ Connexion…", connexion: "⏳ Connexion…", eteint: "⏳ Connexion…",
+    horsligne: "Hors connexion : la base se connectera au retour du réseau.",
+    sanscle: "Pas encore activée : il manque la clé Firebase dans le Sheet (menu 🛠️ Gestion Budget › 🔥 Clé Firebase). En attendant, tout passe par le Sheet comme avant.",
+    erreur: "⚠ " + esc(FB.erreur || "erreur") + " · tout passe par le Sheet en attendant."
+  };
+  return `<div class="card" id="fbCarte"><b>⚡ Base en direct</b><div class="hint" style="margin-top:6px">${E[FB.etat] || E.chargement}</div>
+    ${FB.etat === "erreur" || FB.etat === "sanscle" ? `<button class="btn sec" data-act="fbRetry" style="margin-top:8px">Réessayer</button>` : ""}</div>`;
 }
-document.addEventListener("change", e => {
-  if (e.target.id !== "fbOn") return;
-  LS.set("bf.direct", e.target.checked);
-  if (e.target.checked) fbDemarrer(); else { Object.values(FB.ecoutes).forEach(f => f()); FB.ecoutes = {}; FB.docs = {}; }
-  majDirect();
-});
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-act]"); if (!t) return;
-  const a = t.dataset.act;
-  if (a === "fbLogin") fbConnexion();
-  else if (a === "fbLogout") { S.fbCode = ""; fbDeconnexion(); }
-  else if (a === "fbJoin") fbRejoindre(($("#fbCode") || {}).value);
-  else if (a === "fbInvite") fbInviter();
+  if (t.dataset.act === "fbRetry") { FB.erreur = ""; if (!FB.app) fbDemarrer(); else fbConnexion(); majDirect(); }
 });
+window.addEventListener("online", () => { if (FB.app && !FB.user) fbConnexion(); });
 // =====================================================================
 // 🍽 REPAS : menus de la semaine, fiches recettes, liste de courses partagée, fond de tiroir (v1.6.0)
 // =====================================================================

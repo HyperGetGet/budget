@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f3a5a">
+<meta name="theme-color" content="#1d3870">
 <meta name="mobile-web-app-capable" content="yes">
 <title>Maison &amp; Budget</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -54,7 +54,7 @@ h2{font-size:13px;margin:20px 4px 8px;color:var(--mut);font-weight:600}
 .tg{width:46px;height:26px;border-radius:99px;background:var(--chip);position:relative;flex:none;border:1px solid var(--line)}
 .tg:after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:.15s}
 .tg.on{background:var(--acc)}.tg.on:after{left:22px}
-nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:#131a21;border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:20;background:rgba(8,20,50,.28);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
 nav button{flex:1;border:0;background:none;color:var(--mut);font-size:11px;padding:6px 0;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer}
 nav button span{display:grid;place-items:center;height:24px}nav button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}nav button.on{color:var(--acc);font-weight:600}
 #fab{position:fixed;right:18px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:25;width:58px;height:58px;border-radius:18px;border:0;background:var(--acc);color:var(--onacc);font-size:32px;line-height:1;box-shadow:0 6px 18px rgba(0,0,0,.5);cursor:pointer}
@@ -325,17 +325,17 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .cplat.on{border-color:var(--acc);background:var(--chip)}.cplat i{width:9px;height:9px;border-radius:99px;display:inline-block}
 .crayon{text-transform:none;font-size:15px;color:var(--ink);font-weight:600;letter-spacing:0;margin:18px 2px 8px}.crayon span+span{font-size:12px;color:var(--mut);font-weight:400}
 .ctiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.ctile{position:relative;min-height:108px;border-radius:14px;border:1.5px solid #2c3844;background:#1c2631;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 6px;font-family:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;transition:opacity .15s,border-color .15s}
+.ctile{position:relative;min-height:108px;border-radius:14px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 6px;font-family:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation;transition:opacity .15s,border-color .15s}
 .ctile b{font-size:13px;font-weight:600;line-height:1.15;text-align:center;overflow-wrap:anywhere}
 .ctile small{font-size:12px;color:var(--mut);line-height:1.15;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ctile .tl{font-family:var(--num);font-weight:700;line-height:1}
-.ctile.achete,.ctile.maison{background:#131a21;border-color:#1c2631;opacity:.5}
+.ctile.achete,.ctile.maison{background:rgba(8,20,50,.28);border-color:rgba(255,255,255,.1);opacity:.5}
 .ctile.eteinte{opacity:.22}.ctile.achete.eteinte,.ctile.maison.eteinte{opacity:.15}
 .ctile:active{transform:scale(.97)}
 .cdots{position:absolute;top:8px;left:8px;display:flex;gap:3px}.cdots i{width:7px;height:7px;border-radius:99px;display:block}
 .cok{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:99px;background:#7bd88f;display:flex;align-items:center;justify-content:center}.cok.maison{background:transparent;font-size:13px}
 .ctd-h{display:flex;align-items:center;gap:14px;margin-bottom:12px}.ctd-h .rt span{font-size:13px;color:var(--mut)}
-.ctd-ic{width:64px;height:64px;flex:none;border-radius:16px;background:#1c2631;border:1.5px solid #2c3844;display:flex;align-items:center;justify-content:center}.ctd-ic .tl{font-family:var(--num);font-weight:700}
+.ctd-ic{width:64px;height:64px;flex:none;border-radius:16px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center}.ctd-ic .tl{font-family:var(--num);font-weight:700}
 .ctd-p{font-family:var(--num);font-size:20px;margin-left:auto}
 .ctd-t{font-size:12px;font-weight:600;color:var(--mut);letter-spacing:.3px;text-transform:uppercase;margin:4px 2px 8px}
 .ctd-dot{width:10px;height:10px;border-radius:99px;flex:none;display:block}
@@ -364,11 +364,11 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .gmodes{display:flex;gap:6px;margin-bottom:6px}.gmodes button{flex:1;min-height:36px;border-radius:10px;border:0;background:var(--chip);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer}.gmodes button.on{background:var(--acc);color:var(--onacc)}
 .grayon{display:flex;justify-content:space-between;align-items:baseline;padding:14px 2px 6px}.grayon span{font-size:14px;font-weight:650}.grayon small{font-size:12px;color:var(--mut)}.grayon.ok span{color:#7bd88f}
 .gtiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.gtiles.p{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-.gtile{position:relative;min-height:126px;border-radius:14px;border:1.5px solid #2c3844;background:#1c2631;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 5px 8px;font-family:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.gtile{position:relative;min-height:126px;border-radius:14px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 5px 8px;font-family:inherit;cursor:pointer;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 .gtile b{font-size:15px;font-weight:650;line-height:1.15;text-align:center;overflow-wrap:anywhere}
 .gtile small{font-size:13px;color:#c4ced7;line-height:1.2;text-align:center;overflow-wrap:anywhere}
 .gtile em{margin-top:auto;font-style:normal;font-family:var(--num);font-size:12px;font-weight:700;color:var(--mut)}.gtile em.reel{color:#7bd88f}
-.gtile.petite{min-height:84px;background:#131a21;border-color:#1c2631;padding:8px 4px 6px}.gtile.petite b{font-size:12.5px;font-weight:600;color:#aeb9c4}
+.gtile.petite{min-height:84px;background:rgba(8,20,50,.28);border-color:rgba(255,255,255,.1);padding:8px 4px 6px}.gtile.petite b{font-size:12.5px;font-weight:600;color:#aeb9c4}
 .gtile:active{transform:scale(.97)}
 .gmaison{margin-top:12px}.gmaison summary{font-size:14px;color:var(--mut);padding:8px 2px;cursor:pointer}
 .grec{display:flex;flex-wrap:wrap;gap:6px}.grec button{display:flex;align-items:center;gap:6px;min-height:40px;padding:0 12px 0 8px;border-radius:99px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
@@ -390,6 +390,49 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .gcalc b{transition:color .3s}
 .gbar i{transition:width .35s cubic-bezier(.2,.8,.2,1)}
 @media (prefers-reduced-motion:reduce){.gtile.nouv{animation:none}.gbar i,.switch span::before{transition:none}}
+
+/* =====================================================================
+   v1.30 : thème « Ciel » (maquette validée par Gaétan le 18/11, d'après l'image Gemini)
+   fond bleu profond avec nuages flous, cartes en verre dépoli, coins arrondis, bulles claires et lisibles
+   ===================================================================== */
+:root{--bg:#234283;--card:rgba(255,255,255,.11);--ink:#fff;--mut:#c3d1ee;--line:rgba(255,255,255,.16);--acc:#ffd166;--onacc:#13285e;
+  --bad:#ff9c8f;--warn:#ffb566;--blue:#9cc0ff;--chip:rgba(255,255,255,.1);--shadow:0 10px 28px rgba(8,20,55,.25);--hero1:#1d3870;--hero2:#2c5196;
+  --verre:rgba(255,255,255,.11);--bord-verre:rgba(255,255,255,.2);--bleu:#3b7bff;--bleu2:#5b95ff}
+html{background:linear-gradient(165deg,#1d3870 0%,#2c5196 45%,#234283 100%) fixed;min-height:100%}
+body{background:transparent}
+body::before,body::after{content:"";position:fixed;z-index:-1;border-radius:50%;pointer-events:none;filter:blur(60px)}
+body::before{left:-90px;top:-70px;width:340px;height:260px;background:#6f95e6;opacity:.42;animation:ciel 16s ease-in-out infinite}
+body::after{right:-110px;top:38vh;width:320px;height:280px;background:#9db7f0;opacity:.28;animation:ciel 20s ease-in-out infinite reverse}
+@keyframes ciel{0%,100%{transform:translate(0,0)}50%{transform:translate(22px,-12px)}}
+header{background:rgba(18,38,86,.55);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.12)}
+nav{background:rgba(16,34,78,.62);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,.14)}
+nav button.on{color:#fff}nav button span{width:54px;border-radius:99px;transition:background .2s}nav button.on span{background:rgba(255,255,255,.18)}
+.card,.env,.chip{background:var(--verre);border:1px solid var(--bord-verre);box-shadow:var(--shadow);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.card{border-radius:20px}.env,.chip{border-radius:18px}
+.hero .big{color:#fff}
+.ib,#sync{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.22)}
+#fab{background:linear-gradient(135deg,var(--bleu),var(--bleu2));color:#fff;box-shadow:0 10px 24px rgba(59,123,255,.45)}
+.btn{background:linear-gradient(135deg,var(--bleu),var(--bleu2));color:#fff;box-shadow:0 8px 20px rgba(59,123,255,.35)}
+.btn.sec{background:rgba(255,255,255,.14);color:#fff;box-shadow:none}.btn.red{background:#e5534b;color:#fff;box-shadow:none}
+.cat{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}.cat.on{background:var(--bleu);border-color:var(--bleu);color:#fff}
+.seg{background:rgba(255,255,255,.1)}.seg button.on{background:rgba(255,255,255,.2);color:#fff}
+#sheet{background:rgba(26,50,106,.9);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);border-top:1px solid rgba(255,255,255,.2)}
+#ov{background:rgba(10,20,50,.45)}
+input[type=text],input[type=date],input[type=password],input[type=url],input[type=number],input[type=time],input[type=month],select,textarea{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22);color:#fff}
+select option{color:#13285e}::placeholder{color:#a9bbe0}
+/* bulles d'information : claires, coins arrondis, très lisibles */
+#toast{background:#f4f8ff;color:#1b2a4a;box-shadow:0 10px 24px rgba(8,20,55,.3);border-radius:16px}
+.alert{background:#f4f8ff;color:#1b2a4a;border-radius:16px;box-shadow:var(--shadow)}
+.alert.bad{background:#ffe9e6;color:#7a1f16}
+.gtile{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}.gtile small{color:#d5e0f5}.gtile em.reel{color:#7ee2a8}
+.gtile.petite b{color:#c3d1ee}
+.bar{background:rgba(255,255,255,.16)}
+/* apparition douce des cartes quand on change d'écran (pas à chaque mise à jour) */
+@keyframes monte{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#view.entree>.card,#view.entree>.grid>*,#view.entree>.hero,#view.entree>.chips>*{animation:monte .36s cubic-bezier(.2,.8,.2,1) both}
+#view.entree>*:nth-child(2){animation-delay:.04s}#view.entree>*:nth-child(3){animation-delay:.08s}#view.entree>*:nth-child(4){animation-delay:.12s}#view.entree>*:nth-child(n+5){animation-delay:.16s}
+.card,.env,.chip,.btn,.cat{transition:transform .15s ease}.card:active,.env:active,.chip:active{transform:scale(.985)}
+@media (prefers-reduced-motion:reduce){body::before,body::after,#view.entree *{animation:none!important}}
 </style>
 </head>
 <body>
@@ -414,8 +457,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.29.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 50;       // version du script que cette appli attend
+const APP_VERSION = "1.30.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 51;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -1146,6 +1189,8 @@ function render() {
   if (!estG() && ["conges", "regles", "contrats"].includes(S.tab)) S.tab = "plus";   // v1.20 : écrans réservés à Gaétan
   const v = computeView();
   const el = $("#view");
+  // v1.30 : apparition douce des cartes seulement quand on change d'écran
+  if (el && render.onglet !== S.tab) { render.onglet = S.tab; el.classList.remove("entree"); void el.offsetWidth; el.classList.add("entree"); clearTimeout(render.tEntree); render.tEntree = setTimeout(() => el.classList.remove("entree"), 700); }
   const grpPlus = ["plus", "annuels", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches", "idees", "voyages", "bilan", "regles", "contrats"].includes(S.tab);
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
   $("#fab").style.display = (grpPlus || S.tab === "repas" || S.tab === "courses") ? "none" : "block";
@@ -1480,9 +1525,16 @@ async function fbCharger() {
   return FB.m;
 }
 async function fbDemarrer() {
-  if (!configured() || FB.app) return;
-  FB.etat = "chargement";
+  if (!configured() || FB.app || fbDemarrer.enCours) return;
+  fbDemarrer.enCours = true; FB.etat = "chargement";
   try {
+    // téléphone jamais connecté avec ce code : on demande d'abord l'accès au Sheet ; sans clé Firebase, on ne charge rien du tout
+    if (LS.get("bf.fbProfil", "") !== fbProfil()) {
+      let r = null; try { r = await call("fbjeton", {}, 30000); } catch (e) {}
+      if (!r || !r.ok) { FB.etat = "erreur"; FB.erreur = (r && r.error) || "Sheet injoignable"; majDirect(); return; }
+      if (!r.jeton) { FB.etat = "sanscle"; majDirect(); return; }
+      FB.jetonPret = r.jeton;
+    }
     const { a, au, fs } = await fbCharger();
     FB.app = a.initializeApp(FIREBASE_CONFIG);
     FB.auth = au.getAuth(FB.app);
@@ -1496,10 +1548,11 @@ async function fbDemarrer() {
         // le code de l'appli a changé sur ce téléphone (autre profil) : on reprend un accès neuf
         if (LS.get("bf.fbProfil", "") !== fbProfil()) { await au.signOut(FB.auth); return; }
         if (!role) { FB.etat = "erreur"; FB.erreur = "accès sans profil"; majDirect(); return; }
-        FB.membre = { role }; FB.etat = "ok"; FB.erreur = ""; fbEcouter(); majDirect();
+        FB.membre = { role }; FB.etat = "ok"; FB.erreur = ""; fbEcouter(); fbEcouterEtat(); majDirect();
       } catch (e) { FB.etat = "erreur"; FB.erreur = "Connexion à la base : " + (e.code || e.message); majDirect(); }
     });
   } catch (e) { FB.etat = "erreur"; FB.erreur = "Chargement impossible (réseau ?)"; majDirect(); }
+  finally { fbDemarrer.enCours = false; }
 }
 // empreinte courte du code de l'appli (pour savoir si ce téléphone a changé de profil), sans garder le code lui-même
 function fbProfil() { let h = 7; for (const c of String(S.cfg.key || "")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return String(h); }
@@ -1507,11 +1560,15 @@ async function fbConnexion() {
   if (fbConnexion.enCours || !navigator.onLine) { FB.etat = "horsligne"; majDirect(); return; }
   fbConnexion.enCours = true; FB.etat = "connexion";
   try {
-    const r = await call("fbjeton", {}, 30000);
-    if (!r || !r.ok) { FB.etat = "erreur"; FB.erreur = (r && r.error) || "réponse vide"; return; }
-    if (!r.jeton) { FB.etat = "sanscle"; return; }   // clé Firebase pas encore rangée dans le Sheet : l'appli marche comme avant
+    let jeton = FB.jetonPret; FB.jetonPret = "";
+    if (!jeton) {
+      const r = await call("fbjeton", {}, 30000);
+      if (!r || !r.ok) { FB.etat = "erreur"; FB.erreur = (r && r.error) || "réponse vide"; return; }
+      if (!r.jeton) { FB.etat = "sanscle"; return; }   // clé Firebase pas encore rangée dans le Sheet : l'appli marche comme avant
+      jeton = r.jeton;
+    }
     LS.set("bf.fbProfil", fbProfil());
-    await FB.m.au.signInWithCustomToken(FB.auth, r.jeton);   // la suite se fait dans onAuthStateChanged
+    await FB.m.au.signInWithCustomToken(FB.auth, jeton);   // la suite se fait dans onAuthStateChanged
   } catch (e) { FB.etat = "erreur"; FB.erreur = "Connexion à la base : " + ((e && (e.code || e.message)) || e); }
   finally { fbConnexion.enCours = false; majDirect(); }
 }
@@ -1537,6 +1594,44 @@ function fbEcouter() {
     }, e => { FB.etat = "erreur"; FB.erreur = "Lecture refusée (" + (e.code || e.message) + ")"; majDirect(); });
   });
 }
+// ---------- v1.30 : l'écran tout prêt, déposé dans Firebase par Apps Script ----------
+// Chaque profil lit le sien (« prive_gaetan/etat » ou « etat/M ») : ouverture instantanée et mise à jour sans recharger.
+// « etat/signal » change à chaque écriture : si l'écran n'en tient pas encore compte, l'appli demande un recalcul en arrière-plan.
+FB.etatGen = ""; FB.etatRecu = 0; FB.signal = null;
+const fbCheminEtat = () => FB.membre && FB.membre.role === "M" ? ["etat", "M"] : ["prive_gaetan", "etat"];
+function fbEcouterEtat() {
+  if (FB.ecoutes.__etat) return;
+  const { fs } = FB.m, ch = fbCheminEtat();
+  FB.ecoutes.__etat = fs.onSnapshot(fs.doc(FB.db, ...ch), snap => { if (snap.exists()) fbEtatRecu(snap.data()); }, () => {});
+  FB.ecoutes.__signal = fs.onSnapshot(fs.doc(FB.db, "etat", "signal"), snap => { if (snap.exists()) { FB.signal = snap.data(); fbSignalVu(); } }, () => {});
+}
+async function fbEtatRecu(h, essai) {
+  if (!h || !h.gen || h.gen === FB.etatGen) return;
+  if (S.base && S.base.genere && h.genere && h.genere < S.base.genere) { FB.etatGen = h.gen; FB.etatRecu = Date.now(); return; }   // plus ancien que ce qu'on a déjà
+  const { fs } = FB.m, ch = fbCheminEtat();
+  try {
+    const q = await fs.getDocs(fs.collection(FB.db, ...ch, "morceaux")), m = [];
+    q.forEach(x => { m[Number(x.id)] = x.data(); });
+    const ok = m.length >= h.n && m.slice(0, h.n).every(x => x && x.gen === h.gen);
+    if (!ok) { if ((essai || 0) < 3) setTimeout(() => fbEtatRecu(h, (essai || 0) + 1), 1500); return; }   // morceaux encore en route
+    S.base = JSON.parse(m.slice(0, h.n).map(x => x.t).join(""));
+    saveBase(); FB.etatGen = h.gen; FB.etatRecu = Date.now(); S.offline = false; S.error = "";
+    setSync(); render();
+  } catch (e) { /* hors ligne : on garde l'écran actuel */ }
+}
+function fbSignalVu() {
+  clearTimeout(fbSignalVu.t);
+  fbSignalVu.t = setTimeout(() => {
+    const g = FB.signal;
+    if (!g || !g.gen || g.gen === FB.etatGen) return;          // l'écran tient déjà compte de cette écriture
+    if (FB.membre && g.par === FB.membre.role) return;          // c'est nous : la réponse du Sheet met l'écran à jour
+    if (S.queue.length || !navigator.onLine) return;            // nos propres saisies partent d'abord
+    refresh(true);                                              // recalcul en arrière-plan ; il sera aussi déposé dans Firebase
+  }, 2500);
+}
+// l'écran reçu de Firebase est assez récent : inutile d'interroger le Sheet
+const fbEtatFrais = () => directActif() && FB.etatRecu && Date.now() - FB.etatRecu < 15 * 60000;
+
 // clé d'un article : « m:nom » pour un ajout à la main, sinon le nom du produit
 const fbCle = (produit, manuel) => encodeURIComponent((manuel ? "m:" : "") + String(produit)).replace(/\./g, "%2E");
 
@@ -1608,7 +1703,7 @@ function directCarteHtml() {
 }
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-act]"); if (!t) return;
-  if (t.dataset.act === "fbRetry") { FB.erreur = ""; if (!FB.app) fbDemarrer(); else fbConnexion(); majDirect(); }
+  if (t.dataset.act === "fbRetry") { FB.erreur = ""; if (!FB.app) { LS.set("bf.fbProfil", ""); fbDemarrer(); } else fbConnexion(); majDirect(); }
 });
 window.addEventListener("online", () => { if (FB.app && !FB.user) fbConnexion(); });
 // =====================================================================
@@ -5487,11 +5582,14 @@ async function reloadApp() {
   }
   majProf(); setSync(); render();
   try { fbDemarrer(); } catch (e) {}   // v1.28 : courses en direct, si l'interrupteur est allumé
-  if (configured()) { S.queue.length ? flush() : refresh(true); }
+  // v1.30 : on laisse 3 s à Firebase pour livrer l'écran tout prêt avant d'interroger le Sheet
+  // (seulement sur un téléphone déjà connecté à Firebase ; sinon, comme avant, tout de suite)
+  if (configured()) { S.queue.length ? flush() : LS.get("bf.fbProfil", "") ? setTimeout(() => { if (!fbEtatFrais()) refresh(true); }, 3000) : refresh(true); }
   window.addEventListener("online", () => { S.offline = false; flush(); refresh(true); });
   window.addEventListener("offline", () => { S.offline = true; setSync(); });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden && configured()) { S.queue.length ? flush() : refresh(true); } });
-  setInterval(() => { if (!document.hidden && configured() && navigator.onLine) { S.queue.length ? flush() : refresh(true); } }, 90000);
+  // v1.30 : si l'écran arrive déjà tout prêt par Firebase, on n'interroge plus le Sheet (seulement nos saisies à envoyer)
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && configured()) { S.queue.length ? flush() : fbEtatFrais() ? null : refresh(true); } });
+  setInterval(() => { if (!document.hidden && configured() && navigator.onLine) { S.queue.length ? flush() : fbEtatFrais() ? null : refresh(true); } }, 90000);
   if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(() => {}); }
 })();
 </script>

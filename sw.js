@@ -1,5 +1,5 @@
 // Service worker : l'appli s'ouvre sans connexion et se met à jour toute seule dès qu'une nouvelle version est publiée
-const CACHE = "bf-v1.29.0";
+const CACHE = "bf-v1.30.0";
 const IMG = "bf-img";
 const LIB = "bf-lib"; // v1.28 : bibliothèque Firebase (versionnée, ne change jamais) gardée pour ouvrir l'appli sans réseau // photos des recettes (Wikimedia Commons), gardées d'une version à l'autre pour l'usage hors ligne
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];

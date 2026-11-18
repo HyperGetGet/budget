@@ -464,6 +464,71 @@ select option{color:#13285e}::placeholder{color:#a9bbe0}
 .partage{margin-top:4px}.parts{display:flex;gap:8px;margin:8px 0 4px}.parts>div{flex:1;border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18)}
 .parts span{display:block;font-size:12px;color:var(--mut)}.parts b{font-family:var(--num);font-size:20px}
 @media (prefers-reduced-motion:reduce){.tirelire,.bulle{animation:none}}
+
+/* v1.32 : tirelires animées */
+@keyframes tFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes tEvente{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(16deg)}}
+@keyframes tSaute{0%,100%{transform:translateY(0)}40%{transform:translateY(-10px)}}
+@keyframes tTombe{0%{transform:translateY(-34px);opacity:0}25%{opacity:1}70%{transform:translateY(32px);opacity:1}80%,100%{transform:translateY(36px);opacity:0}}
+@keyframes tTremble{0%,100%{transform:translateX(0)}25%{transform:translateX(-1.2px)}75%{transform:translateX(1.2px)}}
+@keyframes tGoutte{0%{transform:translateY(-4px);opacity:0}20%{opacity:1}100%{transform:translateY(22px);opacity:0}}
+@keyframes tSoupir{0%,100%{transform:scale(1,1)}50%{transform:scale(1.02,.95)}}
+@keyframes tGarg{0%,60%,100%{opacity:0;transform:translateY(0)}70%,90%{opacity:1;transform:translateY(-4px)}}
+@keyframes tTourne{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+@keyframes tFlamme{0%,100%{transform:scaleY(1);opacity:.95}50%{transform:scaleY(1.18);opacity:.8}}
+@keyframes tCligne{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes tEclat{0%,70%,100%{opacity:0}80%{opacity:.9}}
+@keyframes tMorceauG{0%,100%{transform:rotate(0) translateX(0)}50%{transform:rotate(-4deg) translateX(-3px)}}
+@keyframes tMorceauD{0%,100%{transform:rotate(0) translateX(0)}50%{transform:rotate(4deg) translateX(3px)}}
+@keyframes tRoule{0%{transform:translateX(0) rotate(0)}100%{transform:translateX(120px) rotate(720deg)}}
+.tirelire3d{animation:tFlotte 3.4s ease-in-out infinite}
+.tSaute,.tTombe,.tTremble,.tGoutte,.tGargouille,.tCligne,.tEclat,.tMorceauG,.tMorceauD,.tRoule{transform-box:fill-box;transform-origin:center}
+.tEventail{animation:tEvente .9s ease-in-out infinite;transform-box:view-box}
+.tSaute{animation:tSaute 1.4s ease-in-out infinite}.t2{animation-delay:.5s}
+.tTombe{animation:tTombe 2.6s ease-in infinite}
+.tTremble{animation:tTremble .25s linear infinite}
+.tGoutte{animation:tGoutte 1.8s ease-in infinite}
+.tSoupir{animation:tSoupir 3.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}
+.tGargouille{animation:tGarg 4s ease-in-out infinite}
+.tTourne{animation:tTourne 2.4s ease-in-out infinite;transform-box:view-box}
+.tFlamme path{animation:tFlamme .5s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}.tFlamme path:nth-child(2){animation-delay:.2s}
+.tCligne{animation:tCligne 4.5s infinite}
+.tEclat{animation:tEclat 2.8s infinite}
+.tMorceauG{animation:tMorceauG 2.2s ease-in-out infinite}.tMorceauD{animation:tMorceauD 2.2s ease-in-out infinite}
+.tRoule{animation:tRoule 3.5s linear infinite}
+@media (prefers-reduced-motion:reduce){.tirelire3d,.tirelire3d *{animation:none!important}}
+
+.tirebtn{border:0;background:none;padding:0;cursor:pointer;flex:none;width:112px;height:100px}.tirebtn svg{width:112px;height:100px;overflow:visible}
+/* v1.32 : statistiques « 1 mois » comparées au mois d'avant */
+.scomp{padding:16px}.sc-h{display:flex;gap:10px;align-items:flex-end}.sc-h>div{flex:1;display:flex;flex-direction:column;gap:2px}.sc-h small{color:var(--mut);font-size:12.5px}
+.sc-h b{font-family:var(--num);font-size:28px}.sc-p{align-items:flex-end}.sc-p b{font-size:18px!important;color:#dce6fa}
+.sc-e{display:flex;align-items:center;gap:10px;margin:12px 0 6px;padding:10px 12px;border-radius:14px;font-size:13.5px;line-height:1.4;color:#1b2a4a}.sc-e span{font-size:20px;font-weight:800}
+.sc-e.ok{background:#e3f6ea}.sc-e.ok span{color:#1e8a4c}.sc-e.ko{background:#fff0e0}.sc-e.ko span{color:#c26a12}
+.sc-c{display:flex;align-items:center;gap:10px;min-height:52px;border-top:1px solid rgba(255,255,255,.1)}.sc-c>div{display:flex;flex-direction:column;gap:1px}.sc-c>div:first-child{flex:1}
+.sc-c span{font-size:12px;color:var(--mut)}.sc-c>div:last-child{align-items:flex-end}.sc-c em{font-style:normal;font-size:12px;font-weight:700}.sc-c em.ok{color:#7ee2a8}.sc-c em.ko{color:#ffb566}
+/* v1.32 : photos des articles en fond + pastilles des rayons */
+.gtile.aphoto{justify-content:flex-end;align-items:flex-start;text-align:left;padding:8px 9px;overflow:hidden;background-image:linear-gradient(180deg,rgba(10,20,45,0) 30%,rgba(10,20,45,.86)),var(--ph);background-size:cover;background-position:center;border-color:rgba(255,255,255,.28)}
+.gtile.aphoto>svg{position:absolute;top:6px;right:6px;width:22px!important;height:22px!important;opacity:.85;filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+.gtile.aphoto b,.gtile.aphoto small{text-align:left;text-shadow:0 1px 3px rgba(0,0,0,.6)}.gtile.aphoto em{margin-top:2px;color:#ffe08a}.gtile.aphoto em.reel{color:#9ff5c0}
+.gtile.aphoto .cdots{left:auto;right:34px}
+.gtile.petite.aphoto{opacity:.6;background-image:linear-gradient(180deg,rgba(10,20,45,.25),rgba(10,20,45,.85)),var(--ph)}
+.grchips{display:flex;gap:6px;overflow-x:auto;margin:10px -2px 2px;padding:2px;scrollbar-width:none}.grchips::-webkit-scrollbar{display:none}
+.grchips button{flex:none;display:flex;align-items:center;gap:6px;min-height:36px;padding:0 12px 0 9px;border-radius:99px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.12);color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.grchips i,.grpt{display:inline-block;width:10px;height:10px;border-radius:99px;margin-right:6px}.grchips i{margin:0}.grchips span{font-weight:500;opacity:.75}
+.phgrille{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.phchoix{aspect-ratio:1;border-radius:14px;border:2px solid rgba(255,255,255,.2);background-size:cover;background-position:center;cursor:pointer}
+.phchoix:active{border-color:#9cc0ff}
+/* v1.32 : Menus — bandeau des jours et grande carte du jour avec la photo du plat en fond (maquette O) */
+.jbande{display:flex;gap:6px;margin:10px 0 12px}.jbande button{flex:1;min-height:58px;border-radius:16px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;transition:background .2s,box-shadow .2s}
+.jbande span{font-size:11.5px;color:var(--mut)}.jbande b{font-family:var(--num);font-size:18px}.jbande i{width:5px;height:5px;border-radius:99px;background:transparent}
+.jbande button.auj i{background:#ffe08a}.jbande button.on{background:linear-gradient(135deg,var(--bleu),var(--bleu2));border-color:transparent;box-shadow:0 6px 16px rgba(59,123,255,.45)}.jbande button.on span{color:#fff}
+.tonight{position:relative;min-height:300px;border-radius:24px;overflow:hidden;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);box-shadow:0 14px 30px rgba(8,20,55,.35);display:flex;flex-direction:column;justify-content:flex-end;animation:monte .36s cubic-bezier(.2,.8,.2,1) both}
+.tonight .ph{position:absolute;inset:0;height:auto!important;font-size:80px}.tonight .ph img{width:100%;height:100%;object-fit:cover;opacity:.9}
+.tonight .in{position:relative;padding:70px 16px 16px;background:linear-gradient(180deg,rgba(12,24,58,0),rgba(12,24,58,.6) 35%,rgba(12,24,58,.92))}
+.tonight small{color:#c9d8ff;text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:600}
+.tonight b{font-family:var(--num);font-size:22px;color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.4)}.tonight .tm{color:#dce6fa}
+.tonight .duo{display:flex;gap:8px;margin-top:10px}.tonight .duo .btn{margin:0;flex:1}.tonight .duo .btn.sec{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3)}
+.tonight.vide{min-height:150px}
+.dayc{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:18px;box-shadow:none}.dayc.today{outline:2px solid #ffe08a}.dayc.sel{border-color:#9cc0ff;background:rgba(156,192,255,.16)}
 </style>
 </head>
 <body>
@@ -488,8 +553,8 @@ select option{color:#13285e}::placeholder{color:#a9bbe0}
 
 <script>
 "use strict";
-const APP_VERSION = "1.31.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 52;       // version du script que cette appli attend
+const APP_VERSION = "1.32.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 53;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -1152,6 +1217,7 @@ function amzCard(v) {
 const TIRELIRE = `<svg class="tirelire" viewBox="0 0 96 84" role="img" aria-label="Tirelire"><circle cx="66" cy="12" r="9" fill="#FFC94A"/><circle cx="66" cy="12" r="5.5" fill="none" stroke="#E5A520" stroke-width="1.5"/><ellipse cx="46" cy="52" rx="34" ry="24" fill="#FFB3C7"/><path d="M28 34l-4-12 12 7z" fill="#FF9DB6"/><ellipse cx="80" cy="54" rx="9" ry="8" fill="#FF9DB6"/><circle cx="77" cy="53" r="1.8" fill="#C25B7A"/><circle cx="83" cy="53" r="1.8" fill="#C25B7A"/><circle cx="62" cy="44" r="2.6" fill="#3B2440"/><rect x="38" y="29" width="16" height="4" rx="2" fill="#C25B7A"/><rect x="24" y="68" width="9" height="12" rx="4" fill="#FF9DB6"/><rect x="56" y="68" width="9" height="12" rx="4" fill="#FF9DB6"/><ellipse cx="38" cy="46" rx="12" ry="7" fill="#fff" opacity=".35"/></svg>`;
 const AIDES = {
   solde: "Solde théorique : ce qu'il reste sur le compte commun une fois enregistrées toutes les dépenses saisies. Il bouge dès que l'un de vous saisit. Touche le montant pour saisir le solde réel de la banque.",
+  tirelire: "La tirelire suit le solde théorique du compte commun : lunettes de soleil au-dessus de 2 000 €, heureuse de 1 500 à 2 000 €, inquiète de 1 000 à 1 500 €, maigre de 500 à 1 000 €, en brochette de 0 à 500 €, cassée en dessous de 0 €.",
   bas: "Le point le plus bas du compte commun d'ici la fin du mois, en comptant les prélèvements prévus. S'il passe trop bas, une alerte s'affiche au-dessus des enveloppes."
 };
 const bulleAide = k => S.tip === k ? `<div class="bulle">${esc(AIDES[k] || "")}</div>` : "";
@@ -1179,7 +1245,7 @@ function viewHome(v) {
   let h = bandeauScript() + salutation() + whoBar() + `<div class="card heros">
     <div class="hs-t"><span>Solde théorique · compte commun</span><button type="button" class="aide" data-tip="solde" aria-label="Explication du solde">?</button></div>${bulleAide("solde")}
     <div class="hs-l"><div class="hs-m" data-act="solde"><div class="big ${neg ? "neg" : ""}">${eur(t.soldeTheorique)}</div>
-      <div class="sub">Solde réel saisi : ${eur(pv.soldeReel)} · touche pour le mettre à jour</div>${lddsLigne(v)}</div>${TIRELIRE}</div>
+      <div class="sub">Solde réel saisi : ${eur(pv.soldeReel)} · touche pour le mettre à jour</div>${lddsLigne(v)}</div>${tirelireHtml(t.soldeTheorique)}</div>${bulleAide("tirelire")}
     ${courbeSolde(v)}
     <button type="button" class="hs-bas" data-tip="bas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l7 7 4-4 7 7M21 12v5h-5"/></svg><span>Plus bas prévu <b>${esc(pv.plusBas)}</b> le ${esc(pv.plusBasDate)}</span><i>?</i></button>${bulleAide("bas")}
   </div>`;
@@ -1642,7 +1708,7 @@ async function fbDemarrer() {
         // le code de l'appli a changé sur ce téléphone (autre profil) : on reprend un accès neuf
         if (LS.get("bf.fbProfil", "") !== fbProfil()) { await au.signOut(FB.auth); return; }
         if (!role) { FB.etat = "erreur"; FB.erreur = "accès sans profil"; majDirect(); return; }
-        FB.membre = { role }; FB.etat = "ok"; FB.erreur = ""; fbEcouter(); fbEcouterEtat(); majDirect();
+        FB.membre = { role }; FB.etat = "ok"; FB.erreur = ""; fbEcouter(); fbEcouterEtat(); try { photosEcouter(); } catch (e) {} majDirect();
       } catch (e) { FB.etat = "erreur"; FB.erreur = "Connexion à la base : " + (e.code || e.message); majDirect(); }
     });
   } catch (e) { FB.etat = "erreur"; FB.erreur = "Chargement impossible (réseau ?)"; majDirect(); }
@@ -1806,6 +1872,14 @@ document.addEventListener("click", e => {
   const t = e.target.closest("[data-tip]"); if (!t) return;
   e.stopPropagation(); S.tip = S.tip === t.dataset.tip ? "" : t.dataset.tip; render();
 }, true);
+// =====================================================================
+// v1.32 : tirelires en relief et animées (idée de Gaétan du 18/11), selon le solde du compte commun
+// Dessins générés par src/design/tirelires.py (ne pas modifier à la main : relancer le script)
+// =====================================================================
+const TIRELIRES = {"riche": "<svg class=\"tirelire3d\" viewBox=\"0 -8 214 194\" role=\"img\" aria-label=\"Tirelire : La belle vie\"><defs>\n<radialGradient id=\"tCorpsR\" cx=\"38%\" cy=\"30%\" r=\"75%\"><stop offset=\"0\" stop-color=\"#FFE3EC\"/><stop offset=\".55\" stop-color=\"#FFA9C2\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></radialGradient>\n<radialGradient id=\"tGroinR\" cx=\"40%\" cy=\"35%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFE3EC\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></radialGradient>\n<linearGradient id=\"tPatteR\" x1=\"0\" x2=\"1\"><stop offset=\"0\" stop-color=\"#E06C8E\"/><stop offset=\".45\" stop-color=\"#FFA9C2\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></linearGradient>\n<radialGradient id=\"tPieceR\" cx=\"35%\" cy=\"30%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFF1A8\"/><stop offset=\".6\" stop-color=\"#FFC531\"/><stop offset=\"1\" stop-color=\"#C98A0C\"/></radialGradient>\n<radialGradient id=\"tOmbreR\"><stop offset=\"0\" stop-color=\"#06122E\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#06122E\" stop-opacity=\"0\"/></radialGradient>\n<linearGradient id=\"tBilletR\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9BE7B4\"/><stop offset=\"1\" stop-color=\"#2E9457\"/></linearGradient>\n<linearGradient id=\"tVerreR\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A3F55\"/><stop offset=\".5\" stop-color=\"#11131C\"/><stop offset=\"1\" stop-color=\"#2A2E40\"/></linearGradient>\n</defs><ellipse cx=\"100\" cy=\"168\" rx=\"70\" ry=\"9\" fill=\"url(#tOmbreR)\"/>\n<path d=\"M42 100c-14-4-18 10-8 14c8 3 10-8 2-8\" fill=\"none\" stroke=\"url(#tPatteR)\" stroke-width=\"5\" stroke-linecap=\"round\"/>\n<g fill=\"url(#tPatteR)\"><rect x=\"66\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/><rect x=\"88\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"112\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"134\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/></g>\n<ellipse cx=\"100\" cy=\"106\" rx=\"62\" ry=\"48\" fill=\"url(#tCorpsR)\"/>\n<ellipse cx=\"106\" cy=\"132\" rx=\"50\" ry=\"15\" fill=\"#7A1F3D\" opacity=\".14\"/>\n\n<path d=\"M80 66l-6-22 20 12z\" fill=\"url(#tGroinR)\"/><path d=\"M112 64l4-22 14 17z\" fill=\"url(#tGroinR)\"/>\n<rect x=\"88\" y=\"63\" width=\"26\" height=\"6\" rx=\"3\" fill=\"#5A1A33\" opacity=\".75\"/>\n<ellipse cx=\"78\" cy=\"84\" rx=\"20\" ry=\"10\" fill=\"#fff\" opacity=\".42\"/>\n<ellipse cx=\"158\" cy=\"110\" rx=\"15\" ry=\"18\" fill=\"url(#tGroinR)\"/><ellipse cx=\"161\" cy=\"108\" rx=\"10\" ry=\"13\" fill=\"#000\" opacity=\".06\"/>\n<ellipse cx=\"156\" cy=\"106\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/><ellipse cx=\"165\" cy=\"107\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/>\n<g class=\"tReflet\"><rect x=\"114\" y=\"80\" width=\"32\" height=\"19\" rx=\"9\" fill=\"url(#tVerreR)\"/><rect x=\"148\" y=\"82\" width=\"17\" height=\"16\" rx=\"7\" fill=\"url(#tVerreR)\"/><path d=\"M145 87h4M114 87l-16-5\" stroke=\"#11131C\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><path class=\"tEclat\" d=\"M120 84l9 0\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" opacity=\".8\"/></g><path d=\"M150 122q8 6 15-1\" stroke=\"#7A1F3D\" stroke-width=\"2.4\" fill=\"none\" stroke-linecap=\"round\"/><g class=\"tEventail\" style=\"transform-origin:180px 150px\"><g transform=\"rotate(-34 180 150)\"><rect x=\"170\" y=\"98\" width=\"20\" height=\"44\" rx=\"3\" fill=\"url(#tBilletR)\" stroke=\"#1E6B3E\" stroke-width=\"1\"/><text x=\"180\" y=\"124\" font-size=\"11\" text-anchor=\"middle\" fill=\"#145A30\" font-weight=\"700\">€</text></g><g transform=\"rotate(-12 180 150)\"><rect x=\"170\" y=\"96\" width=\"20\" height=\"44\" rx=\"3\" fill=\"url(#tBilletR)\" stroke=\"#1E6B3E\" stroke-width=\"1\"/><text x=\"180\" y=\"122\" font-size=\"11\" text-anchor=\"middle\" fill=\"#145A30\" font-weight=\"700\">€</text></g><g transform=\"rotate(10 180 150)\"><rect x=\"170\" y=\"98\" width=\"20\" height=\"44\" rx=\"3\" fill=\"url(#tBilletR)\" stroke=\"#1E6B3E\" stroke-width=\"1\"/><text x=\"180\" y=\"124\" font-size=\"11\" text-anchor=\"middle\" fill=\"#145A30\" font-weight=\"700\">€</text></g><ellipse cx=\"180\" cy=\"150\" rx=\"10\" ry=\"8\" fill=\"url(#tGroinR)\"/></g><g class=\"tSaute\"><circle cx=\"34\" cy=\"40\" r=\"8\" fill=\"url(#tPieceR)\"/><circle cx=\"34\" cy=\"40\" r=\"5.0\" fill=\"none\" stroke=\"#C98A0C\" stroke-width=\"1.4\" opacity=\".7\"/><ellipse cx=\"31.2\" cy=\"36.8\" rx=\"2.4\" ry=\"1.4\" fill=\"#fff\" opacity=\".8\"/></g><g class=\"tSaute t2\"><circle cx=\"58\" cy=\"22\" r=\"6\" fill=\"url(#tPieceR)\"/><circle cx=\"58\" cy=\"22\" r=\"3.7\" fill=\"none\" stroke=\"#C98A0C\" stroke-width=\"1.4\" opacity=\".7\"/><ellipse cx=\"55.9\" cy=\"19.6\" rx=\"1.8\" ry=\"1.1\" fill=\"#fff\" opacity=\".8\"/></g></svg>", "heureuse": "<svg class=\"tirelire3d\" viewBox=\"0 -8 214 194\" role=\"img\" aria-label=\"Tirelire : Heureuse\"><defs>\n<radialGradient id=\"tCorpsH\" cx=\"38%\" cy=\"30%\" r=\"75%\"><stop offset=\"0\" stop-color=\"#FFE3EC\"/><stop offset=\".55\" stop-color=\"#FFA9C2\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></radialGradient>\n<radialGradient id=\"tGroinH\" cx=\"40%\" cy=\"35%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFE3EC\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></radialGradient>\n<linearGradient id=\"tPatteH\" x1=\"0\" x2=\"1\"><stop offset=\"0\" stop-color=\"#E06C8E\"/><stop offset=\".45\" stop-color=\"#FFA9C2\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></linearGradient>\n<radialGradient id=\"tPieceH\" cx=\"35%\" cy=\"30%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFF1A8\"/><stop offset=\".6\" stop-color=\"#FFC531\"/><stop offset=\"1\" stop-color=\"#C98A0C\"/></radialGradient>\n<radialGradient id=\"tOmbreH\"><stop offset=\"0\" stop-color=\"#06122E\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#06122E\" stop-opacity=\"0\"/></radialGradient>\n<linearGradient id=\"tBilletH\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9BE7B4\"/><stop offset=\"1\" stop-color=\"#2E9457\"/></linearGradient>\n<linearGradient id=\"tVerreH\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A3F55\"/><stop offset=\".5\" stop-color=\"#11131C\"/><stop offset=\"1\" stop-color=\"#2A2E40\"/></linearGradient>\n</defs><ellipse cx=\"100\" cy=\"168\" rx=\"70\" ry=\"9\" fill=\"url(#tOmbreH)\"/>\n<path d=\"M42 100c-14-4-18 10-8 14c8 3 10-8 2-8\" fill=\"none\" stroke=\"url(#tPatteH)\" stroke-width=\"5\" stroke-linecap=\"round\"/>\n<g fill=\"url(#tPatteH)\"><rect x=\"66\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/><rect x=\"88\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"112\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"134\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/></g>\n<ellipse cx=\"100\" cy=\"106\" rx=\"62\" ry=\"48\" fill=\"url(#tCorpsH)\"/>\n<ellipse cx=\"106\" cy=\"132\" rx=\"50\" ry=\"15\" fill=\"#7A1F3D\" opacity=\".14\"/>\n\n<path d=\"M80 66l-6-22 20 12z\" fill=\"url(#tGroinH)\"/><path d=\"M112 64l4-22 14 17z\" fill=\"url(#tGroinH)\"/>\n<rect x=\"88\" y=\"63\" width=\"26\" height=\"6\" rx=\"3\" fill=\"#5A1A33\" opacity=\".75\"/>\n<ellipse cx=\"78\" cy=\"84\" rx=\"20\" ry=\"10\" fill=\"#fff\" opacity=\".42\"/>\n<ellipse cx=\"158\" cy=\"110\" rx=\"15\" ry=\"18\" fill=\"url(#tGroinH)\"/><ellipse cx=\"161\" cy=\"108\" rx=\"10\" ry=\"13\" fill=\"#000\" opacity=\".06\"/>\n<ellipse cx=\"156\" cy=\"106\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/><ellipse cx=\"165\" cy=\"107\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/>\n<path class=\"tCligne\" d=\"M126 90q6-7 12 0\" stroke=\"#1B1020\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\"/><ellipse cx=\"128\" cy=\"104\" rx=\"7\" ry=\"4\" fill=\"#FF6F98\" opacity=\".5\"/><path d=\"M150 122q8 7 15-1\" stroke=\"#7A1F3D\" stroke-width=\"2.4\" fill=\"none\" stroke-linecap=\"round\"/><g class=\"tTombe\"><circle cx=\"101\" cy=\"20\" r=\"9\" fill=\"url(#tPieceH)\"/><circle cx=\"101\" cy=\"20\" r=\"5.6\" fill=\"none\" stroke=\"#C98A0C\" stroke-width=\"1.4\" opacity=\".7\"/><ellipse cx=\"97.8\" cy=\"16.4\" rx=\"2.7\" ry=\"1.6\" fill=\"#fff\" opacity=\".8\"/></g></svg>", "inquiete": "<svg class=\"tirelire3d\" viewBox=\"0 -8 214 194\" role=\"img\" aria-label=\"Tirelire : Un peu inquiète\"><defs>\n<radialGradient id=\"tCorpsI\" cx=\"38%\" cy=\"30%\" r=\"75%\"><stop offset=\"0\" stop-color=\"#FFE3EC\"/><stop offset=\".55\" stop-color=\"#FFA9C2\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></radialGradient>\n<radialGradient id=\"tGroinI\" cx=\"40%\" cy=\"35%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFE3EC\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></radialGradient>\n<linearGradient id=\"tPatteI\" x1=\"0\" x2=\"1\"><stop offset=\"0\" stop-color=\"#E06C8E\"/><stop offset=\".45\" stop-color=\"#FFA9C2\"/><stop offset=\"1\" stop-color=\"#E06C8E\"/></linearGradient>\n<radialGradient id=\"tPieceI\" cx=\"35%\" cy=\"30%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFF1A8\"/><stop offset=\".6\" stop-color=\"#FFC531\"/><stop offset=\"1\" stop-color=\"#C98A0C\"/></radialGradient>\n<radialGradient id=\"tOmbreI\"><stop offset=\"0\" stop-color=\"#06122E\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#06122E\" stop-opacity=\"0\"/></radialGradient>\n<linearGradient id=\"tBilletI\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9BE7B4\"/><stop offset=\"1\" stop-color=\"#2E9457\"/></linearGradient>\n<linearGradient id=\"tVerreI\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A3F55\"/><stop offset=\".5\" stop-color=\"#11131C\"/><stop offset=\"1\" stop-color=\"#2A2E40\"/></linearGradient>\n</defs><g class=\"tTremble\"><ellipse cx=\"100\" cy=\"168\" rx=\"70\" ry=\"9\" fill=\"url(#tOmbreI)\"/>\n<path d=\"M42 100c-14-4-18 10-8 14c8 3 10-8 2-8\" fill=\"none\" stroke=\"url(#tPatteI)\" stroke-width=\"5\" stroke-linecap=\"round\"/>\n<g fill=\"url(#tPatteI)\"><rect x=\"66\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/><rect x=\"88\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"112\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"134\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/></g>\n<ellipse cx=\"100\" cy=\"106\" rx=\"62\" ry=\"48\" fill=\"url(#tCorpsI)\"/>\n<ellipse cx=\"106\" cy=\"132\" rx=\"50\" ry=\"15\" fill=\"#7A1F3D\" opacity=\".14\"/>\n\n<path d=\"M80 66l-6-22 20 12z\" fill=\"url(#tGroinI)\"/><path d=\"M112 64l4-22 14 17z\" fill=\"url(#tGroinI)\"/>\n<rect x=\"88\" y=\"63\" width=\"26\" height=\"6\" rx=\"3\" fill=\"#5A1A33\" opacity=\".75\"/>\n<ellipse cx=\"78\" cy=\"84\" rx=\"20\" ry=\"10\" fill=\"#fff\" opacity=\".42\"/>\n<ellipse cx=\"158\" cy=\"110\" rx=\"15\" ry=\"18\" fill=\"url(#tGroinI)\"/><ellipse cx=\"161\" cy=\"108\" rx=\"10\" ry=\"13\" fill=\"#000\" opacity=\".06\"/>\n<ellipse cx=\"156\" cy=\"106\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/><ellipse cx=\"165\" cy=\"107\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/>\n<g class=\"tCligne\"><ellipse cx=\"132\" cy=\"90\" rx=\"5.5\" ry=\"6.5\" fill=\"#1B1020\"/><circle cx=\"134\" cy=\"87.5\" r=\"2\" fill=\"#fff\"/></g><path d=\"M124 79l13 4\" stroke=\"#1B1020\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><path d=\"M150 124q4-3 7 0t7 0\" stroke=\"#7A1F3D\" stroke-width=\"2.2\" fill=\"none\" stroke-linecap=\"round\"/></g><path class=\"tGoutte\" d=\"M70 52q-6 10 0 13q6-3 0-13z\" fill=\"#8FD3FF\" stroke=\"#fff\" stroke-width=\"1\"/></svg>", "maigre": "<svg class=\"tirelire3d\" viewBox=\"0 -8 214 194\" role=\"img\" aria-label=\"Tirelire : Maigre\"><defs>\n<radialGradient id=\"tCorpsM\" cx=\"38%\" cy=\"30%\" r=\"75%\"><stop offset=\"0\" stop-color=\"#FCEAF0\"/><stop offset=\".55\" stop-color=\"#F2C1CF\"/><stop offset=\"1\" stop-color=\"#C98CA0\"/></radialGradient>\n<radialGradient id=\"tGroinM\" cx=\"40%\" cy=\"35%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FCEAF0\"/><stop offset=\"1\" stop-color=\"#C98CA0\"/></radialGradient>\n<linearGradient id=\"tPatteM\" x1=\"0\" x2=\"1\"><stop offset=\"0\" stop-color=\"#C98CA0\"/><stop offset=\".45\" stop-color=\"#F2C1CF\"/><stop offset=\"1\" stop-color=\"#C98CA0\"/></linearGradient>\n<radialGradient id=\"tPieceM\" cx=\"35%\" cy=\"30%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFF1A8\"/><stop offset=\".6\" stop-color=\"#FFC531\"/><stop offset=\"1\" stop-color=\"#C98A0C\"/></radialGradient>\n<radialGradient id=\"tOmbreM\"><stop offset=\"0\" stop-color=\"#06122E\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#06122E\" stop-opacity=\"0\"/></radialGradient>\n<linearGradient id=\"tBilletM\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9BE7B4\"/><stop offset=\"1\" stop-color=\"#2E9457\"/></linearGradient>\n<linearGradient id=\"tVerreM\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A3F55\"/><stop offset=\".5\" stop-color=\"#11131C\"/><stop offset=\"1\" stop-color=\"#2A2E40\"/></linearGradient>\n</defs><g class=\"tSoupir\"><ellipse cx=\"100\" cy=\"168\" rx=\"70\" ry=\"9\" fill=\"url(#tOmbreM)\"/>\n<path d=\"M48 100c-14-4-18 10-8 14c8 3 10-8 2-8\" fill=\"none\" stroke=\"url(#tPatteM)\" stroke-width=\"5\" stroke-linecap=\"round\"/>\n<g fill=\"url(#tPatteM)\"><rect x=\"66\" y=\"124\" width=\"17\" height=\"24\" rx=\"8\"/><rect x=\"88\" y=\"128\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"112\" y=\"128\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"134\" y=\"124\" width=\"17\" height=\"24\" rx=\"8\"/></g>\n<ellipse cx=\"100\" cy=\"106\" rx=\"56\" ry=\"34\" fill=\"url(#tCorpsM)\"/>\n<ellipse cx=\"106\" cy=\"125\" rx=\"45\" ry=\"11\" fill=\"#7A1F3D\" opacity=\".14\"/>\n<path d=\"M78 100q4 14 0 26M90 98q4 16 0 30M102 98q4 16 0 30\" stroke=\"#B5788B\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\" opacity=\".7\"/>\n<path d=\"M80 80l-6-22 20 12z\" fill=\"url(#tGroinM)\"/><path d=\"M112 78l4-22 14 17z\" fill=\"url(#tGroinM)\"/>\n<rect x=\"88\" y=\"77\" width=\"26\" height=\"6\" rx=\"3\" fill=\"#5A1A33\" opacity=\".75\"/>\n<ellipse cx=\"78\" cy=\"91\" rx=\"18\" ry=\"7\" fill=\"#fff\" opacity=\".42\"/>\n<ellipse cx=\"152\" cy=\"110\" rx=\"15\" ry=\"18\" fill=\"url(#tGroinM)\"/><ellipse cx=\"155\" cy=\"108\" rx=\"10\" ry=\"13\" fill=\"#000\" opacity=\".06\"/>\n<ellipse cx=\"150\" cy=\"106\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/><ellipse cx=\"159\" cy=\"107\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/>\n<ellipse cx=\"128\" cy=\"96\" rx=\"4.5\" ry=\"5\" fill=\"#1B1020\"/><path d=\"M121 89l12-2\" stroke=\"#1B1020\" stroke-width=\"2.2\" stroke-linecap=\"round\"/><circle cx=\"129.5\" cy=\"94.5\" r=\"1.5\" fill=\"#fff\"/><path d=\"M146 122q5-4 10 0\" stroke=\"#7A1F3D\" stroke-width=\"2.2\" fill=\"none\" stroke-linecap=\"round\"/></g><text class=\"tGargouille\" x=\"40\" y=\"70\" font-size=\"13\" fill=\"#FFE08A\" font-weight=\"700\">grr…</text></svg>", "brochette": "<svg class=\"tirelire3d\" viewBox=\"0 -8 214 194\" role=\"img\" aria-label=\"Tirelire : En brochette\"><defs>\n<radialGradient id=\"tCorpsB\" cx=\"38%\" cy=\"30%\" r=\"75%\"><stop offset=\"0\" stop-color=\"#FFD9B8\"/><stop offset=\".55\" stop-color=\"#E9A27E\"/><stop offset=\"1\" stop-color=\"#A8532E\"/></radialGradient>\n<radialGradient id=\"tGroinB\" cx=\"40%\" cy=\"35%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFD9B8\"/><stop offset=\"1\" stop-color=\"#A8532E\"/></radialGradient>\n<linearGradient id=\"tPatteB\" x1=\"0\" x2=\"1\"><stop offset=\"0\" stop-color=\"#A8532E\"/><stop offset=\".45\" stop-color=\"#E9A27E\"/><stop offset=\"1\" stop-color=\"#A8532E\"/></linearGradient>\n<radialGradient id=\"tPieceB\" cx=\"35%\" cy=\"30%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFF1A8\"/><stop offset=\".6\" stop-color=\"#FFC531\"/><stop offset=\"1\" stop-color=\"#C98A0C\"/></radialGradient>\n<radialGradient id=\"tOmbreB\"><stop offset=\"0\" stop-color=\"#06122E\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#06122E\" stop-opacity=\"0\"/></radialGradient>\n<linearGradient id=\"tBilletB\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9BE7B4\"/><stop offset=\"1\" stop-color=\"#2E9457\"/></linearGradient>\n<linearGradient id=\"tVerreB\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A3F55\"/><stop offset=\".5\" stop-color=\"#11131C\"/><stop offset=\"1\" stop-color=\"#2A2E40\"/></linearGradient>\n</defs><path d=\"M8 104H192\" stroke=\"#7A5A3A\" stroke-width=\"5\" stroke-linecap=\"round\"/><circle cx=\"192\" cy=\"104\" r=\"5\" fill=\"#5A3A1E\"/><g class=\"tTourne\" style=\"transform-origin:100px 104px\"><ellipse cx=\"100\" cy=\"168\" rx=\"70\" ry=\"9\" fill=\"url(#tOmbreB)\"/>\n<path d=\"M42 100c-14-4-18 10-8 14c8 3 10-8 2-8\" fill=\"none\" stroke=\"url(#tPatteB)\" stroke-width=\"5\" stroke-linecap=\"round\"/>\n<g fill=\"url(#tPatteB)\"><rect x=\"66\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/><rect x=\"88\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"112\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"134\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/></g>\n<ellipse cx=\"100\" cy=\"106\" rx=\"62\" ry=\"48\" fill=\"url(#tCorpsB)\"/>\n<ellipse cx=\"106\" cy=\"132\" rx=\"50\" ry=\"15\" fill=\"#7A1F3D\" opacity=\".14\"/>\n\n<path d=\"M80 66l-6-22 20 12z\" fill=\"url(#tGroinB)\"/><path d=\"M112 64l4-22 14 17z\" fill=\"url(#tGroinB)\"/>\n<rect x=\"88\" y=\"63\" width=\"26\" height=\"6\" rx=\"3\" fill=\"#5A1A33\" opacity=\".75\"/>\n<ellipse cx=\"78\" cy=\"84\" rx=\"20\" ry=\"10\" fill=\"#fff\" opacity=\".42\"/>\n<ellipse cx=\"158\" cy=\"110\" rx=\"15\" ry=\"18\" fill=\"url(#tGroinB)\"/><ellipse cx=\"161\" cy=\"108\" rx=\"10\" ry=\"13\" fill=\"#000\" opacity=\".06\"/>\n<ellipse cx=\"156\" cy=\"106\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/><ellipse cx=\"165\" cy=\"107\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/>\n<path d=\"M127 86l9 9M136 86l-9 9\" stroke=\"#1B1020\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><path d=\"M150 124h12\" stroke=\"#5A1A10\" stroke-width=\"2.4\" stroke-linecap=\"round\"/><path d=\"M70 96l10 4M84 92l10 4M74 116l10 4M96 120l10 4\" stroke=\"#7A3A1E\" stroke-width=\"3\" stroke-linecap=\"round\" opacity=\".55\"/></g><g class=\"tFlamme\"><path d=\"M50 176q6-22 14-6q4-12 10-4q4 10-6 12z\" fill=\"#FF7A2A\"/><path d=\"M90 176q8-28 18-6q4-14 12-4q3 12-8 12z\" fill=\"#FFB03A\"/><path d=\"M134 176q6-22 14-6q4-12 10-4q4 10-6 12z\" fill=\"#FF7A2A\"/></g><path d=\"M30 178H170M34 172H166\" stroke=\"#3A4560\" stroke-width=\"4\" stroke-linecap=\"round\"/></svg>", "cassee": "<svg class=\"tirelire3d\" viewBox=\"0 -8 214 194\" role=\"img\" aria-label=\"Tirelire : Cassée\"><defs>\n<radialGradient id=\"tCorpsC\" cx=\"38%\" cy=\"30%\" r=\"75%\"><stop offset=\"0\" stop-color=\"#F7DCE4\"/><stop offset=\".55\" stop-color=\"#E3AFBF\"/><stop offset=\"1\" stop-color=\"#B57A8E\"/></radialGradient>\n<radialGradient id=\"tGroinC\" cx=\"40%\" cy=\"35%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#F7DCE4\"/><stop offset=\"1\" stop-color=\"#B57A8E\"/></radialGradient>\n<linearGradient id=\"tPatteC\" x1=\"0\" x2=\"1\"><stop offset=\"0\" stop-color=\"#B57A8E\"/><stop offset=\".45\" stop-color=\"#E3AFBF\"/><stop offset=\"1\" stop-color=\"#B57A8E\"/></linearGradient>\n<radialGradient id=\"tPieceC\" cx=\"35%\" cy=\"30%\" r=\"70%\"><stop offset=\"0\" stop-color=\"#FFF1A8\"/><stop offset=\".6\" stop-color=\"#FFC531\"/><stop offset=\"1\" stop-color=\"#C98A0C\"/></radialGradient>\n<radialGradient id=\"tOmbreC\"><stop offset=\"0\" stop-color=\"#06122E\" stop-opacity=\".55\"/><stop offset=\"1\" stop-color=\"#06122E\" stop-opacity=\"0\"/></radialGradient>\n<linearGradient id=\"tBilletC\" x1=\"0\" x2=\"1\" y1=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#9BE7B4\"/><stop offset=\"1\" stop-color=\"#2E9457\"/></linearGradient>\n<linearGradient id=\"tVerreC\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#3A3F55\"/><stop offset=\".5\" stop-color=\"#11131C\"/><stop offset=\"1\" stop-color=\"#2A2E40\"/></linearGradient>\n</defs><clipPath id=\"tGaucheC\"><path d=\"M0 0H98L90 60L102 90L92 120L100 200H0Z\"/></clipPath><clipPath id=\"tDroiteC\"><path d=\"M98 0H220V200H100L92 120L102 90L90 60Z\"/></clipPath><g class=\"tMorceauG\" clip-path=\"url(#tGaucheC)\"><ellipse cx=\"100\" cy=\"168\" rx=\"70\" ry=\"9\" fill=\"url(#tOmbreC)\"/>\n<path d=\"M42 100c-14-4-18 10-8 14c8 3 10-8 2-8\" fill=\"none\" stroke=\"url(#tPatteC)\" stroke-width=\"5\" stroke-linecap=\"round\"/>\n<g fill=\"url(#tPatteC)\"><rect x=\"66\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/><rect x=\"88\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"112\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"134\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/></g>\n<ellipse cx=\"100\" cy=\"106\" rx=\"62\" ry=\"48\" fill=\"url(#tCorpsC)\"/>\n<ellipse cx=\"106\" cy=\"132\" rx=\"50\" ry=\"15\" fill=\"#7A1F3D\" opacity=\".14\"/>\n\n<path d=\"M80 66l-6-22 20 12z\" fill=\"url(#tGroinC)\"/><path d=\"M112 64l4-22 14 17z\" fill=\"url(#tGroinC)\"/>\n<rect x=\"88\" y=\"63\" width=\"26\" height=\"6\" rx=\"3\" fill=\"#5A1A33\" opacity=\".75\"/>\n<ellipse cx=\"78\" cy=\"84\" rx=\"20\" ry=\"10\" fill=\"#fff\" opacity=\".42\"/>\n<ellipse cx=\"158\" cy=\"110\" rx=\"15\" ry=\"18\" fill=\"url(#tGroinC)\"/><ellipse cx=\"161\" cy=\"108\" rx=\"10\" ry=\"13\" fill=\"#000\" opacity=\".06\"/>\n<ellipse cx=\"156\" cy=\"106\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/><ellipse cx=\"165\" cy=\"107\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/>\n<path d=\"M127 86l9 9M136 86l-9 9\" stroke=\"#1B1020\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><path d=\"M149 126q8-6 15 0\" stroke=\"#7A1F3D\" stroke-width=\"2.4\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"112\" y=\"64\" width=\"26\" height=\"9\" rx=\"3\" fill=\"#F4F8FF\" transform=\"rotate(-24 125 68)\"/><path d=\"M118 66l2 4M124 64l2 4M130 62l2 4\" stroke=\"#BFC7D9\" stroke-width=\"1.2\" transform=\"rotate(-24 125 68)\"/></g><g class=\"tMorceauD\" clip-path=\"url(#tDroiteC)\"><ellipse cx=\"100\" cy=\"168\" rx=\"70\" ry=\"9\" fill=\"url(#tOmbreC)\"/>\n<path d=\"M42 100c-14-4-18 10-8 14c8 3 10-8 2-8\" fill=\"none\" stroke=\"url(#tPatteC)\" stroke-width=\"5\" stroke-linecap=\"round\"/>\n<g fill=\"url(#tPatteC)\"><rect x=\"66\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/><rect x=\"88\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"112\" y=\"142\" width=\"17\" height=\"22\" rx=\"8\"/><rect x=\"134\" y=\"138\" width=\"17\" height=\"24\" rx=\"8\"/></g>\n<ellipse cx=\"100\" cy=\"106\" rx=\"62\" ry=\"48\" fill=\"url(#tCorpsC)\"/>\n<ellipse cx=\"106\" cy=\"132\" rx=\"50\" ry=\"15\" fill=\"#7A1F3D\" opacity=\".14\"/>\n\n<path d=\"M80 66l-6-22 20 12z\" fill=\"url(#tGroinC)\"/><path d=\"M112 64l4-22 14 17z\" fill=\"url(#tGroinC)\"/>\n<rect x=\"88\" y=\"63\" width=\"26\" height=\"6\" rx=\"3\" fill=\"#5A1A33\" opacity=\".75\"/>\n<ellipse cx=\"78\" cy=\"84\" rx=\"20\" ry=\"10\" fill=\"#fff\" opacity=\".42\"/>\n<ellipse cx=\"158\" cy=\"110\" rx=\"15\" ry=\"18\" fill=\"url(#tGroinC)\"/><ellipse cx=\"161\" cy=\"108\" rx=\"10\" ry=\"13\" fill=\"#000\" opacity=\".06\"/>\n<ellipse cx=\"156\" cy=\"106\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/><ellipse cx=\"165\" cy=\"107\" rx=\"2.6\" ry=\"4\" fill=\"#5A1A33\"/>\n<path d=\"M127 86l9 9M136 86l-9 9\" stroke=\"#1B1020\" stroke-width=\"2.6\" stroke-linecap=\"round\"/><path d=\"M149 126q8-6 15 0\" stroke=\"#7A1F3D\" stroke-width=\"2.4\" fill=\"none\" stroke-linecap=\"round\"/><rect x=\"112\" y=\"64\" width=\"26\" height=\"9\" rx=\"3\" fill=\"#F4F8FF\" transform=\"rotate(-24 125 68)\"/><path d=\"M118 66l2 4M124 64l2 4M130 62l2 4\" stroke=\"#BFC7D9\" stroke-width=\"1.2\" transform=\"rotate(-24 125 68)\"/></g><path d=\"M98 56L90 60L102 90L92 120L100 160\" stroke=\"#5A2A3A\" stroke-width=\"2\" fill=\"none\" stroke-linejoin=\"round\"/><g class=\"tRoule\"><circle cx=\"40\" cy=\"166\" r=\"7\" fill=\"url(#tPieceC)\"/><circle cx=\"40\" cy=\"166\" r=\"4.3\" fill=\"none\" stroke=\"#C98A0C\" stroke-width=\"1.4\" opacity=\".7\"/><ellipse cx=\"37.5\" cy=\"163.2\" rx=\"2.1\" ry=\"1.3\" fill=\"#fff\" opacity=\".8\"/></g></svg>"};
+const TIRELIRE_SEUILS = [[2000, "riche"], [1500, "heureuse"], [1000, "inquiete"], [500, "maigre"], [0, "brochette"]];
+function tirelireEtat(solde) { const s = Number(solde) || 0; for (const [m, k] of TIRELIRE_SEUILS) if (s >= m) return k; return "cassee"; }
+function tirelireHtml(solde) { return `<button type="button" class="tirebtn" data-tip="tirelire" aria-label="Pourquoi cette tirelire ?">${TIRELIRES[tirelireEtat(solde)]}</button>`; }
 // =====================================================================
 // 🍽 REPAS : menus de la semaine, fiches recettes, liste de courses partagée, fond de tiroir (v1.6.0)
 // =====================================================================
@@ -2034,9 +2108,29 @@ function weekChips() {
   const lib = [[-1, "Sem. passée"], [0, "Cette semaine"], [1, "Semaine pro."], [2, "Dans 2 sem."], [3, "Dans 3 sem."]];
   return `<div class="wk">${lib.map(([i, n]) => `<button data-rwk="${i}" class="${S.rp.wk === i ? "on" : ""}">${n}</button>`).join("")}</div>`;
 }
+// v1.32 : bandeau des 7 jours + grande carte du jour choisi (photo du plat en fond), maquette O validée le 18/11
+function bandeauJours(v, sem, d) {
+  const today = todayISO(), J = d.jours.slice().sort((a, b) => a.date < b.date ? -1 : 1);
+  if (!J.length) return "";
+  if (!S.rp.jsel || !J.some(j => j.date === S.rp.jsel)) S.rp.jsel = J.some(j => j.date === today) ? today : J[0].date;
+  return `<div class="jbande">${J.map(j => { const dd = dOf(j.date); return `<button data-rjour="${j.date}" class="${j.date === S.rp.jsel ? "on" : ""}${j.date === today ? " auj" : ""}"><span>${["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"][dd.getDay()]}</span><b>${dd.getDate()}</b><i></i></button>`; }).join("")}</div>`;
+}
+function carteJour(v, d) {
+  const today = todayISO(), j = d.jours.find(x => x.date === S.rp.jsel); if (!j) return "";
+  if (j.date === today && S.rp.wk === 0) return tonightCard(v, false);
+  const i = d.jours.indexOf(j), r = recette(v, j.id), quand = jourLong(j.date);
+  if (j.type === "libre" || j.type === "restes" || !r) return `<div class="tonight vide"><div class="in"><small>${esc(quand)}</small><b>${j.type === "restes" ? "🥡 Restes : " + esc(r ? r.nom : j.nom) : j.type === "libre" ? "🍕 Pas de repas prévu" : esc(j.nom || "Recette introuvable")}</b>${j.type !== "restes" ? `<div class="duo"><button class="btn sec" data-rr="changer" data-i="${i}">Choisir un plat</button></div>` : ""}</div></div>`;
+  return `<div class="tonight">${photoHtml(r)}<div class="in"><small>${esc(quand)}</small><b data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${esc(r.nom)}</b>
+    <div class="tm">⏱ ${tempsTotal(r)} min (prépa ${r.prepa})${estPimente(r) ? " · 🌶" : ""} · ${j.portions > 4 ? "×2 : restes pour plus tard" : "2 ce soir · 2 en boîte pour le lendemain midi"}</div>
+    <div class="duo"><button class="btn sec" data-rr="changer" data-i="${i}">Changer</button><button class="btn sec" data-rr="doubler" data-i="${i}">${j.portions > 4 ? "×2 ✓" : "Doubler"}</button></div></div></div>`;
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-rjour]"); if (!t) return;
+  S.rp.jsel = t.dataset.rjour; render(); window.scrollTo({ top: 0, behavior: "smooth" });
+});
 function viewMenus(v) {
   const sem = semaineOff(S.rp.wk), d = semData(v, sem), g = reg(v), pm = prodMap(v);
-  let h = (S.rp.wk === 0 ? tonightCard(v, true) : "") + weekChips() + `<h2 style="margin-top:4px">Semaine ${esc(libSemaine(sem))}</h2>`;
+  let h = weekChips() + bandeauJours(v, sem, d) + carteJour(v, d) + `<h2 style="margin-top:4px">Semaine ${esc(libSemaine(sem))}</h2>`;
   if (!d.jours.length && S.rp.wk < 0) return h + `<div class="empty">Pas de menus enregistrés pour la semaine passée.</div>`;
   if (!d.jours.length) {
     const o = S.rp.gen || (S.rp.gen = { soirs: [0, 1, 2, 3, 4], prepaMax: g.prepaMax, cuissonMax: g.cuissonMax, budget: g.alim, appareil: g.appareil || "mixte" });
@@ -2062,7 +2156,7 @@ function viewMenus(v) {
     if (j.type === "reporte") { h += `<div class="dayc" style="opacity:.6">${photoHtml(r)}<div class="rt">${lab}<b>${esc(r ? r.nom : j.nom)}</b><span>↪ pas fait, reporté à la semaine suivante</span></div></div>`; return; }
     if (!r) { h += `<div class="dayc"><div class="ph">❓</div><div class="rt">${lab}<b>${esc(j.nom || "Recette introuvable")}</b><div class="acts"><button data-rr="changer" data-i="${i}">Changer</button></div></div></div>`; return; }
     const cp = coutRecette(r, pm, reg(v).coef) / 4;
-    h += `<div class="dayc ${j.date === today ? "today" : ""}"><div data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${photoHtml(r)}</div>
+    h += `<div class="dayc ${j.date === today ? "today" : ""}${j.date === S.rp.jsel ? " sel" : ""}"><div data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${photoHtml(r)}</div>
       <div class="rt">${lab}<b data-rr="fiche" data-id="${r.id}" style="cursor:pointer">${esc(r.nom)}</b><span>⏱ ${tempsTotal(r)} min (prépa ${r.prepa})${estPimente(r) ? " · 🌶" : ""} · ${j.type === "reprise" ? "↩ reporté, déjà acheté" : eur(cp) + " / part"}${j.portions > 4 ? " · ×2" : ""}</span>
       <div class="acts"><button data-rr="doubler" data-i="${i}" class="${j.portions > 4 ? "on" : ""}">${j.portions > 4 ? "×2 ✓" : "Doubler"}</button><button data-rr="changer" data-i="${i}">Changer</button><button data-rr="libre" data-i="${i}">🗑 Retirer</button>${j.date <= today ? `<button data-rr="pasfait" data-i="${i}">↪ Pas fait</button>` : ""}</div></div></div>`;
   });
@@ -2861,6 +2955,7 @@ function openTuile(nom) {
       ${l.manuel ? (l.etat === "achete" ? `<button class="btn sec" style="margin:0" data-ctact="caddie">Pas encore pris</button>` : "") : l.placard ? "" : `<button class="btn sec" style="margin:0" data-ctact="maison">${l.etat === "maison" ? "Finalement à acheter" : "Déjà à la maison"}</button>`}
       ${l.placard || l.manuel ? "" : l.etat === "achete" ? `<button class="btn sec" style="margin:0" data-ctact="caddie">Pas encore pris</button>` : `<button class="btn sec" style="margin:0" data-ctact="qte">Contenance, prix habituel</button>`}
     </div>
+    <button class="btn sec" data-ctact="photo" style="margin-top:8px">📷 Changer la photo</button>
     ${l.etat === "maison" && !l.manuel ? "" : `<button class="linkbtn" style="color:var(--bad);display:block;margin:12px auto 0" data-ctact="retirer">Retirer de la liste</button>`}
     <div id="ctConf"></div></div>`);
 }
@@ -2876,6 +2971,7 @@ document.addEventListener("click", e => {
   const a = t.dataset.ctact, x = S.ctuile; if (!x) return;
   e.stopImmediatePropagation();
   const v = computeView(), sd = semData(v, x.sem);
+  if (a === "photo") { openPhotoArticle(x.nom); return; }
   if (a === "qte") { closeSheet(); openArticle(x.nom); return; }
   if (a === "panier") { ctPanier(); return; }
   if (a === "prixman") { closeSheet(); openManuel(x.nom); return; }
@@ -2949,7 +3045,8 @@ function tuileG(l, PS, payes, petite) {
   const cleV = (petite ? "p:" : "g:") + l.produit; S.gVusNext = S.gVusNext || new Set(); S.gVusNext.add(cleV);
   const nouv = S.gVus && !S.gVus.has(cleV) ? " nouv" : "";
   const prix = pr.v ? (pr.reel ? "" : "≈ ") + eur(pr.v) : "prix ?";
-  return `<button class="gtile${nouv} ${petite ? "petite" : ""} ${pris ? "pris achete" : ""} ${l.etat === "maison" ? "maison" : ""}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}" data-tuile="${esc(l.produit)}"
+  const ph = photoDe(l.produit);   // v1.32 : vraie photo en fond (Wikimedia Commons), sinon l'icône
+  return `<button class="gtile${nouv} ${petite ? "petite" : ""} ${pris ? "pris achete" : ""} ${l.etat === "maison" ? "maison" : ""}${ph ? " aphoto" : ""}"${ph ? ` style="--ph:url('${esc(ph)}')"` : ""} data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}" data-tuile="${esc(l.produit)}"
     aria-label="${esc(l.produit + ", " + detailTuile(l) + (pris ? ", dans le panier : toucher pour remettre" : " : toucher pour mettre dans le panier"))}">
     ${plats.length ? `<span class="cdots">${plats.map(x => `<i style="background:${coulDe[x.id]}"></i>`).join("")}</span>` : ""}
     ${tuileVisuel(l.produit, petite ? 22 : 30, pris ? "var(--mut)" : "var(--acc)")}
@@ -2984,9 +3081,12 @@ function coursesPageG(v, dansRepas) {
   const aPrendre = reste.filter(l => !sel || (PS.parProduit[l.produit] || []).some(x => x.id === sel));
   if (!aPrendre.length) h += `<div class="empty" style="padding:18px 8px">${actifs.length ? "Tout est dans le panier 🎉" : simple ? "Aucun article ajouté à la main.<br>Touche « Que faut-il acheter ? »." : "Rien à acheter cette semaine.<br>Prépare les menus ou ajoute un article."}</div>`;
   const parRayon = {}; aPrendre.forEach(l => { (parRayon[l.rayon] = parRayon[l.rayon] || []).push(l); });
-  Object.keys(parRayon).sort((a, b) => (a === RAYON_MAISON) - (b === RAYON_MAISON) || (a === "Divers") - (b === "Divers") || a.localeCompare(b, "fr")).forEach(r => {
+  const rayons = Object.keys(parRayon).sort((a, b) => (a === RAYON_MAISON) - (b === RAYON_MAISON) || (a === "Divers") - (b === "Divers") || a.localeCompare(b, "fr"));
+  // v1.32 : pastilles des rayons pour sauter directement d'un rayon à l'autre
+  if (rayons.length > 1) h += `<div class="grchips">${rayons.map((r, i) => `<button data-graller="${i}"><i style="background:${couleurRayon(r)}"></i>${esc(r.split(/[ &,]/)[0])}<span>${parRayon[r].length}</span></button>`).join("")}</div>`;
+  rayons.forEach((r, i) => {
     const T = parRayon[r].sort((a, b) => a.produit.localeCompare(b.produit, "fr"));
-    h += `<div class="grayon"><span>${esc(r)}</span><small>${T.length} à prendre</small></div><div class="gtiles">${T.map(l => tuileG(l, PS, payes)).join("")}</div>`;
+    h += `<div class="grayon" id="gray-${i}"><span><i class="grpt" style="background:${couleurRayon(r)}"></i>${esc(r)}</span><small>${T.length} à prendre</small></div><div class="gtiles">${T.map(l => tuileG(l, PS, payes)).join("")}</div>`;
   });
   if (pris.length) h += `<div class="grayon ok"><span>Dans le panier</span><small>toucher pour remettre</small></div><div class="gtiles p">${pris.map(l => tuileG(l, PS, payes, true)).join("")}</div>`;
   const maison = vis.filter(l => l.etat === "maison");
@@ -3001,6 +3101,12 @@ function coursesPageG(v, dansRepas) {
   h += `<div class="hint" style="margin:10px 4px">Toucher un article = dans le panier. Appui long = nombre et prix réellement payé (la calculatrice du haut se met à jour).</div>`;
   return h;
 }
+// couleur stable par rayon (pastilles et points des rayons)
+function couleurRayon(r) { const C = ["#FF7A7A", "#FF9F6B", "#FFD166", "#7EE2A8", "#8FD3FF", "#9CC0FF", "#C3A8FF", "#FF9CC4"]; let h = 0; for (const c of String(r)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return C[h % C.length]; }
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-graller]"); if (!t) return;
+  const el = document.getElementById("gray-" + t.dataset.graller); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+});
 // carte « budget de la semaine » : vraie dépense (journal), qui peut faire les courses, liste estimée et objectif
 function budgetCoursesHtml(v, sem, L) {
   const g = reg(v);
@@ -3057,6 +3163,115 @@ document.addEventListener("click", e => {
   const t = e.target.closest("[data-ctn]"); if (!t || !S.ctuile) return;
   S.ctuile.n = Math.max(1, (S.ctuile.n || 1) + Number(t.dataset.ctn)); const b = $("#ctN"); if (b) b.textContent = S.ctuile.n;
   const ph = $("#ctPaye"); if (ph && !ph.value) ph.placeholder = "estimé " + f2(S.ctuile.estimU * S.ctuile.n) + " €";
+});
+// =====================================================================
+// v1.32 : photos des articles de courses (idée de Gaétan du 18/11)
+//   Vraie photo libre de droits (Wikimedia Commons, comme les recettes), en fond semi-transparent derrière le nom.
+//   Recherche faite par le téléphone (Commons accepte les appels directs), choix partagé entre les deux téléphones
+//   dans Firebase (« photos_articles »), copie locale pour le mode hors ligne. Appui long › « Changer la photo ».
+// =====================================================================
+const PHOTO_EN = {
+  ail: "garlic bulbs", citron: "lemon fruit", "citron vert": "lime fruit", oignon: "onions", "oignon rouge": "red onion", echalote: "shallots", persil: "parsley",
+  coriandre: "coriander leaves", basilic: "basil leaves", ciboulette: "chives", cive: "spring onions", tomate: "tomatoes", "tomate cerise": "cherry tomatoes",
+  carotte: "carrots", courgette: "zucchini", aubergine: "eggplant", poivron: "bell peppers", "poivron rouge": "red bell pepper", concombre: "cucumber",
+  salade: "lettuce", laitue: "lettuce", epinard: "spinach", brocoli: "broccoli", chou: "cabbage", "chou-fleur": "cauliflower", poireau: "leeks", champignon: "mushrooms",
+  "pomme de terre": "potatoes", "pommes de terre": "potatoes", grenaille: "baby potatoes", patate: "potatoes", "patate douce": "sweet potatoes", haricot: "green beans",
+  pomme: "apples", poire: "pears", banane: "bananas", orange: "oranges", clementine: "clementines", kiwi: "kiwifruit", raisin: "grapes", fraise: "strawberries",
+  avocat: "avocado", mangue: "mango", ananas: "pineapple", melon: "melon", gingembre: "ginger root", piment: "chili peppers",
+  poulet: "raw chicken", "cuisse de poulet": "chicken legs", "blanc de poulet": "chicken breast", dinde: "turkey meat", boeuf: "raw beef", "boeuf hache": "ground beef",
+  "viande hachee": "ground beef", steak: "raw steak", porc: "pork meat", jambon: "sliced ham", lardon: "bacon lardons", saucisse: "sausages", merguez: "merguez",
+  saumon: "raw salmon fillet", "pave de saumon": "salmon fillet", thon: "canned tuna", cabillaud: "cod fillet", crevette: "shrimp", poisson: "fish fillet",
+  oeuf: "chicken eggs", lait: "milk carton", beurre: "butter", creme: "cream", "creme fraiche": "creme fraiche", "creme liquide": "cream", yaourt: "yogurt",
+  fromage: "cheese", emmental: "emmental cheese", gruyere: "grated cheese", mozzarella: "mozzarella", parmesan: "parmesan", "fromage rape": "grated cheese", feta: "feta",
+  riz: "rice grains", "riz basmati": "basmati rice", pates: "pasta", spaghetti: "spaghetti", penne: "penne pasta", coquillette: "pasta", lasagne: "lasagna sheets",
+  semoule: "couscous", quinoa: "quinoa", lentille: "lentils", "pois chiche": "chickpeas", farine: "flour", sucre: "sugar", sel: "salt", poivre: "black pepper",
+  huile: "olive oil bottle", "huile d'olive": "olive oil bottle", vinaigre: "vinegar", moutarde: "mustard", ketchup: "ketchup", mayonnaise: "mayonnaise",
+  bouillon: "stock cubes", cumin: "cumin", curry: "curry powder", paprika: "paprika", "lait de coco": "coconut milk", "sauce tomate": "tomato sauce",
+  "tomate concassee": "canned tomatoes", "concentre de tomate": "tomato paste", miel: "honey", confiture: "jam", cafe: "coffee beans", the: "tea",
+  pain: "bread", baguette: "baguette", "pain de mie": "sliced bread", brioche: "brioche", tortilla: "tortillas", cereales: "breakfast cereal",
+  glace: "ice cream", chocolat: "chocolate bar", biscuit: "biscuits", cacahuete: "peanuts", chips: "potato chips", eau: "bottled water", jus: "orange juice",
+  "papier toilette": "toilet paper", essuie: "paper towels", "film etirable": "plastic wrap", lessive: "laundry detergent", "liquide vaisselle": "dish soap",
+  eponge: "kitchen sponge", couche: "diapers", lingette: "wet wipes", litiere: "cat litter", croquette: "pet food kibble", savon: "soap bar", shampoing: "shampoo",
+  dentifrice: "toothpaste", "sac poubelle": "garbage bags"
+};
+const photoNorm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z' -]/g, " ").replace(/\s+/g, " ").trim();
+// « Glaces Ben & Jerry's » → « glace » ; on retire pluriels et marques pour trouver la bonne recherche
+function photoRecherche(nom) {
+  const n = photoNorm(nom), mots = n.split(" ").map(m => m.replace(/(s|x)$/, ""));
+  for (let k = Math.min(3, mots.length); k >= 1; k--) for (let i = 0; i + k <= mots.length; i++) {
+    const g = mots.slice(i, i + k).join(" "); if (PHOTO_EN[g]) return PHOTO_EN[g];
+  }
+  return n;
+}
+const photoCle = nom => encodeURIComponent(photoNorm(nom).replace(/ /g, "_")).replace(/\./g, "%2E").slice(0, 120) || "x";
+const PH = { docs: LS.get("bf.photosArt", {}), essais: {}, file: [], enCours: 0 };
+function photoDe(nom) {
+  const d = PH.docs[photoCle(nom)];
+  if (d) return d.aucune ? null : d.url;
+  photoDemander(nom); return null;
+}
+// recherche automatique, quelques-unes à la fois, une seule fois par article et par session
+function photoDemander(nom) {
+  const k = photoCle(nom);
+  if (PH.essais[k] || !navigator.onLine) return;
+  PH.essais[k] = 1; PH.file.push(nom); photoSuivante();
+}
+function photoSuivante() {
+  while (PH.enCours < 2 && PH.file.length) {
+    const nom = PH.file.shift(); PH.enCours++;
+    photoCandidats(photoRecherche(nom)).then(l => { if (l.length) photoEnregistrer(nom, l[0], false); else photoEnregistrer(nom, null, false); })
+      .catch(() => {}).finally(() => { PH.enCours--; photoSuivante(); });
+  }
+}
+async function photoCandidats(q) {
+  const u = "https://commons.wikimedia.org/w/api.php?origin=*&action=query&format=json&generator=search&gsrnamespace=6&gsrlimit=30&gsrsearch=" + encodeURIComponent(q + " filetype:bitmap") + "&prop=imageinfo&iiprop=url%7Cextmetadata%7Csize%7Cmime&iiurlwidth=360";
+  const r = await fetch(u), j = await r.json(), pages = Object.values((j.query && j.query.pages) || {}), mots = photoNorm(q).split(" ").filter(w => w.length > 2);
+  return pages.map(p => {
+    const ii = p.imageinfo && p.imageinfo[0]; if (!ii || !/jpeg|png/.test(ii.mime || "") || (ii.width || 0) < 400) return null;
+    const md = ii.extmetadata || {}, lic = String((md.LicenseShortName && md.LicenseShortName.value) || "");
+    if (!/(CC|Public domain|domaine public|CC0)/i.test(lic) || /NC|ND/.test(lic)) return null;
+    const titre = photoNorm(String(p.title || "").replace(/^File:/i, "").replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " "));
+    const auteur = String((md.Artist && md.Artist.value) || "").replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 60) || "auteur inconnu";
+    return { url: ii.thumburl || ii.url, credit: "Photo : " + auteur + " · " + lic + " · Wikimedia Commons", page: ii.descriptionurl || "",
+      score: mots.filter(w => titre.includes(w)).length * 10 - (p.index || 0) / 100 - (/(map|logo|diagram|drawing|icon|flag|coat of arms|plant|field|tree|flower)/.test(titre) ? 30 : 0) };
+  }).filter(Boolean).sort((a, b) => b.score - a.score);
+}
+// enregistre (Firebase si connecté : visible aussitôt sur l'autre téléphone ; sinon sur ce téléphone seulement)
+function photoEnregistrer(nom, c, choisi) {
+  const k = photoCle(nom), d = c ? { nom, url: c.url, credit: c.credit, page: c.page, choisi: !!choisi } : { nom, aucune: true, choisi: !!choisi };
+  if (!choisi && PH.docs[k] && PH.docs[k].choisi) return;   // un choix fait à la main n'est jamais remplacé
+  PH.docs[k] = d; LS.set("bf.photosArt", PH.docs);
+  if (directActif()) { try { const { fs } = FB.m; fs.setDoc(fs.doc(FB.db, "photos_articles", k), d); } catch (e) {} }
+  clearTimeout(photoEnregistrer.t); photoEnregistrer.t = setTimeout(() => { if (S.tab === "courses" || S.tab === "repas") render(); }, 250);
+}
+// écoute des choix de l'autre téléphone
+function photosEcouter() {
+  if (!directActif() || FB.ecoutes.__photos) return;
+  const { fs } = FB.m;
+  FB.ecoutes.__photos = fs.onSnapshot(fs.collection(FB.db, "photos_articles"), snap => {
+    let change = false;
+    snap.forEach(x => { const d = x.data(); if (JSON.stringify(PH.docs[x.id]) !== JSON.stringify(d)) { PH.docs[x.id] = d; change = true; } });
+    if (change) { LS.set("bf.photosArt", PH.docs); if (S.tab === "courses" || S.tab === "repas") render(); }
+  }, () => {});
+}
+// « Changer la photo » : propositions, recherche libre, ou « pas de photo »
+async function openPhotoArticle(nom, q) {
+  q = q || photoRecherche(nom);
+  openSheet(`<h3>📷 Photo : ${esc(nom)}</h3><div class="two"><input type="text" id="phQ" value="${esc(q)}" autocomplete="off"><button class="btn sec" style="margin:0" data-phq="1">Chercher</button></div>
+    <div id="phL" class="phgrille"><div class="spin"></div></div>
+    <button class="btn sec" data-phnone="1">Pas de photo (icône seulement)</button><div class="hint">Photos libres de droits (Wikimedia Commons). Ton choix vaut pour les deux téléphones.</div>`);
+  S.phNom = nom;
+  try {
+    const l = await photoCandidats(q); S.phL = l.slice(0, 12);
+    const el = $("#phL"); if (el) el.innerHTML = S.phL.length ? S.phL.map((c, i) => `<button class="phchoix" data-phi="${i}" style="background-image:url('${esc(c.url)}')" aria-label="Photo ${i + 1}"></button>`).join("") : `<div class="hint">Aucune photo trouvée : essaie un autre mot (en anglais, c'est souvent mieux).</div>`;
+  } catch (e) { const el = $("#phL"); if (el) el.innerHTML = `<div class="hint">Wikimedia Commons ne répond pas (réseau ?).</div>`; }
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-phi],[data-phnone],[data-phq],[data-ctact=photo]"); if (!t) return;
+  if (t.dataset.ctact === "photo") { const n = (S.ctuile && S.ctuile.nom) || t.dataset.nom; if (n) openPhotoArticle(n); return; }
+  if (t.dataset.phq) { openPhotoArticle(S.phNom, ($("#phQ") || {}).value); return; }
+  if (t.dataset.phnone) { photoEnregistrer(S.phNom, null, true); closeSheet(); toast("Icône seulement"); return; }
+  if (t.dataset.phi) { const c = (S.phL || [])[Number(t.dataset.phi)]; if (c) { photoEnregistrer(S.phNom, c, true); closeSheet(); toast("✔ Photo choisie"); } }
 });
 // =====================================================================
 // v1.7.0 : PROFILS (Gaétan = tout, Mathilde = sa version), CONGÉS, GARDE DE LÉO, PONTS, JOUR DES COURSES
@@ -3527,6 +3742,14 @@ function semainesDuMois(ym, dernierJour) {
 }
 
 // ---------- page Statistiques ----------
+// v1.32 : ce mois-ci comparé au mois d'avant, au même jour (vert si on dépense moins)
+function statsCompar(c) {
+  const a = c.cur.total, b = c.prev.total, d = Math.round((a - b) * 100) / 100, mieux = d <= 0, nomM = ym => moisLong(ym).replace(/ \d{4}$/, "");
+  const cats = [...new Set(Object.keys(c.cur.cats).concat(Object.keys(c.prev.cats)))].map(k => ({ k, a: c.cur.cats[k] || 0, b: c.prev.cats[k] || 0 })).sort((x, y) => y.a - x.a).slice(0, 8);
+  return `<div class="card scomp"><div class="sc-h"><div><small>${esc(nomM(c.cur.ym))} (au ${c.jour})</small><b>${e0(a)}</b></div><div class="sc-p"><small>${esc(nomM(c.prev.ym))} (au ${c.jour})</small><b>${e0(b)}</b></div></div>
+    <div class="sc-e ${mieux ? "ok" : "ko"}"><span>${mieux ? "↓" : "↑"}</span><div><b>${mieux ? "−" : "+"}${e0(Math.abs(d))}${b > 0 ? " (" + Math.round(Math.abs(d) / b * 100) + " %)" : ""}</b> par rapport au mois d'avant, au même jour${mieux ? " : vous vous améliorez 👏" : "."}</div></div>
+    ${cats.map(x => { const e = x.a - x.b; return `<div class="sc-c"><div><b>${esc(x.k)}</b><span>avant : ${e0(x.b)}</span></div><div><b>${e0(x.a)}</b><em class="${e > 0 ? "ko" : "ok"}">${e > 0 ? "+" : "−"}${e0(Math.abs(e))}</em></div></div>`; }).join("")}</div>`;
+}
 function viewStats(dansRepas) {
   const st = S.st && S.st.data;
   chargerStats();
@@ -3534,10 +3757,11 @@ function viewStats(dansRepas) {
   if (!st) return h + `<div class="empty">${S.stErreur ? "⚠ " + esc(S.stErreur) : "📊 Calcul des statistiques…<br><small>La première fois, ça peut prendre une demi-minute.</small>"}</div>`;
   if (st.vide) return h + `<div class="empty">Pas encore d'achats dans l'onglet « Historique achats ».<br>Scanne un ticket de courses pour commencer.</div>`;
   const per = st.periodes[S.stPer] || st.periodes.tout, obj = objectifSemaine();
-  const nomsPer = { "3": "3 mois", "6": "6 mois", "12": "12 mois", tout: "Tout" };
+  const nomsPer = { "1": "1 mois", "3": "3 mois", "6": "6 mois", "12": "12 mois", tout: "Tout" };
   h += `<div class="hero"><small>📊 Tes courses · ${per.debut === per.fin ? moisLong(per.debut) : moisLong(per.debut) + " → " + moisLong(per.fin)}</small>
     <div class="big">${e0(per.total)}</div><div class="sub">${per.tickets} tickets · ${per.articles} articles · ${e0(per.parMois)} par mois en moyenne</div></div>
     <div class="wk">${Object.keys(nomsPer).filter(k => st.periodes[k]).map(k => `<button data-stper="${k}" class="${S.stPer === k ? "on" : ""}">${nomsPer[k]}</button>`).join("")}</div>`;
+  if (S.stPer === "1" && per.compar) h += statsCompar(per.compar);
   // note
   const g = per.groupes;
   const n = noteCourses({ alim: g.alim, malbouffe: g.malbouffe, alcool: g.alcool, fl: g.fl || 0, semaines: per.semaines, tickets: per.tickets, objectif: obj });

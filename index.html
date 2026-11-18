@@ -373,6 +373,23 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 .gmaison{margin-top:12px}.gmaison summary{font-size:14px;color:var(--mut);padding:8px 2px;cursor:pointer}
 .grec{display:flex;flex-wrap:wrap;gap:6px}.grec button{display:flex;align-items:center;gap:6px;min-height:40px;padding:0 12px 0 8px;border-radius:99px;border:1px solid var(--line);background:var(--chip);color:var(--ink);font:inherit;font-size:14px;cursor:pointer}
 .ctret{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:14px;color:var(--mut)}.ctret input{width:20px;height:20px;accent-color:var(--acc)}
+.gbud{margin:6px 0 4px}.ccons{margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--chip);font-size:14px;line-height:1.45}.ccons-t{font-size:12px;font-weight:650;color:var(--mut);margin-bottom:2px}
+.gcalc.libre{position:static;box-shadow:none}
+/* v1.28 : courses en direct (Firestore) */
+.switch{position:relative;display:inline-block;width:48px;height:28px;flex:none}.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:background .2s}
+.switch span::before{content:"";position:absolute;width:22px;height:22px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .2s cubic-bezier(.2,.8,.2,1);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.switch input:checked+span{background:var(--acc)}.switch input:checked+span::before{transform:translateX(20px)}
+.badge-beta{font-size:11px;font-weight:600;padding:2px 7px;border-radius:99px;background:var(--chip);color:var(--mut);vertical-align:2px}
+.fbcode{margin:12px 0 4px;text-align:center;font-family:var(--num);font-size:30px;letter-spacing:.18em;font-weight:700;padding:12px;border-radius:14px;background:var(--chip);user-select:all}
+/* v1.28 : animations légères (Gaétan : épuré, moderne, animations douces) */
+@keyframes gEntree{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes gPop{0%{transform:scale(1)}40%{transform:scale(.9)}100%{transform:scale(1)}}
+.gtile{transition:transform .12s ease,border-color .2s,background .2s}
+.gtile.nouv{animation:gEntree .22s ease-out both}.gtile.petite.nouv{animation:gPop .3s ease-out}
+.gcalc b{transition:color .3s}
+.gbar i{transition:width .35s cubic-bezier(.2,.8,.2,1)}
+@media (prefers-reduced-motion:reduce){.gtile.nouv{animation:none}.gbar i,.switch span::before{transition:none}}
 </style>
 </head>
 <body>
@@ -397,8 +414,8 @@ input[type=month]{font-family:inherit;width:100%;font-size:17px;padding:12px;bor
 
 <script>
 "use strict";
-const APP_VERSION = "1.26.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 48;       // version du script que cette appli attend
+const APP_VERSION = "1.28.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 49;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -474,6 +491,7 @@ function computeView() {
   if (!S.base) return null;
   const v = JSON.parse(JSON.stringify(S.base));
   S.queue.forEach(op => applyOp(v, op));
+  try { fbAppliquer(v); } catch (e) {}   // v1.28 : courses en direct (Firestore) par-dessus
   return v;
 }
 function shift(v, cat, mont, ldds, sign) {
@@ -650,6 +668,7 @@ const RESERVE_G = ["regleajout", "reglesup", "fixemod", "contratsave", "contrats
 function enqueue(type, payload) {
   if (S.roleM && RESERVE_G.includes(type)) { toast("Réservé à Gaétan"); return; }
   S.queue.push({ id: uid(), type, payload, ts: Date.now() });
+  try { fbEcrire(type, payload); } catch (e) {}   // v1.28 : part aussi tout de suite dans Firestore (courses en direct)
   saveQueue(); render(); setSync();
   flush();
 }
@@ -1113,6 +1132,7 @@ function viewReglages() {
     <label>Code secret</label><input type="password" id="cfgKey" value="${esc(S.cfg.key)}" autocomplete="off">
     <button class="btn" id="cfgSave">Enregistrer et tester</button>
     <div class="hint">Astuce : un lien de configuration (avec #u=…&k=…) règle tout en un clic sur le deuxième téléphone.</div></div>
+    ${directCarteHtml()}
     <div class="card"><b>État</b>
     <div class="hint">Version ${APP_VERSION} · ${S.queue.length} saisie(s) en attente · ${S.base ? "dernier chargement : " + new Date(S.base.genere).toLocaleString("fr-FR") : "aucune donnée chargée"}</div>${syncInfo114()}
     <button class="btn sec" id="cfgReload">Recharger l'appli (mise à jour)</button></div>
@@ -1187,15 +1207,15 @@ async function filePayload(file) {
 async function scanTicket(file) {
   if (!file) return;
   if (!navigator.onLine || S.offline) { toast("Il faut du réseau pour lire un ticket"); return; }
-  openSheet(`<h3>📷 Lecture du ticket…</h3><div class="spin"></div><div class="hint" style="text-align:center">Gemini analyse l'image, quelques secondes.</div>`);
+  openSheet(`<h3>📷 Lecture du ticket…</h3><div class="spin"></div><div class="hint" style="text-align:center">Gemini analyse le ticket : quelques secondes, jusqu'à 2 minutes pour un long ticket en PDF. Garde l'appli ouverte.</div>`);
   try {
     const pl = await filePayload(file);
-    const r = await call("scan", pl, 70000);
+    const r = await call("scan", pl, 180000);   // v1.26 : 70 s ne suffisaient pas pour un ticket Leclerc de 3 pages
     if (!r.ok) throw new Error(r.error || "lecture impossible");
     if (S.finCourses) finCoursesComparer(r.ticket); else openTicket(r.ticket);
   } catch (e) {
     closeSheet();
-    toast("⚠ " + (e.name === "AbortError" ? "Gemini met trop de temps, réessaie" : e.message));
+    toast("⚠ " + (e.name === "AbortError" ? "Gemini n'a pas répondu en 3 minutes, réessaie" : String(e.message || e).replace(/^Gemini 503.*$/, "Gemini est surchargé chez Google, réessaie dans quelques minutes")));
   }
 }
 function guessTicketCat(t) {
@@ -1428,6 +1448,212 @@ function regleMensuelPourCible(valeur, tauxAn, nMois, cible) {
 // nombre de mois entre deux mois « AAAA-MM »
 function regleMoisEntre(a, b) { return (+b.slice(0, 4) - +a.slice(0, 4)) * 12 + (+b.slice(5, 7) - +a.slice(5, 7)); }
 // =====================================================================
+// ⚡ v1.28 : COURSES EN DIRECT (Firestore) — nouvelle fondation, décidée avec Gaétan le 18/11/2026
+//   Les coches, prix payés, quantités et ajouts de la liste de courses partent directement dans Firestore
+//   (projet « maison-budget-5b560 ») : instantané, visible sur l'autre téléphone en ~1 s, marche sans réseau.
+//   Le Google Sheet reste à jour en arrière-plan (les mêmes saisies partent aussi vers le script, sans bloquer l'écran).
+//   Activé par l'interrupteur de Réglages (« bf.direct ») : éteint = fonctionnement d'avant, rien ne change.
+//   Accès : connexion Google ; Gaétan = propriétaire (règles), Mathilde rejoint avec un code d'invitation.
+// =====================================================================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBJFLX45-yChAQgiB87mp6GyXbaAkwmp8I",
+  authDomain: "maison-budget-5b560.firebaseapp.com",
+  projectId: "maison-budget-5b560",
+  storageBucket: "maison-budget-5b560.firebasestorage.app",
+  messagingSenderId: "814804375010",
+  appId: "1:814804375010:web:99fa0fd6dccb34b38415bb"
+};
+const FB_VER = "10.14.1";
+const FB_URL = (window.FB_URL_TEST || "https://www.gstatic.com/firebasejs/" + FB_VER + "/");
+const FB_TYPES = ["repascoche", "repasajout", "repasqte", "repaspaye"];
+const FB = { m: null, app: null, auth: null, db: null, user: null, membre: null, etat: "eteint", erreur: "", docs: {}, ecoutes: {} };
+
+const directVoulu = () => LS.get("bf.direct", false) === true;
+const directActif = () => directVoulu() && !!FB.membre;
+
+async function fbCharger() {
+  if (FB.m) return FB.m;
+  const [a, au, fs] = await Promise.all(["firebase-app.js", "firebase-auth.js", "firebase-firestore.js"].map(f => import(FB_URL + f)));
+  FB.m = { a, au, fs };
+  return FB.m;
+}
+async function fbDemarrer() {
+  if (!directVoulu() || FB.app) return;
+  FB.etat = "chargement"; majDirect();
+  try {
+    const { a, au, fs } = await fbCharger();
+    FB.app = a.initializeApp(FIREBASE_CONFIG);
+    FB.auth = au.getAuth(FB.app);
+    try { FB.db = fs.initializeFirestore(FB.app, { localCache: fs.persistentLocalCache({ tabManager: fs.persistentMultipleTabManager() }) }); }
+    catch (e) { FB.db = fs.getFirestore(FB.app); }   // cache hors ligne indisponible (navigation privée…) : en ligne seulement
+    au.onAuthStateChanged(FB.auth, async u => {
+      FB.user = u; FB.membre = null;
+      if (!u) { FB.etat = "deconnecte"; majDirect(); return; }
+      FB.etat = "verification"; majDirect();
+      await fbMembre();
+      if (FB.membre) fbEcouter();
+      majDirect();
+    });
+  } catch (e) { FB.etat = "erreur"; FB.erreur = "Chargement impossible (réseau ?) : " + (e.message || e); majDirect(); }
+}
+function majDirect() {
+  try {
+    const c = document.getElementById("fbCarte");   // Réglages ne se redessine pas en entier (pour ne pas effacer une saisie) : on met à jour la carte seule
+    if (S.tab === "reglages" && c) { if (document.activeElement && document.activeElement.id === "fbCode") return; c.outerHTML = directCarteHtml(); return; }
+    render();
+  } catch (e) {}
+}
+
+// ---------- membres : propriétaire (Gaétan) ou invitée (Mathilde) ----------
+async function fbMembre() {
+  const { fs } = FB.m, uidU = FB.user.uid, ref = fs.doc(FB.db, "membres", uidU);
+  try {
+    const s = await fs.getDoc(ref);
+    if (s.exists()) { FB.membre = s.data(); FB.etat = "ok"; return; }
+  } catch (e) { /* pas encore membre : la lecture peut être refusée */ }
+  // pas encore membre : le tout premier compte connecté devient propriétaire du foyer (Gaétan, le soir de l'installation).
+  // Les règles refusent la création de « foyer/proprio » s'il existe déjà : tout autre compte passe par un code d'invitation.
+  try {
+    const pr = await fs.getDoc(fs.doc(FB.db, "foyer", "proprio"));
+    if (!pr.exists()) await fs.setDoc(fs.doc(FB.db, "foyer", "proprio"), { uid: uidU, depuis: fs.serverTimestamp() });
+    else if ((pr.data() || {}).uid !== uidU) { FB.etat = "invitation"; return; }
+    const m = { role: "G", nom: "Gaétan", depuis: fs.serverTimestamp() };
+    await fs.setDoc(ref, m); FB.membre = m; FB.etat = "ok"; return;
+  } catch (e) { FB.etat = "invitation"; }
+}
+async function fbRejoindre(code) {
+  const { fs } = FB.m, c = String(code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (c.length < 6) { toast("Code d'invitation incomplet"); return; }
+  try {
+    const m = { role: "M", nom: "Mathilde", code: c, depuis: fs.serverTimestamp() };
+    await fs.setDoc(fs.doc(FB.db, "membres", FB.user.uid), m);
+    try { await fs.deleteDoc(fs.doc(FB.db, "invitations", c)); } catch (e) {}   // code à usage unique
+    FB.membre = m; FB.etat = "ok"; fbEcouter(); toast("✔ Bienvenue dans le foyer"); majDirect();
+  } catch (e) { toast("Code refusé ou expiré : demande un nouveau code à Gaétan"); }
+}
+async function fbInviter() {
+  const { fs } = FB.m, L = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let c = ""; const r = new Uint32Array(8); crypto.getRandomValues(r); r.forEach(x => { c += L[x % L.length]; });
+  try {
+    await fs.setDoc(fs.doc(FB.db, "invitations", c), { role: "M", expire: fs.Timestamp.fromMillis(Date.now() + 7 * 86400000), cree: fs.serverTimestamp() });
+    S.fbCode = c; majDirect();
+  } catch (e) { toast("Impossible de créer le code : " + (e.code || e.message)); }
+}
+async function fbConnexion() {
+  try { await fbDemarrer(); const { au } = FB.m; await au.signInWithPopup(FB.auth, new au.GoogleAuthProvider()); }
+  catch (e) {
+    if (e && /popup-blocked|operation-not-supported/.test(e.code || "")) { try { const { au } = FB.m; await au.signInWithRedirect(FB.auth, new au.GoogleAuthProvider()); return; } catch (e2) {} }
+    if (e && /popup-closed|cancelled-popup/.test(e.code || "")) return;
+    toast("Connexion impossible : " + ((e && (e.code || e.message)) || e));
+  }
+}
+async function fbDeconnexion() { try { await FB.m.au.signOut(FB.auth); } catch (e) {} }
+
+// ---------- écoute en direct des articles des semaines utiles ----------
+function fbSemainesUtiles() { return [-1, 0, 1, 2].map(semaineOff); }
+function fbEcouter() {
+  if (!FB.db || !FB.membre) return;
+  const { fs } = FB.m, voulues = new Set(fbSemainesUtiles());
+  Object.keys(FB.ecoutes).forEach(sem => { if (!voulues.has(sem)) { FB.ecoutes[sem](); delete FB.ecoutes[sem]; delete FB.docs[sem]; } });
+  voulues.forEach(sem => {
+    if (FB.ecoutes[sem]) return;
+    FB.ecoutes[sem] = fs.onSnapshot(fs.collection(FB.db, "courses", sem, "articles"), snap => {
+      const d = {}; snap.forEach(x => { d[x.id] = x.data(); });
+      FB.docs[sem] = d; FB.recu = Date.now(); majDirect();
+    }, e => { FB.etat = "erreur"; FB.erreur = "Lecture refusée (" + (e.code || e.message) + ")"; majDirect(); });
+  });
+}
+// clé d'un article : « m:nom » pour un ajout à la main, sinon le nom du produit
+const fbCle = (produit, manuel) => encodeURIComponent((manuel ? "m:" : "") + String(produit)).replace(/\./g, "%2E");
+
+// un article ajouté à la main ? (certaines saisies ne le précisent pas : on regarde la liste en direct puis celle du Sheet)
+function fbEstManuel(sem, produit) {
+  const d = FB.docs[sem] || {};
+  if (d[fbCle(produit, true)] && !d[fbCle(produit, true)].supprime) return true;
+  if (d[fbCle(produit, false)]) return false;
+  const w = S.base && S.base.repas && S.base.repas.semaines && S.base.repas.semaines[sem];
+  return !!(w && (w.manuels || []).some(m => m.lib === produit));
+}
+// ---------- écriture : appelée par enqueue() pour les saisies de courses ----------
+function fbEcrire(type, p) {
+  if (!directActif() || !FB_TYPES.includes(type)) return;
+  const { fs } = FB.m, sem = p.semaine; if (!sem) return;
+  const produit = type === "repasajout" ? p.lib : p.produit;
+  if (!produit) return;
+  const manuel = type === "repasajout" ? true : p.manuel !== undefined ? !!p.manuel : fbEstManuel(sem, produit);
+  const ref = fs.doc(FB.db, "courses", sem, "articles", fbCle(produit, manuel));
+  const base = { produit, manuel, par: S.who || "", maj: fs.serverTimestamp() };
+  let d;
+  if (type === "repascoche") d = Object.assign(base, { etat: p.etat || "" }, p.rayon ? { rayon: p.rayon } : {});
+  else if (type === "repasqte") d = Object.assign(base, { qte: Number(p.qte) || 0 }, p.rayon ? { rayon: p.rayon } : {});
+  else if (type === "repaspaye") d = Object.assign(base, { paye: p.total === "" || p.total == null ? null : Number(p.total) });
+  else if (p.suppr) d = Object.assign(base, { supprime: true });
+  else if (p.maj) d = Object.assign(base, { qte: Number(p.qte) || 1, prix: Number(p.prix) || 0 });
+  else d = Object.assign(base, { rayon: p.rayon || "Divers", prix: Number(p.prix) || 0, qte: Number(p.qte) || 1, prec: p.prec || "", etat: "", supprime: false, paye: null });
+  fs.setDoc(ref, d, { merge: true }).catch(e => { FB.erreur = "Écriture refusée (" + (e.code || e.message) + ")"; majDirect(); });
+}
+
+// ---------- fusion : l'état en direct passe par-dessus les données du Sheet (appelée par computeView) ----------
+function fbAppliquer(v) {
+  if (!directActif() || !v || !v.repas || !v.repas.installe) return;
+  const S2 = v.repas.semaines = v.repas.semaines || {};
+  Object.keys(FB.docs).forEach(sem => {
+    const w = S2[sem] = S2[sem] || { jours: [], etats: {}, manuels: [] };
+    w.etats = w.etats || {}; w.manuels = w.manuels || []; w.qte = w.qte || {}; w.payes = w.payes || {};
+    Object.values(FB.docs[sem]).forEach(a => {
+      if (!a || !a.produit) return;
+      if (a.manuel) {
+        let m = w.manuels.find(x => x.lib === a.produit);
+        if (a.supprime) { w.manuels = w.manuels.filter(x => x.lib !== a.produit); return; }
+        if (!m) { m = { lib: a.produit, rayon: a.rayon || "Divers", prix: Number(a.prix) || 0, qte: Number(a.qte) || 1, etat: "", prec: a.prec || "" }; w.manuels.push(m); }
+        if (a.etat !== undefined) m.etat = a.etat;
+        if (a.qte !== undefined) m.qte = Number(a.qte) || 1;
+        if (a.prix !== undefined) m.prix = Number(a.prix) || 0;
+        if (a.prec !== undefined) m.prec = a.prec;
+        if (a.rayon) m.rayon = a.rayon;
+      } else {
+        if (a.etat !== undefined) { if (a.etat) w.etats[a.produit] = a.etat; else delete w.etats[a.produit]; }
+        if (a.qte !== undefined) { if (Number(a.qte) > 0) w.qte[a.produit] = Number(a.qte); else delete w.qte[a.produit]; }
+      }
+      if (a.paye !== undefined) { const k = (a.manuel ? "m:" : "") + a.produit; if (a.paye === null) delete w.payes[k]; else w.payes[k] = Number(a.paye); }
+    });
+  });
+}
+
+// ---------- Réglages : carte « Courses en direct » ----------
+function directCarteHtml() {
+  const on = directVoulu();
+  let corps = "";
+  if (on) {
+    if (FB.etat === "chargement" || FB.etat === "verification") corps = `<div class="hint">⏳ Connexion à la base…</div>`;
+    else if (FB.etat === "erreur") corps = `<div class="alert bad" style="margin-top:8px">${esc(FB.erreur)}</div>`;
+    else if (!FB.user) corps = `<button class="btn" data-act="fbLogin" style="margin-top:10px">Se connecter avec Google</button><div class="hint">Une seule fois par téléphone.</div>`;
+    else if (!FB.membre) corps = `<div class="hint" style="margin-top:8px">Connecté avec Google. Ce compte n'est pas encore dans le foyer : entre le code donné par Gaétan.</div>
+      <input type="text" id="fbCode" placeholder="Code d'invitation (8 caractères)" autocapitalize="characters" autocomplete="off" style="margin-top:8px">
+      <button class="btn" data-act="fbJoin">Rejoindre le foyer</button><button class="linkbtn" data-act="fbLogout">Changer de compte</button>`;
+    else corps = `<div class="hint" style="margin-top:8px">● En direct · ${esc(FB.membre.nom || "")}</div>
+      ${FB.membre.role === "G" ? (S.fbCode ? `<div class="fbcode" title="Code valable 7 jours, une seule fois">${esc(S.fbCode)}</div><div class="hint">À entrer par Mathilde dans Réglages › Courses en direct, après s'être connectée avec Google. Valable 7 jours, une seule fois.</div>` : `<button class="btn sec" data-act="fbInvite" style="margin-top:10px">Inviter Mathilde (code)</button>`) : ""}
+      <button class="linkbtn" data-act="fbLogout">Se déconnecter</button>`;
+  }
+  return `<div class="card" id="fbCarte"><div style="display:flex;align-items:center;gap:10px"><b style="flex:1">⚡ Courses en direct <span class="badge-beta">bêta</span></b>
+    <label class="switch" title="Coches et prix instantanés, partagés en direct entre vos deux téléphones"><input type="checkbox" id="fbOn" ${on ? "checked" : ""}><span></span></label></div>
+    <div class="hint">Les coches, prix payés et ajouts partent tout de suite et apparaissent chez l'autre en une seconde, même sans réseau. Le Sheet reste à jour en arrière-plan. Éteint : fonctionnement d'avant.</div>${corps}</div>`;
+}
+document.addEventListener("change", e => {
+  if (e.target.id !== "fbOn") return;
+  LS.set("bf.direct", e.target.checked);
+  if (e.target.checked) fbDemarrer(); else { Object.values(FB.ecoutes).forEach(f => f()); FB.ecoutes = {}; FB.docs = {}; }
+  majDirect();
+});
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-act]"); if (!t) return;
+  const a = t.dataset.act;
+  if (a === "fbLogin") fbConnexion();
+  else if (a === "fbLogout") { S.fbCode = ""; fbDeconnexion(); }
+  else if (a === "fbJoin") fbRejoindre(($("#fbCode") || {}).value);
+  else if (a === "fbInvite") fbInviter();
+});
+// =====================================================================
 // 🍽 REPAS : menus de la semaine, fiches recettes, liste de courses partagée, fond de tiroir (v1.6.0)
 // =====================================================================
 const RAYON_PLACARD = "Placard (déjà à la maison)", RAYON_MAISON = "Hygiène & maison";
@@ -1644,7 +1870,7 @@ function viewRepas(v) {
   }
   const seg = [["menus", "Menus"], ["courses", "Courses"], ["recettes", "Recettes"], ["tiroir", "Tiroir"], ["flemme", "⚡ Flemme"], ["stats", "📊"]];
   let h = `<div class="seg">${seg.map(([k, n]) => `<button data-rsub="${k}" class="${S.rp.sub === k ? "on" : ""}">${n}</button>`).join("")}</div>`;
-  if (S.rp.sub === "courses") return h + viewCourses(v);
+  if (S.rp.sub === "courses") return h + coursesPageG(v, true);   // v1.26 : même page que l'onglet Courses
   if (S.rp.sub === "recettes") return h + viewRecettes(v);
   if (S.rp.sub === "tiroir") return h + viewTiroir(v);
   if (S.rp.sub === "flemme") return h + viewFlemme(v);
@@ -1702,37 +1928,6 @@ function dateCourses(v, sem) {
   let k = j < 0 ? -2 : ((j + 6) % 7) - 7; // jour choisi, dans la semaine qui précède
   if (k < -6) k += 7;
   return addDays(sem, k);
-}
-function viewCourses(v) {
-  const sem = semaineOff(S.rp.wk), d = semData(v, sem), g = reg(v), L = construireListe(v, sem, d.jours);
-  let h = weekChips();
-  const dc = dateCourses(v, sem);
-  h += `<div class="ctot"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--mut)">Semaine ${esc(libSemaine(sem))}</span><span class="live">${S.queue.length ? "⏳ envoi…" : "● en direct"}</span></div>
-    ${reelCourses(v, sem)}
-    ${conseilCourses(S.rp.wk >= 1 ? sem : addDays(sem, 7))}
-    <div class="l" style="margin-top:10px;font-size:12px;color:var(--mut)"><span>LISTE ESTIMÉE</span></div>
-    <div class="l"><span>🥕 Alimentaire</span><b style="color:${L.alim > g.alim ? "var(--bad)" : "inherit"}">${eur(L.alim)} / ${eur(g.alim)}</b></div>${pctBar(L.alim, g.alim)}
-    <div class="l"><span>🧻 Hygiène & maison</span><b>${eur(L.maison)}</b></div>
-    <div class="l"><span>🛒 Total du caddie</span><b style="color:${L.total > g.total ? "var(--bad)" : L.total > g.objectif ? "var(--warn)" : "var(--acc)"}">${eur(L.total)}</b></div>
-    <div class="hint">${L.total <= g.objectif ? "🎯 Objectif " + eur(g.objectif) + " tout compris tenu." : L.total <= g.total ? "Au-dessus de l'objectif de " + eur(g.objectif) + ", sous le plafond de " + eur(g.total) + "." : "⚠ Au-dessus du plafond de " + eur(g.total) + "."}${L.alim > g.alim ? " Alimentaire : " + eur(L.alim - g.alim) + " de trop." : ""}</div>
-    <div class="two" style="margin-top:10px"><button class="btn sec" style="margin:0" data-rr="ajout">+ Ajouter</button><button class="btn sec" style="margin:0" data-rr="partager">📋 Partager</button></div></div>`;
-  const inc = (R(v).inconnus || []).length;
-  if (inc) h += `<button class="linkbtn" data-rr="inconnus">🧾 ${inc} article(s) de tes tickets à associer pour affiner les prix</button>`;
-  if (!L.lignes.length) return h + `<div class="empty">Liste vide pour la semaine ${esc(libSemaine(sem))}.<br>Génère les menus dans l'onglet Menus, ou ajoute des articles.</div>`;
-  const groupes = {};
-  L.lignes.forEach(l => { (groupes[l.rayon] = groupes[l.rayon] || []).push(l); });
-  const ordre = Object.keys(groupes).sort((a, b) => (a === RAYON_PLACARD) - (b === RAYON_PLACARD) || (a === RAYON_MAISON) - (b === RAYON_MAISON) || a.localeCompare(b, "fr"));
-  // v1.21 : tuiles par rayon (module 12), pastilles des plats en haut
-  const PS = platsSemaine(v, d.jours);
-  if (S.rp.plat && !PS.plats.some(p => p.id === S.rp.plat)) S.rp.plat = "";
-  h += coursesPlatsHtml(PS);
-  ordre.forEach(ray => {
-    const items = groupes[ray].sort((a, b) => (!!a.etat - !!b.etat) || a.produit.localeCompare(b.produit, "fr"));
-    const reste = items.filter(l => !l.etat).length;
-    h += `<div class="rayon crayon"><span>${esc(ray === RAYON_PLACARD ? "À vérifier au placard" : ray)}</span><span>${reste ? reste + " à prendre" : "✓ tout est pris"}</span></div>` + coursesTuilesHtml(items, PS);
-  });
-  h += `<button class="btn" data-rr="fincourses" style="margin-top:16px">✅ J'ai fini les courses : scanner le ticket</button><div class="hint" style="text-align:center">Photo ou PDF du ticket : la dépense est enregistrée une seule fois, et comparée à la liste.</div>`;
-  return h + `<div class="hint" style="margin:10px 4px">Touche une tuile quand l'article est dans le caddie (elle se coche aussi chez l'autre). Appui long sur une tuile : plats concernés, prix, quantité, « déjà à la maison ». Les points de couleur disent à quels plats sert l'article ; touche un plat en haut pour allumer ses ingrédients.</div>`;
 }
 function viewRecettes(v) {
   const pm = prodMap(v), q = norm(S.rp.q || ""), f = S.rp.filt || "";
@@ -2597,8 +2792,11 @@ function tuileG(l, PS, payes, petite) {
   const coulDe = {}; PS.plats.forEach(p => { coulDe[p.id] = p.c; });
   const plats = petite ? [] : (PS.parProduit[l.produit] || []).filter(x => coulDe[x.id]);
   const pr = prixLigne(l, payes), pris = l.etat === "achete";
+  // v1.28 : animation d'entrée seulement pour une tuile qui vient d'apparaître à cet endroit (pas à chaque coche)
+  const cleV = (petite ? "p:" : "g:") + l.produit; S.gVusNext = S.gVusNext || new Set(); S.gVusNext.add(cleV);
+  const nouv = S.gVus && !S.gVus.has(cleV) ? " nouv" : "";
   const prix = pr.v ? (pr.reel ? "" : "≈ ") + eur(pr.v) : "prix ?";
-  return `<button class="gtile ${petite ? "petite" : ""} ${pris ? "pris" : ""}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}" data-tuile="${esc(l.produit)}"
+  return `<button class="gtile${nouv} ${petite ? "petite" : ""} ${pris ? "pris achete" : ""} ${l.etat === "maison" ? "maison" : ""}" data-rck="${esc(l.produit)}" data-man="${l.manuel ? 1 : 0}" data-ray="${esc(l.rayon)}" data-tuile="${esc(l.produit)}"
     aria-label="${esc(l.produit + ", " + detailTuile(l) + (pris ? ", dans le panier : toucher pour remettre" : " : toucher pour mettre dans le panier"))}">
     ${plats.length ? `<span class="cdots">${plats.map(x => `<i style="background:${coulDe[x.id]}"></i>`).join("")}</span>` : ""}
     ${tuileVisuel(l.produit, petite ? 22 : 30, pris ? "var(--mut)" : "var(--acc)")}
@@ -2606,8 +2804,12 @@ function tuileG(l, PS, payes, petite) {
     <em class="${pr.reel ? "reel" : ""}">${esc(prix)}</em></button>`;
 }
 function viewOngletCourses(v) {
-  const rp = R(v);
-  if (!rp.installe) return viewRepas(v);
+  if (!R(v).installe) return viewRepas(v);
+  return coursesPageG(v);
+}
+// v1.26 : LA page Courses, la même dans la barre du bas et dans Repas › Courses (avant : deux écrans différents)
+function coursesPageG(v, dansRepas) {
+  S.gVus = S.gVusNext || null; S.gVusNext = new Set();
   const sem = semaineOff(S.rp.wk), d = semData(v, sem), L = construireListe(v, sem, d.jours), PS = platsSemaine(v, d.jours);
   const simple = S.rp.cmode === "simple", payes = d.payes || {};
   (d.manuels || []).forEach(m => { const l = L.lignes.find(x => x.manuel && x.produit === m.lib); if (l) { l.qteMan = m.qte || 1; l.prec = m.prec || ""; } });
@@ -2617,12 +2819,13 @@ function viewOngletCourses(v) {
   const panier = somme(pris), resteE = Math.round(reste.reduce((s, l) => s + (l.prix || 0), 0) * 100) / 100, prevu = Math.round(actifs.reduce((s, l) => s + (l.prix || 0), 0) * 100) / 100;
   const estimes = pris.filter(l => !prixLigne(l, payes).reel).length;
   const pct = actifs.length ? Math.round(pris.length / actifs.length * 100) : 0;
-  let h = `<div class="gcalc"><div class="gcalc-l"><span>Dans le panier · ${pris.length} / ${actifs.length}</span><b>${eur(panier)}</b>${estimes ? `<small>dont ${estimes} prix estimé${estimes > 1 ? "s" : ""}</small>` : ""}</div>
+  let h = `<div class="gcalc${dansRepas ? " libre" : ""}"><div class="gcalc-l"><span>Dans le panier · ${pris.length} / ${actifs.length}</span><b>${eur(panier)}</b>${estimes ? `<small>dont ${estimes} prix estimé${estimes > 1 ? "s" : ""}</small>` : ""}</div>
     <div class="gcalc-r"><span>reste à prendre</span><b>≈ ${eur(resteE)}</b><small>prévu ${eur(prevu)}</small></div>
     <div class="gbar"><i style="width:${pct}%"></i></div></div>`;
   h += weekChips();
+  h += budgetCoursesHtml(v, sem, L);
   h += `<button class="gadd" data-rr="ajout"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14zM20 20l-4-4"/></svg>Que faut-il acheter ?</button>`;
-  h += `<div class="gmodes"><button class="${simple ? "" : "on"}" data-cmode="menus">Avec les menus</button><button class="${simple ? "on" : ""}" data-cmode="simple">Liste simple</button></div>`;
+  h += `<div class="gmodes"><button class="${simple ? "" : "on"}" data-cmode="menus">Tout</button><button class="${simple ? "on" : ""}" data-cmode="simple">Mes articles seulement</button></div>`;
   if (!simple) h += coursesPlatsHtml(PS);
   const sel = !simple && S.rp.plat;
   const aPrendre = reste.filter(l => !sel || (PS.parProduit[l.produit] || []).some(x => x.id === sel));
@@ -2635,12 +2838,28 @@ function viewOngletCourses(v) {
   if (pris.length) h += `<div class="grayon ok"><span>Dans le panier</span><small>toucher pour remettre</small></div><div class="gtiles p">${pris.map(l => tuileG(l, PS, payes, true)).join("")}</div>`;
   const maison = vis.filter(l => l.etat === "maison");
   if (maison.length) h += `<details class="gmaison"><summary>🏠 Déjà à la maison (${maison.length})</summary><div class="gtiles p">${maison.map(l => tuileG(l, PS, payes, true)).join("")}</div></details>`;
+  const placard = L.lignes.filter(l => l.placard);
+  if (placard.length) h += `<details class="gmaison"><summary>🧂 À vérifier au placard (${placard.filter(l => !l.etat).length} sur ${placard.length})</summary><div class="gtiles p">${placard.map(l => tuileG(l, PS, payes, true)).join("")}</div></details>`;
   const rec = recentsCourses(v, sem, L.lignes.filter(l => l.manuel).map(l => l.produit));
   S.crec = rec;
   if (rec.length) h += `<div class="grayon"><span>Récemment ajoutés</span><small>toucher pour remettre dans la liste</small></div><div class="grec">${rec.map((x, i) => `<button data-crec="${i}">${tuileVisuel(x.lib, 18, "var(--mut)")}<span>${esc(x.lib)}</span></button>`).join("")}</div>`;
   h += `<button class="btn sec" data-rr="ajout" style="margin-top:14px">Parcourir le catalogue par rayon</button>`;
+  h += `<button class="btn" data-rr="fincourses" style="margin-top:10px">✅ J'ai fini les courses : scanner le ticket</button><div class="hint" style="text-align:center">Photo ou PDF du ticket : la dépense est enregistrée une seule fois, et comparée à la liste.</div>`;
   h += `<div class="hint" style="margin:10px 4px">Toucher un article = dans le panier. Appui long = nombre et prix réellement payé (la calculatrice du haut se met à jour).</div>`;
   return h;
+}
+// carte « budget de la semaine » : vraie dépense (journal), qui peut faire les courses, liste estimée et objectif
+function budgetCoursesHtml(v, sem, L) {
+  const g = reg(v);
+  return `<div class="ctot gbud"><div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--mut)">Semaine ${esc(libSemaine(sem))}</span><span class="live" title="${directActif() ? "Coches partagées instantanément entre vos téléphones" : "Mise à jour via le Google Sheet"}">${directActif() ? "⚡ en direct" : S.queue.length ? "⏳ envoi…" : "● à jour"}</span></div>
+    ${reelCourses(v, sem)}
+    ${conseilCourses(S.rp.wk >= 1 ? sem : addDays(sem, 7))}
+    <div class="l" style="margin-top:8px"><span>🥕 Alimentaire prévu</span><b style="color:${L.alim > g.alim ? "var(--bad)" : "inherit"}">${eur(L.alim)} / ${eur(g.alim)}</b></div>${pctBar(L.alim, g.alim)}
+    <div class="l"><span>🧻 Hygiène & maison</span><b>${eur(L.maison)}</b></div>
+    <div class="l"><span>🛒 Caddie prévu</span><b style="color:${L.total > g.total ? "var(--bad)" : L.total > g.objectif ? "var(--warn)" : "var(--acc)"}">${eur(L.total)}</b></div>
+    <div class="hint">${L.total <= g.objectif ? "🎯 Objectif " + eur(g.objectif) + " tout compris tenu." : L.total <= g.total ? "Au-dessus de l'objectif de " + eur(g.objectif) + ", sous le plafond de " + eur(g.total) + "." : "⚠ Au-dessus du plafond de " + eur(g.total) + "."}</div>
+    <div class="two" style="margin-top:8px"><button class="btn sec" style="margin:0" data-rr="partager">📋 Partager</button><button class="btn sec" style="margin:0" data-rr="fincourses">🧾 Scanner le ticket</button></div></div>
+    ${(R(v).inconnus || []).length ? `<button class="linkbtn" data-rr="inconnus">🧾 ${(R(v).inconnus || []).length} article(s) de tes tickets à associer pour affiner les prix</button>` : ""}`;
 }
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-cmode],[data-crec]"); if (!t) return;
@@ -2812,22 +3031,25 @@ function viewGarde() {
 }
 
 // ---------- conseil : quel jour faire les courses ----------
+// v1.26 : TOUTES les possibilités de la période, la plus proche d'abord, et l'appli parle en « nous » (Gaétan, 17/11).
+// Avant : un seul jour « à deux » (le dernier) et un seul jour par personne, ce qui cachait « Mathilde aujourd'hui ».
 function conseilCourses(semCible) {
   const d = cgData(); if (!d) return "";
   const today = todayISO(), deb = addDays(semCible, -7) > today ? addDays(semCible, -7) : today, fin = addDays(semCible, -1);
   const J = gardeJours(d, 0).filter(g => g.date >= deb && g.date <= fin);
   if (!J.length) return "";
-  const deux = J.filter(g => libre(g.mathilde) && libre(g.gaetan)).pop();
-  // v1.20 : pour une personne seule, son PREMIER jour de repos (avant : le dernier, pour des produits plus frais)
-  const mat = J.find(g => libre(g.mathilde) && !libre(g.gaetan));
-  const gae = J.find(g => libre(g.gaetan) && !libre(g.mathilde));
-  let t = "";
-  if (deux) t = `📅 <b>${esc(longD(deux.date))}</b> : vous êtes tous les deux en repos, courses à deux (magasin ou drive).`;
-  else if (mat) t = `📅 <b>${esc(longD(mat.date))}</b> : Mathilde est en repos, seule avec Léo : <b>drive conseillé</b>.`;
-  else if (gae) t = `📅 <b>${esc(longD(gae.date))}</b> : Gaétan est en repos : drive ou magasin.`;
-  if (!t) return "";
-  const autres = [mat, gae].filter(x => x && x !== deux && x.date !== (deux || {}).date);
-  return `<div class="hint" style="margin-top:8px">${t}${deux && autres.length ? " Sinon : " + autres.map(x => esc(longD(x.date)) + (x === mat ? " (Mathilde, drive)" : " (Gaétan)")).join(", ") + "." : ""}</div>`;
+  const nomJour = g => g.date === today ? "aujourd'hui" : g.date === addDays(today, 1) ? "demain (" + longD(g.date).replace(/ \S+\.?$/, "") + ")" : longD(g.date);
+  const liste = T => T.slice(0, 3).map(nomJour).join(" ou ");
+  const deux = J.filter(g => libre(g.mathilde) && libre(g.gaetan));
+  const mat = J.filter(g => libre(g.mathilde) && !libre(g.gaetan));
+  const gae = J.filter(g => libre(g.gaetan) && !libre(g.mathilde));
+  const L = [];
+  if (mat.length) L.push({ d: mat[0].date, t: `<b>Mathilde</b> : ${esc(liste(mat))} · seule avec Léo, drive conseillé` });
+  if (deux.length) L.push({ d: deux[0].date, t: `<b>Nous deux</b> : ${esc(liste(deux))} · magasin ou drive` });
+  if (gae.length) L.push({ d: gae[0].date, t: `<b>Gaétan</b> : ${esc(liste(gae))} · drive ou magasin` });
+  if (!L.length) return "";
+  L.sort((x, y) => x.d < y.d ? -1 : 1);
+  return `<div class="ccons"><div class="ccons-t">📅 Qui peut faire les courses</div>${L.map(x => `<div>${x.t}</div>`).join("")}</div>`;
 }
 
 // ---------- écran Congés (profil Gaétan) ----------
@@ -5306,6 +5528,7 @@ async function reloadApp() {
     if (p.get("u") && p.get("k")) { const nouv = p.get("k") !== S.cfg.key; S.cfg = { url: p.get("u"), key: p.get("k") }; saveCfg(); if (nouv) { S.base = null; saveBase(); } history.replaceState(null, "", location.pathname); toast("Connexion configurée"); }
   }
   majProf(); setSync(); render();
+  try { fbDemarrer(); } catch (e) {}   // v1.28 : courses en direct, si l'interrupteur est allumé
   if (configured()) { S.queue.length ? flush() : refresh(true); }
   window.addEventListener("online", () => { S.offline = false; flush(); refresh(true); });
   window.addEventListener("offline", () => { S.offline = true; setSync(); });

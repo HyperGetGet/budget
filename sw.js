@@ -1,6 +1,7 @@
 // Service worker : l'appli s'ouvre sans connexion et se met à jour toute seule dès qu'une nouvelle version est publiée
-const CACHE = "bf-v1.26.0";
-const IMG = "bf-img"; // photos des recettes (Wikimedia Commons), gardées d'une version à l'autre pour l'usage hors ligne
+const CACHE = "bf-v1.28.0";
+const IMG = "bf-img";
+const LIB = "bf-lib"; // v1.28 : bibliothèque Firebase (versionnée, ne change jamais) gardée pour ouvrir l'appli sans réseau // photos des recettes (Wikimedia Commons), gardées d'une version à l'autre pour l'usage hors ligne
 const SHELL = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -8,7 +9,7 @@ self.addEventListener("install", e => {
 });
 
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== IMG).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== IMG && k !== LIB).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 
 self.addEventListener("fetch", e => {
@@ -17,6 +18,10 @@ self.addEventListener("fetch", e => {
   const url = new URL(req.url);
   if (url.hostname === "upload.wikimedia.org" || url.hostname === "thumb.wikimedia.org") {        // photos : cache d'abord, réseau sinon
     e.respondWith(caches.open(IMG).then(c => c.match(req).then(r => r || fetch(req).then(res => { if (res.ok || res.type === "opaque") c.put(req, res.clone()); return res; }))));
+    return;
+  }
+  if (url.hostname === "www.gstatic.com" && url.pathname.startsWith("/firebasejs/")) {        // Firebase : cache d'abord
+    e.respondWith(caches.open(LIB).then(c => c.match(req).then(r => r || fetch(req).then(res => { if (res.ok) c.put(req, res.clone()); return res; }))));
     return;
   }
   if (url.origin !== location.origin) return;           // les appels vers le Sheet ne passent jamais par le cache

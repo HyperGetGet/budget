@@ -532,6 +532,8 @@ select option{color:#13285e}::placeholder{color:#a9bbe0}
 
 @keyframes boing{0%{transform:translateY(0) scale(1)}30%{transform:translateY(-16px) scale(1.06,.94)}55%{transform:translateY(0) scale(.94,1.06)}75%{transform:translateY(-5px)}100%{transform:none}}
 .tirebtn.boing{animation:boing .65s cubic-bezier(.3,1.4,.5,1)}
+/* v1.34 : la carte du jour ne « remonte » qu'à l'arrivée sur l'écran (sinon elle clignotait à chaque mise à jour) */
+.tonight{animation:none}#view.entree .tonight{animation:monte .36s cubic-bezier(.2,.8,.2,1) both}
 </style>
 </head>
 <body>
@@ -1322,6 +1324,18 @@ function viewReglages() {
     <button class="linkbtn" data-act="goplus">← Plus</button>`;
 }
 
+// v1.34 : on ne remplace l'écran que s'il a vraiment changé (sinon la photo du plat « clignotait » à chaque mise à jour en direct)
+// Toute retouche de l'écran faite ailleurs (morceau mis à jour à la main) annule la mémoire : on redessine alors normalement.
+function poserVue(el, h) {
+  if (!el.__obs && window.MutationObserver) {
+    el.__obs = new MutationObserver(recs => { if (recs.some(r => !(r.target === el && r.type === "attributes"))) el.__html = null; });
+    el.__obs.observe(el, { childList: true, subtree: true, characterData: true, attributes: true });
+  }
+  if (el.__obs) { const recs = el.__obs.takeRecords(); if (recs.some(r => !(r.target === el && r.type === "attributes"))) el.__html = null; }
+  if (el.__html === h && el.firstChild && el.firstChild === el.__noeud) return;
+  el.innerHTML = h; el.__html = h; el.__noeud = el.firstChild;
+  if (el.__obs) el.__obs.takeRecords();
+}
 function render() {
   try { v19Role(); } catch (e) {}
   if (!estG() && ["conges", "regles", "contrats"].includes(S.tab)) S.tab = "plus";   // v1.20 : écrans réservés à Gaétan
@@ -1332,23 +1346,23 @@ function render() {
   const grpPlus = ["plus", "annuels", "amazon", "soins", "reglages", "conges", "garde", "stats", "bourse", "taches", "idees", "voyages", "bilan", "regles", "contrats"].includes(S.tab);
   document.querySelectorAll("#nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === S.tab || (b.dataset.tab === "plus" && grpPlus)));
   $("#fab").style.display = (grpPlus || S.tab === "repas" || S.tab === "courses") ? "none" : "block";
-  if (S.tab === "plus") { el.innerHTML = viewPlus(); return; }
-  if (S.tab === "reglages") { if (!el.querySelector("#cfgSave")) { el.innerHTML = viewReglages(); setTimeout(chargerSante, 50); } return; }
-  if (!configured()) { S.tab = "reglages"; el.innerHTML = viewReglages(); toast("Configure d'abord la connexion"); return; }
-  if (!v) { el.innerHTML = `<div class="empty">${S.loading ? "Chargement…" : "Pas encore de données.<br>Vérifie la connexion puis appuie sur ⟳."}</div>`; return; }
-  if (S.tab === "repas") { el.innerHTML = bandeauScript() + viewRepas(v); return; }
-  if (S.tab === "courses") { el.innerHTML = bandeauScript() + viewOngletCourses(v); return; }
-  if (S.tab === "conges") { el.innerHTML = viewConges(); return; }
-  if (S.tab === "garde") { el.innerHTML = viewGarde(); return; }
-  if (S.tab === "stats") { el.innerHTML = bandeauScript() + viewStats(false); return; }
-  if (S.tab === "bourse") { el.innerHTML = bandeauScript() + viewBourse(); return; }
-  if (S.tab === "taches") { el.innerHTML = bandeauScript() + viewTaches(); return; }
-  if (S.tab === "bilan") { el.innerHTML = bandeauScript() + viewBilan(); return; }
-  if (S.tab === "regles") { el.innerHTML = bandeauScript() + viewRegles(); return; }
-  if (S.tab === "contrats") { el.innerHTML = bandeauScript() + viewContrats(); return; }
-  if (S.tab === "idees") { el.innerHTML = bandeauScript() + viewIdees(); ideesVues(); return; }
-  if (S.tab === "voyages") { el.innerHTML = bandeauScript() + viewVoyages(); if (v111Pret() && voy().photosManquantes) setTimeout(voyPhotos, 400); return; }
-  el.innerHTML = S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : S.tab === "amazon" ? viewAmazon(v) : S.tab === "soins" ? viewSoins(v) : viewAnnuels(v);
+  if (S.tab === "plus") { poserVue(el, viewPlus()); return; }
+  if (S.tab === "reglages") { if (!el.querySelector("#cfgSave")) { poserVue(el, viewReglages()); setTimeout(chargerSante, 50); } return; }
+  if (!configured()) { S.tab = "reglages"; poserVue(el, viewReglages()); toast("Configure d'abord la connexion"); return; }
+  if (!v) { poserVue(el, `<div class="empty">${S.loading ? "Chargement…" : "Pas encore de données.<br>Vérifie la connexion puis appuie sur ⟳."}</div>`); return; }
+  if (S.tab === "repas") { poserVue(el, bandeauScript() + viewRepas(v)); return; }
+  if (S.tab === "courses") { poserVue(el, bandeauScript() + viewOngletCourses(v)); return; }
+  if (S.tab === "conges") { poserVue(el, viewConges()); return; }
+  if (S.tab === "garde") { poserVue(el, viewGarde()); return; }
+  if (S.tab === "stats") { poserVue(el, bandeauScript() + viewStats(false)); return; }
+  if (S.tab === "bourse") { poserVue(el, bandeauScript() + viewBourse()); return; }
+  if (S.tab === "taches") { poserVue(el, bandeauScript() + viewTaches()); return; }
+  if (S.tab === "bilan") { poserVue(el, bandeauScript() + viewBilan()); return; }
+  if (S.tab === "regles") { poserVue(el, bandeauScript() + viewRegles()); return; }
+  if (S.tab === "contrats") { poserVue(el, bandeauScript() + viewContrats()); return; }
+  if (S.tab === "idees") { poserVue(el, bandeauScript() + viewIdees()); ideesVues(); return; }
+  if (S.tab === "voyages") { poserVue(el, bandeauScript() + viewVoyages()); if (v111Pret() && voy().photosManquantes) setTimeout(voyPhotos, 400); return; }
+  poserVue(el, S.tab === "home" ? viewHome(v) : S.tab === "journal" ? viewJournal(v) : S.tab === "amazon" ? viewAmazon(v) : S.tab === "soins" ? viewSoins(v) : viewAnnuels(v));
 }
 
 // ---------- fenêtre d'ajout ----------
@@ -3048,7 +3062,7 @@ function openTuile(nom) {
       ${l.manuel ? (l.etat === "achete" ? `<button class="btn sec" style="margin:0" data-ctact="caddie">Pas encore pris</button>` : "") : l.placard ? "" : `<button class="btn sec" style="margin:0" data-ctact="maison">${l.etat === "maison" ? "Finalement à acheter" : "Déjà à la maison"}</button>`}
       ${l.placard || l.manuel ? "" : l.etat === "achete" ? `<button class="btn sec" style="margin:0" data-ctact="caddie">Pas encore pris</button>` : `<button class="btn sec" style="margin:0" data-ctact="qte">Contenance, prix habituel</button>`}
     </div>
-    <button class="btn sec" data-ctact="photo" style="margin-top:8px">📷 Changer la photo</button>
+    ${PHOTOS_ARTICLES ? `<button class="btn sec" data-ctact="photo" style="margin-top:8px">📷 Changer la photo</button>` : ""}
     ${l.etat === "maison" && !l.manuel ? "" : `<button class="linkbtn" style="color:var(--bad);display:block;margin:12px auto 0" data-ctact="retirer">Retirer de la liste</button>`}
     <div id="ctConf"></div></div>`);
 }
@@ -3298,7 +3312,11 @@ function photoRecherche(nom) {
 }
 const photoCle = nom => encodeURIComponent(photoNorm(nom).replace(/ /g, "_")).replace(/\./g, "%2E").slice(0, 120) || "x";
 const PH = { docs: LS.get("bf.photosArt", {}), essais: {}, file: [], enCours: 0 };
+// v1.34 : retour aux icônes dessinées pour les courses (boîte à idées du 18/11 : photos peu parlantes, texte moins lisible).
+// Le code des photos reste en sommeil : on le rallume en passant PHOTOS_ARTICLES à true.
+const PHOTOS_ARTICLES = false;
 function photoDe(nom) {
+  if (!PHOTOS_ARTICLES) return null;
   const d = PH.docs[photoCle(nom)];
   if (d) return d.aucune ? null : d.url;
   photoDemander(nom); return null;
@@ -3339,7 +3357,7 @@ function photoEnregistrer(nom, c, choisi) {
 }
 // écoute des choix de l'autre téléphone
 function photosEcouter() {
-  if (!directActif() || FB.ecoutes.__photos) return;
+  if (!PHOTOS_ARTICLES || !directActif() || FB.ecoutes.__photos) return;
   const { fs } = FB.m;
   FB.ecoutes.__photos = fs.onSnapshot(fs.collection(FB.db, "photos_articles"), snap => {
     let change = false;

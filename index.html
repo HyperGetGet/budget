@@ -558,8 +558,8 @@ select option{color:#13285e}::placeholder{color:#a9bbe0}
 
 <script>
 "use strict";
-const APP_VERSION = "1.34.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 55;       // version du script que cette appli attend
+const APP_VERSION = "1.35.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 56;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -1622,6 +1622,37 @@ function regleContratEtat(c, auj) {
 // Gaétan : calendrier prévisionnel des mises en paiement, colonne Île-de-France (syndicat Unité, 19/01/2026, « sous réserve de modifications des SGAMI »).
 // Une année absente reprend la dernière année connue : ajouter ici la ligne 2027 quand le calendrier sera publié.
 var PAIE_IDF = { 2026: [27, 24, 26, 27, 26, 25, 28, 26, 25, 27, 25, 22] };
+// Mathilde : dates réelles de ses salaires (relevés bancaires), mois de paie → jour du virement.
+// Février 2025 est arrivé le 3 mars : la fenêtre de février va donc jusqu'au début mars.
+// Les salaires confirmés dans l'appli s'ajoutent tout seuls (perso.vusM), pas besoin de compléter cette liste.
+var PAIE_M_VU = {
+  "2024-11": "2024-11-29", "2024-12": "2024-12-30", "2025-01": "2025-01-31", "2025-02": "2025-03-03", "2025-03": "2025-03-28", "2025-04": "2025-04-30",
+  "2025-05": "2025-05-28", "2025-06": "2025-06-30", "2025-07": "2025-07-30", "2025-08": "2025-08-29", "2025-09": "2025-09-30", "2025-10": "2025-10-31",
+  "2025-11": "2025-11-28", "2025-12": "2025-12-29", "2026-01": "2026-01-30", "2026-02": "2026-02-27", "2026-03": "2026-03-31", "2026-04": "2026-04-30",
+  "2026-05": "2026-05-29", "2026-06": "2026-06-30", "2026-07": "2026-07-31", "2026-08": "2026-08-31", "2026-09": "2026-09-30", "2026-10": "2026-10-30"
+};
+// Fenêtre de paie de Mathilde pour un mois : du jour le plus tôt observé les années précédentes, moins 1 jour de marge
+// (un week-end recule au vendredi), jusqu'à la fin du mois, ou plus tard si un salaire est déjà arrivé le mois suivant.
+// Renvoie { debut, fin, exact } ou null sans historique. Si le salaire du mois est déjà connu : debut = fin = ce jour, exact.
+function reglePaieFenetreM(annee, mois0, perso) {
+  var p = function (x) { return ("0" + x).slice(-2); }, vus = {}, k;
+  for (k in PAIE_M_VU) { vus[k] = PAIE_M_VU[k]; }
+  if (perso && perso.vusM) { for (k in perso.vusM) { if (perso.vusM[k]) { vus[k] = perso.vusM[k]; } } }
+  var ym = annee + "-" + p(mois0 + 1);
+  if (vus[ym]) { return { debut: vus[ym], fin: vus[ym], exact: true }; }
+  var ecarts = [];
+  for (k in vus) {
+    if (+k.slice(5, 7) !== mois0 + 1 || +k.slice(0, 4) >= annee) { continue; }
+    var y = +k.slice(0, 4), d = vus[k];
+    ecarts.push(Math.round((Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) - Date.UTC(y, mois0, 1)) / 86400000));
+  }
+  if (!ecarts.length) { return null; }
+  var iso = function (t) { var x = new Date(t); return x.getUTCFullYear() + "-" + p(x.getUTCMonth() + 1) + "-" + p(x.getUTCDate()); };
+  var t0 = Date.UTC(annee, mois0, 1), deb = t0 + (Math.min.apply(null, ecarts) - 1) * 86400000;
+  while ([0, 6].indexOf(new Date(deb).getUTCDay()) >= 0) { deb -= 86400000; }
+  var finMois = Date.UTC(annee, mois0 + 1, 0), fin = Math.max(finMois, t0 + Math.max.apply(null, ecarts) * 86400000);
+  return { debut: iso(deb), fin: iso(fin), exact: false };
+}
 // jour de paie d'un mois (mois0 : 0 = janvier), pour "G" (Gaétan) ou "M" (Mathilde).
 // perso = dates saisies dans l'appli : { G: { "2027": [12 jours] }, M: { … } } ; elles l'emportent sur le calendrier ci-dessus.
 // Une année sans dates reprend la dernière année connue. Mathilde sans dates : avant-dernier jour du mois (« dans les 3 derniers jours »), estimé.
@@ -1635,17 +1666,33 @@ function reglePaieTable(qui, annee, perso) {
 }
 function reglePaieDate(qui, annee, mois0, perso) {
   var p = function (x) { return ("0" + x).slice(-2); }, fin = new Date(annee, mois0 + 1, 0).getDate(), t = reglePaieTable(qui, annee, perso);
+  if (qui === "M" && !t) { var f = reglePaieFenetreM(annee, mois0, perso); if (f) { return f.debut; } }
   var jour = t ? Math.min(Number(t.jours[mois0]) || fin - 1, fin) : fin - 1;
   return annee + "-" + p(mois0 + 1) + "-" + p(jour);
 }
 // prochaine paie à partir du jour « auj » (le jour même compte) : { date, estime }
 function reglePaieProchaine(qui, auj, perso) {
-  var y = +auj.slice(0, 4), m = +auj.slice(5, 7) - 1, d = reglePaieDate(qui, y, m, perso);
+  var y = +auj.slice(0, 4), m = +auj.slice(5, 7) - 1, d;
+  if (qui === "M" && !reglePaieTable("M", y, perso)) {
+    // Mathilde : on regarde le mois précédent (février peut finir en mars), puis le mois en cours, puis le suivant
+    for (var i = -1; i <= 1; i++) {
+      var mm = m + i, yy = y; if (mm < 0) { mm = 11; yy--; } if (mm > 11) { mm = 0; yy++; }
+      var f = reglePaieFenetreM(yy, mm, perso);
+      if (!f) { break; }
+      if (f.exact || f.fin < auj) { continue; }
+      return { date: f.debut, fin: f.fin, estime: true, fenetre: true };
+    }
+  }
+  d = reglePaieDate(qui, y, m, perso);
   if (d < auj) { m++; if (m > 11) { m = 0; y++; } d = reglePaieDate(qui, y, m, perso); }
   return { date: d, estime: !reglePaieTable(qui, y, perso) };
 }
 // jour du mois à partir duquel l'appli demande « As-tu reçu ton salaire ? » : la veille de la date de paie prévue
 function reglePaieJourQuestion(qui, ym, perso) {
+  if (qui === "M" && !reglePaieTable("M", +ym.slice(0, 4), perso)) {   // v1.35 : la fenêtre a déjà son jour d'avance
+    var f = reglePaieFenetreM(+ym.slice(0, 4), +ym.slice(5, 7) - 1, perso);
+    if (f && f.debut.slice(0, 7) === ym) { return +f.debut.slice(8, 10); }
+  }
   return Math.max(1, +reglePaieDate(qui, +ym.slice(0, 4), +ym.slice(5, 7) - 1, perso).slice(8, 10) - 1);
 }
 
@@ -4088,7 +4135,15 @@ window.addEventListener("click", e => {
 
 // ---------- salaire : une petite carte à partir de la VEILLE de la date de paie prévue (calendrier de paie, modifiable), jusqu'au 10 du mois suivant ----------
 // Mathilde, tant qu'elle n'a pas saisi ses dates : ancienne règle (dès le 24, dès le 20 en décembre)
-const jourDebutSal = (ym, P) => (P === "M" && !reglePaieTable("M", Number(ym.slice(0, 4)), paiePerso())) ? (ym.slice(5, 7) === "12" ? 20 : 24) : reglePaieJourQuestion(P || "G", ym, paiePerso());
+// v1.35 : Mathilde avec un historique : dès le début de sa fenêtre de paie (jour le plus tôt des années passées, moins 1 jour)
+const jourDebutSal = (ym, P) => {
+  if (P === "M" && !reglePaieTable("M", Number(ym.slice(0, 4)), paiePerso())) {
+    const f = reglePaieFenetreM(Number(ym.slice(0, 4)), Number(ym.slice(5, 7)) - 1, paiePerso());
+    if (f && f.debut.slice(0, 7) === ym) return Math.min(Number(f.debut.slice(8, 10)), 28);
+    return ym.slice(5, 7) === "12" ? 20 : 24;
+  }
+  return reglePaieJourQuestion(P || "G", ym, paiePerso());
+};
 function periodeSalaire(P) {
   const t = todayISO(), ym = t.slice(0, 7), j = Number(t.slice(8, 10));
   if (j >= jourDebutSal(ym, P)) return ym;
@@ -4544,10 +4599,21 @@ function pontsAVenir(d) {
 // =====================================================================
 // 📅 PAIE : prochaine paie sur l'accueil, calendrier de paie modifiable (règles dans src/commun/regles.js)
 // =====================================================================
-const paiePerso = () => { try { return (v19().paie) || {}; } catch (e) { return {}; } };
+// v1.35 : les salaires de Mathilde confirmés dans l'appli complètent l'historique de ses dates de paie
+const paiePerso = () => {
+  let paie = {}, vusM = {};
+  try { paie = (v19().paie) || {}; } catch (e) {}
+  try { (v19().mois.sal.M || []).forEach(s => { if (s.per && s.d) vusM[s.per] = s.d; }); } catch (e) {}
+  return Object.assign({}, paie, { vusM });
+};
 const paieQui = () => estG() ? "G" : "M";
 function paieCard() {
   const qui = paieQui(), p = reglePaieProchaine(qui, todayISO(), paiePerso()), j = regleJours(todayISO(), p.date);
+  if (p.fenetre) {
+    const dj = j <= 0;
+    return `<div class="card paie" data-act="paie" style="cursor:pointer"><div><span>${dj ? "Ta paie peut tomber" : "Ta prochaine paie (d'après l'an dernier)"} · touche pour régler</span><b>${dj ? "dès aujourd'hui" : "à partir du " + esc(longD(p.date))}</b></div><i>${dj ? "jusqu'au " + esc(longD(p.fin)) : j === 1 ? "demain" : "dans " + j + " jours"}</i></div>`
+      + `<div class="hint" style="margin:-4px 4px 12px">${dj ? "Elle arrive d'habitude avant la fin du mois." : "Elle peut arriver jusqu'au " + esc(longD(p.fin)) + ". J'ai pris un jour d'avance par prudence."}</div>`;
+  }
   return `<div class="card paie" data-act="paie" style="cursor:pointer"><div><span>${p.estime ? "Ta prochaine paie (date estimée) · touche pour régler" : "Ta prochaine paie · touche pour régler"}</span><b>${p.estime ? "vers le " : ""}${esc(longD(p.date))}</b></div><i>${j === 0 ? "aujourd'hui" : j === 1 ? "demain" : "dans " + j + " jours"}</i></div>`
     + (qui === "G" ? `<div class="hint" style="margin:-4px 4px 12px">${j === 0 ? "Jour de paie : dès que tu confirmes ton salaire, je te propose ton DCA." : "DCA conseillé le " + esc(longD(p.date)) + ", le jour de la paie, une fois le salaire confirmé. Je te pose la question la veille."}</div>` : "");
 }

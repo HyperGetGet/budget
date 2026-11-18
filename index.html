@@ -433,6 +433,37 @@ select option{color:#13285e}::placeholder{color:#a9bbe0}
 #view.entree>*:nth-child(2){animation-delay:.04s}#view.entree>*:nth-child(3){animation-delay:.08s}#view.entree>*:nth-child(4){animation-delay:.12s}#view.entree>*:nth-child(n+5){animation-delay:.16s}
 .card,.env,.chip,.btn,.cat{transition:transform .15s ease}.card:active,.env:active,.chip:active{transform:scale(.985)}
 @media (prefers-reduced-motion:reduce){body::before,body::after,#view.entree *{animation:none!important}}
+/* ---------- v1.31 : Accueil, Journal et saisie comme la maquette (K, L, M) ---------- */
+:root{--c-courses:#7ee2a8;--c-animaux:#ffb566;--c-bebe:#8fd3ff;--c-loisirs:#ff9cc4;--c-vehicule:#9cc0ff;--c-hors:#c3a8ff}
+.salut{display:flex;flex-direction:column;gap:2px;margin:2px 4px 12px}.salut b{font-family:var(--num);font-size:23px;font-weight:700}.salut span{font-size:13px;color:var(--mut)}
+.heros{position:relative;overflow:hidden;padding:16px}
+.hs-t{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mut)}.hs-t span{flex:1}
+.aide{width:24px;height:24px;border-radius:99px;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;font-size:12px;font-weight:700;cursor:pointer;flex:none}
+.bulle{margin:8px 0 2px;padding:11px 13px;border-radius:16px;background:#f4f8ff;color:#1b2a4a;font-size:13.5px;line-height:1.45;box-shadow:0 10px 24px rgba(8,20,55,.3);animation:bulleIn .18s ease-out both}
+@keyframes bulleIn{from{opacity:0;transform:translateY(-4px) scale(.97)}to{opacity:1;transform:none}}
+.hs-l{display:flex;align-items:flex-end;gap:8px;margin-top:4px}.hs-m{flex:1;cursor:pointer;min-width:0}
+.heros .big{font-family:var(--num);font-size:40px;font-weight:700;line-height:1.05;letter-spacing:-1px;margin:2px 0 6px;color:#fff}.heros .big.neg{color:var(--bad)}
+.heros .sub{font-size:12.5px;color:var(--mut)}.heros .sub b{color:#fff}
+.tirelire{width:92px;height:80px;flex:none;animation:flotte 3.2s ease-in-out infinite}
+@keyframes flotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.courbe{display:block;width:100%;height:46px;margin:10px 0 4px}.courbe .cz{fill:rgba(255,255,255,.12)}.courbe .cl{fill:none;stroke:#9ff5c0;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}.courbe .cp{fill:#9ff5c0}
+.hs-bas{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin-top:8px;padding:0 12px;border-radius:14px;border:0;background:rgba(255,255,255,.14);color:#fff;font:inherit;font-size:13.5px;text-align:left;cursor:pointer}
+.hs-bas svg{width:18px;height:18px;flex:none;fill:none;stroke:#ffc94a;stroke-width:2.2;stroke-linecap:round}.hs-bas span{flex:1}.hs-bas i{font-style:normal;font-size:12px;color:var(--mut)}
+.pas{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:11px;font-size:16px;flex:none;background:rgba(255,255,255,.16)}
+.pas-courses{background:rgba(126,226,168,.22)}.pas-animaux{background:rgba(255,181,102,.24)}.pas-bebe{background:rgba(143,211,255,.24)}.pas-loisirs{background:rgba(255,156,196,.24)}.pas-vehicule{background:rgba(156,192,255,.26)}.pas-hors{background:rgba(195,168,255,.24)}
+.env .t{align-items:center;gap:8px}.env .tn{flex:1;font-weight:600;color:#e6edfb}
+.anneau{width:30px;height:30px;flex:none}.anneau .af{fill:none;stroke:rgba(255,255,255,.18);stroke-width:5}.anneau .ap{fill:none;stroke:#8fb4ff;stroke-width:5;stroke-linecap:round}.anneau .ap.warn{stroke:var(--warn)}.anneau .ap.bad{stroke:var(--bad)}
+.env .bar i{background:#8fb4ff}.env .bar i.warn{background:var(--warn)}.env .bar i.bad{background:var(--bad)}
+.jresume{padding:16px}.jr-h{display:flex;align-items:flex-end;gap:10px;margin-bottom:10px}.jr-h>div{flex:1}.jr-h small{color:var(--mut);font-size:13px}
+.jr-t{font-family:var(--num);font-size:30px;font-weight:700;line-height:1.05}.jr-d{width:62px;height:62px;flex:none}
+.jr-c{display:flex;align-items:center;gap:10px;margin-top:9px}.jr-c .pas{width:30px;height:30px;font-size:15px}.jr-cb{flex:1;min-width:0}
+.jr-cl{display:flex;gap:6px;font-size:13px;margin-bottom:4px}.jr-cl b{flex:1;font-weight:600}.jr-cl span{color:var(--mut);width:40px;text-align:right}.jr-cl em{font-style:normal;font-weight:700;width:80px;text-align:right;font-family:var(--num)}
+.jresume .bar{height:5px}
+.day{display:flex;justify-content:space-between;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600;color:#dce6fa;margin:14px 6px 6px}.day span+span{font-weight:500;color:var(--mut)}
+.jjour{padding:2px 14px;margin-bottom:6px}.jjour .row{cursor:pointer;min-height:60px}.jjour .ic.pas{width:40px;height:40px;border-radius:13px;font-size:19px}
+.partage{margin-top:4px}.parts{display:flex;gap:8px;margin:8px 0 4px}.parts>div{flex:1;border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18)}
+.parts span{display:block;font-size:12px;color:var(--mut)}.parts b{font-family:var(--num);font-size:20px}
+@media (prefers-reduced-motion:reduce){.tirelire,.bulle{animation:none}}
 </style>
 </head>
 <body>
@@ -457,8 +488,8 @@ select option{color:#13285e}::placeholder{color:#a9bbe0}
 
 <script>
 "use strict";
-const APP_VERSION = "1.30.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 51;       // version du script que cette appli attend
+const APP_VERSION = "1.31.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 52;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -1117,14 +1148,41 @@ function amzCard(v) {
   return `<div class="card" data-act="goamz" style="cursor:pointer"><div class="t" style="font-size:13px;color:var(--mut)">📦 Amazon Prévoyez et Économisez</div>
     <div style="font-size:15px;margin-top:4px"><b>${eur(a.cur.total)}</b> ${esc(mshort(a.cur.mois))} · débit le ${a.cur.jour || "?"} &nbsp;|&nbsp; <b>${eur(a.suiv.total)}</b> ${esc(mshort(a.suiv.mois))}</div></div>`;
 }
+// ---------- v1.31 : éléments du nouveau design (maquette K validée le 18/11) ----------
+const TIRELIRE = `<svg class="tirelire" viewBox="0 0 96 84" role="img" aria-label="Tirelire"><circle cx="66" cy="12" r="9" fill="#FFC94A"/><circle cx="66" cy="12" r="5.5" fill="none" stroke="#E5A520" stroke-width="1.5"/><ellipse cx="46" cy="52" rx="34" ry="24" fill="#FFB3C7"/><path d="M28 34l-4-12 12 7z" fill="#FF9DB6"/><ellipse cx="80" cy="54" rx="9" ry="8" fill="#FF9DB6"/><circle cx="77" cy="53" r="1.8" fill="#C25B7A"/><circle cx="83" cy="53" r="1.8" fill="#C25B7A"/><circle cx="62" cy="44" r="2.6" fill="#3B2440"/><rect x="38" y="29" width="16" height="4" rx="2" fill="#C25B7A"/><rect x="24" y="68" width="9" height="12" rx="4" fill="#FF9DB6"/><rect x="56" y="68" width="9" height="12" rx="4" fill="#FF9DB6"/><ellipse cx="38" cy="46" rx="12" ry="7" fill="#fff" opacity=".35"/></svg>`;
+const AIDES = {
+  solde: "Solde théorique : ce qu'il reste sur le compte commun une fois enregistrées toutes les dépenses saisies. Il bouge dès que l'un de vous saisit. Touche le montant pour saisir le solde réel de la banque.",
+  bas: "Le point le plus bas du compte commun d'ici la fin du mois, en comptant les prélèvements prévus. S'il passe trop bas, une alerte s'affiche au-dessus des enveloppes."
+};
+const bulleAide = k => S.tip === k ? `<div class="bulle">${esc(AIDES[k] || "")}</div>` : "";
+function salutation() {
+  const d = new Date(), j = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" });
+  return `<div class="salut"><b>Bonjour ${estG() ? "Gaétan" : "Mathilde"}</b><span>${esc(j.charAt(0).toUpperCase() + j.slice(1))}</span></div>`;
+}
+// courbe du solde prévu jour par jour (liste « À venir » du prévisionnel)
+function courbeSolde(v) {
+  const p = (v.jours || []).map(j => num(String(j.solde || "").replace(/\s/g, ""))).filter(x => typeof x === "number" && isFinite(x));
+  if (p.length < 2) return "";
+  const mn = Math.min(...p), mx = Math.max(...p), W = 320, H = 46, k = mx > mn ? (H - 8) / (mx - mn) : 0;
+  const pts = p.map((y, i) => [Math.round(i / (p.length - 1) * W), Math.round(H - 4 - (y - mn) * k)]);
+  const d = pts.map((q, i) => (i ? "L" : "M") + q[0] + " " + q[1]).join(" ");
+  return `<svg class="courbe" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${W} ${H} L0 ${H}Z" class="cz"/><path d="${d}" class="cl"/><circle cx="${pts[pts.length - 1][0]}" cy="${pts[pts.length - 1][1]}" r="3.5" class="cp"/></svg>`;
+}
+function anneau(dep, tot) {
+  const p = tot > 0 ? Math.min(100, dep / tot * 100) : 0, C = 2 * Math.PI * 14;
+  return `<svg class="anneau" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="14" class="af"/><circle cx="18" cy="18" r="14" class="ap ${p >= 100 ? "bad" : p >= 80 ? "warn" : ""}" stroke-dasharray="${(C * p / 100).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 18 18)"/></svg>`;
+}
 function viewHome(v) {
   if (S.who !== "Commun") return viewPerso(v);
   const t = v.totaux, pv = v.previsionnel;
   const neg = t.soldeTheorique < 0;
-  let h = bandeauScript() + whoBar() + `<div class="hero" data-act="solde" style="cursor:pointer"><small>Solde théorique aujourd'hui</small>
-    <div class="big ${neg ? "neg" : ""}">${eur(t.soldeTheorique)}</div>
-    <div class="sub">Plus bas prévu <b>${esc(pv.plusBas)}</b> le ${esc(pv.plusBasDate)}</div>
-    <div class="sub" style="margin-top:4px">Solde réel saisi : ${eur(pv.soldeReel)} · touche pour le mettre à jour</div>${lddsLigne(v)}</div>`;
+  let h = bandeauScript() + salutation() + whoBar() + `<div class="card heros">
+    <div class="hs-t"><span>Solde théorique · compte commun</span><button type="button" class="aide" data-tip="solde" aria-label="Explication du solde">?</button></div>${bulleAide("solde")}
+    <div class="hs-l"><div class="hs-m" data-act="solde"><div class="big ${neg ? "neg" : ""}">${eur(t.soldeTheorique)}</div>
+      <div class="sub">Solde réel saisi : ${eur(pv.soldeReel)} · touche pour le mettre à jour</div>${lddsLigne(v)}</div>${TIRELIRE}</div>
+    ${courbeSolde(v)}
+    <button type="button" class="hs-bas" data-tip="bas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l7 7 4-4 7 7M21 12v5h-5"/></svg><span>Plus bas prévu <b>${esc(pv.plusBas)}</b> le ${esc(pv.plusBasDate)}</span><i>?</i></button>${bulleAide("bas")}
+  </div>`;
   if (pv.alerte) {
     const bad = /🚨/.test(pv.alerte);
     h += `<div class="alert ${bad ? "bad" : ""}">${esc(pv.alerte)}</div>`;
@@ -1132,7 +1190,7 @@ function viewHome(v) {
   h += paieCard() + tonightCard(v, true) + accueilPerso() + accueilBourse() + alerteBourse115() + recapAccueil() + contratsAccueil115() + planAccueil() + tachesAccueil() + gtCartes("GM") + voyAccueil() + ideesAccueil() + lddsCard(v, true) + amzCard(v) + soinsCard(v);
   h += `<div class="grid">` + ENVS.map(([k, nom, ic]) => {
     const e = v.enveloppes[k]; const tot = e.restant + e.depense;
-    return `<div class="env"><div class="t"><span>${ic} ${nom}</span></div>
+    return `<div class="env"><div class="t"><span class="pas pas-${k}">${ic}</span><span class="tn">${nom}</span>${anneau(e.depense, tot)}</div>
       <div class="v" style="color:${e.restant < 0 ? "var(--bad)" : "inherit"}">${eur(e.restant)}</div>
       ${pctBar(e.depense, tot)}<div class="s">${eur(e.depense)} dépensés sur ${eur(tot)}</div></div>`;
   }).join("") + `</div>`;
@@ -1156,14 +1214,23 @@ function viewHome(v) {
 
 function viewJournal(v) {
   if (S.who !== "Commun") { const P = (v.perso || {})[S.who]; return whoBar() + (P ? persoList(P) : `<div class="empty">Onglet non disponible.</div>`); }
-  if (!v.journal.length) return `<div class="empty">Aucune dépense pour l'instant.<br>Appuie sur + pour en ajouter.</div>`;
-  let h = whoBar(), last = "";
-  v.journal.forEach((j, i) => {
-    if (j.date !== last) { h += `<div class="day">${esc(fmtDay(j.date))}</div>`; last = j.date; }
-    h += `<div class="card" style="padding:4px 14px;margin-bottom:6px"><div class="row ${j.pending ? "pend" : ""}" data-act="item" data-i="${i}">
-      <div class="ic">${CATS[j.cat] || "📦"}</div>
+  if (!v.journal.length) return whoBar() + `<div class="empty">Aucune dépense pour l'instant.<br>Appuie sur + pour en ajouter.</div>`;
+  // v1.31 : en haut, le total du mois et la répartition par catégorie ; puis une carte par jour
+  const mois = todayISO().slice(0, 7), duMois = v.journal.filter(j => String(j.date).slice(0, 7) === mois), parCat = {};
+  duMois.forEach(j => { parCat[j.cat] = (parCat[j.cat] || 0) + (Number(j.mont) || 0); });
+  const tot = Object.values(parCat).reduce((x, y) => x + y, 0), cats = Object.keys(parCat).sort((x, y) => parCat[y] - parCat[x]);
+  let cumul = 0;
+  const arcs = cats.map(c => { const p = tot > 0 ? parCat[c] / tot * 100 : 0, a = `<circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--c-${CAT_ENV[c] || "hors"})" stroke-width="6" stroke-dasharray="${Math.max(0, p - 1.2).toFixed(1)} ${(100 - p + 1.2).toFixed(1)}" stroke-dashoffset="${(-cumul).toFixed(1)}" transform="rotate(-90 21 21)"/>`; cumul += p; return a; }).join("");
+  let h = whoBar() + `<div class="card jresume"><div class="jr-h"><div><small>Dépenses du mois (compte commun)</small><div class="jr-t">${eur(tot)}</div></div><svg viewBox="0 0 42 42" class="jr-d" aria-hidden="true">${arcs}</svg></div>
+    ${cats.slice(0, 5).map(c => `<div class="jr-c"><span class="pas pas-${CAT_ENV[c] || "hors"}">${CATS[c] || "📦"}</span><div class="jr-cb"><div class="jr-cl"><b>${esc(c)}</b><span>${tot > 0 ? Math.round(parCat[c] / tot * 100) : 0} %</span><em>${eur(parCat[c])}</em></div><div class="bar"><i style="width:${tot > 0 ? Math.round(parCat[c] / tot * 100) : 0}%;background:var(--c-${CAT_ENV[c] || "hors"})"></i></div></div></div>`).join("")}</div>`;
+  const jours = [];
+  v.journal.forEach((j, i) => { if (!jours.length || jours[jours.length - 1].date !== j.date) jours.push({ date: j.date, l: [] }); jours[jours.length - 1].l.push([j, i]); });
+  jours.forEach(J => {
+    const tj = J.l.reduce((x, [j]) => x + (Number(j.mont) || 0), 0);
+    h += `<div class="day"><span>${esc(fmtDay(J.date))}</span><span>${eur(tj)}</span></div><div class="card jjour">` + J.l.map(([j, i]) => `<div class="row ${j.pending ? "pend" : ""}" data-act="item" data-i="${i}">
+      <div class="ic pas pas-${CAT_ENV[j.cat] || "hors"}">${CATS[j.cat] || "📦"}</div>
       <div class="rt"><b>${esc(j.lib)}</b><span>${esc(j.cat)}${j.ldds ? " · 💙 amorti LDDS" : ""}${j.pending ? " · ⏳ en attente" : ""}</span></div>
-      <div class="am ${j.ldds ? "l" : ""}">${eur(j.mont)}</div></div></div>`;
+      <div class="am ${j.ldds ? "l" : ""}">${eur(j.mont)}</div></div>`).join("") + `</div>`;
   });
   return h;
 }
@@ -1357,11 +1424,31 @@ function openAdd(prefill) {
     <label>Date</label><input type="date" id="fDate" value="${esc(f.date)}">
     ${S.edit ? "" : `<label>Payé par</label>` + payerChips("fQui", f.qui, "data-payer")}
     <div class="line" id="fLddsLine" style="${f.qui !== "Commun" ? "display:none" : ""}"><div><b>💙 Amorti par le LDDS</b><div class="hint">Visible, mais hors budget du mois</div></div><div class="tg ${f.ldds ? "on" : ""}" id="fLdds"></div></div>
+    ${S.edit ? "" : `<div id="fPartWrap" class="partage" style="${f.qui === "Commun" ? "display:none" : ""}">
+      <div class="line"><div><b>👥 Dépense partagée</b><div class="hint">Chacun sa part, rangée dans son onglet</div></div><div class="tg ${f.partage ? "on" : ""}" id="fPart"></div></div>
+      <div id="fPartDet" style="${f.partage ? "" : "display:none"}">${partageDetail()}</div></div>`}
     <button class="btn" id="fSave">Enregistrer</button>
     ${S.edit ? `<button class="btn sec red" id="fDel" style="color:#fff">Supprimer</button>` : ""}`);
   setTimeout(() => { const t = $("#fText"); if (t && !S.edit) t.focus(); }, 250);
   updateAuto();
 }
+// ---------- v1.31 : dépense partagée (idée du 15/11) ----------
+// Celui qui a payé avec sa carte garde sa part dans son onglet ; la part de l'autre va dans l'onglet de l'autre, avec « payé par ».
+const PARTS = [["50", "Moitié-moitié"], ["60", "60 / 40"], ["libre", "Montant libre"]];
+function partageCalc() {
+  const f = S.form || {}, q = parseQuick(f.text || ""), m0 = num(f.mont), mont = m0 > 0 ? m0 : (q ? q.mont : 0);
+  const payeur = f.qui === "Mathilde" ? "Mathilde" : "Gaétan", autre = payeur === "Gaétan" ? "Mathilde" : "Gaétan";
+  let pPaye = f.part === "libre" ? Math.min(mont, num(f.partLibre) || 0) : r2(mont * (Number(f.part || 50) / 100));
+  return { mont: r2(mont || 0), payeur, autre, pPaye: r2(pPaye || 0), pAutre: r2((mont || 0) - (pPaye || 0)) };
+}
+function partageDetail() {
+  const f = S.form || {}, c = partageCalc();
+  return `<div class="tchips" style="margin:6px 0">${PARTS.map(([k, n]) => `<button type="button" class="cat ${String(f.part || "50") === k ? "on" : ""}" data-fpart="${k}">${n}</button>`).join("")}</div>
+    ${f.part === "libre" ? `<label>Part de ${esc(c.payeur)} (€)</label><input type="text" id="fPartLibre" inputmode="decimal" value="${esc(f.partLibre || "")}" autocomplete="off">` : ""}
+    <div class="parts"><div><span>Part de ${esc(c.payeur)}</span><b>${eur(c.pPaye)}</b></div><div><span>Part de ${esc(c.autre)}</span><b>${eur(c.pAutre)}</b></div></div>
+    <div class="hint">${c.mont > 0 ? `${esc(c.payeur)} a payé ${eur(c.mont)} : ${esc(c.autre)} lui doit ${eur(c.pAutre)}.` : "Indique le montant pour voir les parts."}</div>`;
+}
+function majPartage() { const d = $("#fPartDet"); if (d && S.form && S.form.partage) d.innerHTML = partageDetail(); }
 function openSolde() {
   const v = computeView();
   openSheet(`<h3>Solde réel du compte commun</h3>
@@ -1394,6 +1481,13 @@ function saveForm() {
   const qui = S.edit ? "Commun" : (f.qui || "Commun");
   const payload = { date: f.date || todayISO(), lib, mont: Math.round(mont * 100) / 100, cat: f.cat || "Hors budget", ldds: qui === "Commun" && f.ldds === true, qui };
   if (S.edit) deleteItem(S.edit, true);
+  if (!S.edit && f.partage && qui !== "Commun") {
+    const c = partageCalc();
+    if (!(c.pPaye >= 0 && c.pAutre >= 0) || c.pPaye > c.mont) { toast("Les parts dépassent le montant"); return; }
+    if (c.pPaye > 0) enqueue("add", Object.assign({}, payload, { qui: c.payeur, mont: c.pPaye, lib: lib + " (partagée)" }));
+    if (c.pAutre > 0) enqueue("add", Object.assign({}, payload, { qui: c.autre, mont: c.pAutre, lib: lib + " (part de " + c.autre + ", payé par " + c.payeur + ")" }));
+    closeSheet(); toast("✔ Partagée : " + c.autre + " doit " + eur(c.pAutre) + " à " + c.payeur); return;
+  }
   enqueue("add", payload);
   closeSheet(); toast("✔ Enregistré");
 }
@@ -1706,6 +1800,12 @@ document.addEventListener("click", e => {
   if (t.dataset.act === "fbRetry") { FB.erreur = ""; if (!FB.app) { LS.set("bf.fbProfil", ""); fbDemarrer(); } else fbConnexion(); majDirect(); }
 });
 window.addEventListener("online", () => { if (FB.app && !FB.user) fbConnexion(); });
+
+// v1.31 : infobulles du nouveau design (une seule ouverte à la fois ; toucher à nouveau la referme)
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-tip]"); if (!t) return;
+  e.stopPropagation(); S.tip = S.tip === t.dataset.tip ? "" : t.dataset.tip; render();
+}, true);
 // =====================================================================
 // 🍽 REPAS : menus de la semaine, fiches recettes, liste de courses partagée, fond de tiroir (v1.6.0)
 // =====================================================================
@@ -2983,11 +3083,13 @@ function cgData() {
   S.queue.forEach(op => {
     const p = op.payload;
     if (op.type === "congepose") d.demandes.push({ row: 0, du: p.du, au: p.au, compteur: p.compteur, jours: joursOuvres(p.du, p.au, d), etat: p.etat, statut: p.etat, prevenir: p.prevenir, annule: false, note: p.note || "", controle: "envoi…", attente: true });
-    else if (op.type === "congemod") { const x = d.demandes.find(y => y.du === p.du && y.au === p.au && y.compteur === p.compteur); if (x) { if (p.annuler) { x.annule = true; x.statut = "Annulé"; } if (p.etat) { x.etat = p.etat; x.statut = p.etat; } if (p.prevenir === true || p.prevenir === false) x.prevenir = p.prevenir; x.attente = true; } }
+    else if (op.type === "congemod") { const x = d.demandes.find(y => y.du === p.du && y.au === p.au && y.compteur === p.compteur); if (x) { if (p.annuler) { x.annule = true; x.statut = "Annulé"; } if (p.etat) { x.etat = p.etat; x.statut = p.etat; } if (p.prevenir === true || p.prevenir === false) x.prevenir = p.prevenir; if (p.nvCompteur) x.compteur = p.nvCompteur; x.attente = true; } }
     else if (op.type === "pontetat") { if (p.etat) d.ponts_etat[p.occ] = p.etat; else delete d.ponts_etat[p.occ]; }
   });
   return d;
 }
+// v1.31 : la copie a plus d'une minute : on relit le fichier congés (une modification faite à la main dans le tableau se voit tout de suite)
+const cgVieux = () => !S.cg || Date.now() - S.cg.at > 60000;
 async function chargerConges(force) {
   if (!configured() || !navigator.onLine) return;
   if (!force && S.cg && Date.now() - S.cg.at < 10 * 60000) return;
@@ -3214,6 +3316,8 @@ function openDemande(cle) {
   S.rf = { dem: x };
   openSheet(`<h3>${esc(longD(du))}${au !== du ? " → " + esc(longD(au)) : ""}</h3><div class="hint">${esc(compteur)} · ${esc(dureeDemande(x, d))} · contrôle : ${esc(x.controle)}${x.note ? " · " + esc(x.note) : ""}</div>
     <label>État</label><div class="tchips">${["Prévu", "Demandé", "Validé"].map(e => `<button class="cat ${x.etat === e ? "on" : ""}" data-cgmetat="${e}">${e}</button>`).join("")}</div>
+    <label>Compteur</label><div class="tchips">${(d.compteurs || []).filter(c => c.n === compteur || c.reste > 0 || c.unite === "heures").map(c => `<button class="cat ${c.n === compteur ? "on" : ""}" data-cgmcpt="${esc(c.n)}">${esc(c.n)}</button>`).join("")}</div>
+    <div class="hint">Changer le compteur met à jour ton tableau, les soldes et l'agenda (4 h = 0,5 j).</div>
     <label class="row" style="padding:10px 0;cursor:pointer"><div class="rt"><b>Prévenir Mathilde</b><span>invitation + mail</span></div><div class="tg ${x.prevenir ? "on" : ""}" data-cgmprev="1"></div></label>
     <button class="btn sec" data-cgannule="1" style="color:var(--bad)">Annuler ce congé</button>
     <div class="hint">Annuler coche « Annulé » dans ton tableau et retire l'événement de l'agenda${x.prevenir ? " (Mathilde reçoit un mail)" : ""}.</div>`);
@@ -3233,13 +3337,13 @@ function accueilPerso() {
 
 // ---------- événements ----------
 document.addEventListener("click", e => {
-  const t = e.target.closest("#prof,[data-prof],[data-cgposer],[data-cgcpt],[data-cgetat],[data-cgprev],[data-cgsave],[data-cgdem],[data-cgmetat],[data-cgmprev],[data-cgannule],[data-cgpont],[data-cgfait],[data-cgnon],[data-cgmaj],[data-gvue],[data-cgmode],[data-cgjournee],[data-act=goconges],[data-act=gogarde],[data-act=gobourse]");
+  const t = e.target.closest("#prof,[data-prof],[data-cgposer],[data-cgcpt],[data-cgetat],[data-cgprev],[data-cgsave],[data-cgdem],[data-cgmetat],[data-cgmcpt],[data-cgmprev],[data-cgannule],[data-cgpont],[data-cgfait],[data-cgnon],[data-cgmaj],[data-gvue],[data-cgmode],[data-cgjournee],[data-act=goconges],[data-act=gogarde],[data-act=gobourse]");
   if (!t) return;
   const dd = t.dataset;
   if (t.id === "prof") { openSheet(`<h3>Ce téléphone est celui de…</h3><div class="hint">Gaétan voit tout (administrateur). Mathilde a sa version : budget, repas, Léo planning.</div><div class="duo" style="margin-top:14px"><button class="btn ${estG() ? "" : "sec"}" data-prof="G" style="margin:0">Gaétan</button><button class="btn ${estG() ? "sec" : ""}" data-prof="M" style="margin:0">Mathilde</button></div>`); return; }
   if (dd.prof) { setProf(dd.prof); closeSheet(); toast(estG() ? "Profil Gaétan : tout est visible" : "Profil Mathilde"); return; }
-  if (dd.act === "goconges") { S.tab = "conges"; render(); window.scrollTo(0, 0); chargerConges(); return; }
-  if (dd.act === "gogarde") { S.tab = "garde"; render(); window.scrollTo(0, 0); chargerConges(); return; }
+  if (dd.act === "goconges") { S.tab = "conges"; render(); window.scrollTo(0, 0); chargerConges(cgVieux()); return; }
+  if (dd.act === "gogarde") { S.tab = "garde"; render(); window.scrollTo(0, 0); chargerConges(cgVieux()); return; }
   if (dd.act === "gobourse") { S.tab = "bourse"; render(); window.scrollTo(0, 0); chargerBourse(); return; }
   if (dd.cgmaj) { toast("🔄 Lecture du fichier congés…"); chargerConges(true); return; }
   if (dd.gvue) { S.gardeVue = dd.gvue; render(); return; }
@@ -3252,6 +3356,7 @@ document.addEventListener("click", e => {
   if (dd.cgsave) { savePoser(); return; }
   if (dd.cgdem) { openDemande(dd.cgdem); return; }
   if (dd.cgmetat) { modDemande({ etat: dd.cgmetat }); closeSheet(); toast("✔ " + dd.cgmetat); return; }
+  if (dd.cgmcpt) { if (dd.cgmcpt !== S.rf.dem.compteur) { modDemande({ nvCompteur: dd.cgmcpt }); toast("✔ Passé en " + dd.cgmcpt); } closeSheet(); return; }
   if (dd.cgmprev) { e.preventDefault(); modDemande({ prevenir: !S.rf.dem.prevenir }); closeSheet(); toast(S.rf.dem.prevenir ? "Mathilde ne sera plus prévenue" : "Mathilde est prévenue"); return; }
   if (dd.cgannule) { if (confirm("Annuler ce congé ?")) { modDemande({ annuler: true }); closeSheet(); toast("Congé annulé"); } return; }
   if (dd.cgpont) { const p = (cgData().ponts || []).find(x => x.occ === dd.cgpont); if (p) openPoser(p.du, p.au, String(p.compteur).split(" ou ")[0]); return; }
@@ -5460,7 +5565,8 @@ document.addEventListener("click", e => {
     if (pend >= 0) { S.queue.splice(pend, 1); saveQueue(); render(); setSync(); } else enqueue("soindel", { soinId: id });
     closeSheet(); toast("Soin supprimé"); return;
   }
-  if (t.dataset.payer) { S.form.qui = t.dataset.payer; document.querySelectorAll("#fQui .cat").forEach(b => b.classList.toggle("on", b.dataset.payer === S.form.qui)); const l = $("#fLddsLine"); if (l) l.style.display = S.form.qui === "Commun" ? "flex" : "none"; return; }
+  if (t.dataset.payer) { S.form.qui = t.dataset.payer; document.querySelectorAll("#fQui .cat").forEach(b => b.classList.toggle("on", b.dataset.payer === S.form.qui)); const l = $("#fLddsLine"); if (l) l.style.display = S.form.qui === "Commun" ? "flex" : "none"; const pw = $("#fPartWrap"); if (pw) pw.style.display = S.form.qui === "Commun" ? "none" : ""; majPartage(); return; }
+  if (t.dataset.fpart) { S.form.part = t.dataset.fpart; majPartage(); if (t.dataset.fpart === "libre") setTimeout(() => { const i = $("#fPartLibre"); if (i) i.focus(); }, 50); return; }
   if (t.dataset.tqui) { S.form.qui = t.dataset.tqui; document.querySelectorAll("#tQui .cat").forEach(b => b.classList.toggle("on", b.dataset.tqui === S.form.qui)); return; }
   if (t.dataset.act === "carteTP") { carteTpOuvrir(); return; }
   if (t.dataset.act === "ctpFermer") { closeSheet(); return; }
@@ -5534,15 +5640,16 @@ document.addEventListener("click", e => {
     return;
   }
 });
-document.addEventListener("click", e => { if (e.target.id === "ov") closeSheet(); if (e.target.id === "fLdds") { S.form.ldds = !S.form.ldds; e.target.classList.toggle("on", S.form.ldds); } if (e.target.id === "aC" || e.target.id === "aS") e.target.classList.toggle("on");
+document.addEventListener("click", e => { if (e.target.id === "ov") closeSheet(); if (e.target.id === "fLdds") { S.form.ldds = !S.form.ldds; e.target.classList.toggle("on", S.form.ldds); } if (e.target.id === "fPart") { S.form.partage = !S.form.partage; e.target.classList.toggle("on", S.form.partage); const d = $("#fPartDet"); if (d) { d.style.display = S.form.partage ? "" : "none"; majPartage(); } } if (e.target.id === "aC" || e.target.id === "aS") e.target.classList.toggle("on");
   if (e.target.id === "sNR") { S.form.nonremb = !S.form.nonremb; e.target.classList.toggle("on", S.form.nonremb); ["sS", "sA"].forEach(i => { const x = $("#" + i); if (x) { x.disabled = S.form.nonremb; if (S.form.nonremb) x.value = ""; } }); }
   if (e.target.id === "sDep") { S.form.depense = !S.form.depense; e.target.classList.toggle("on", S.form.depense); } });
 document.addEventListener("input", e => {
   if (S.form && S.form.vmode === "soind") { if (e.target.id === "dNote") S.form.note = e.target.value; return; }
   if (!S.form || S.form.vmode === "amz" || S.form.vmode === "amzj") return;
   if (S.form.vmode === "soin" || S.form.vmode === "entree") { handleFormInput(e); return; }
-  if (e.target.id === "fText") { S.form.text = e.target.value; updateAuto(); }
-  if (e.target.id === "fMont") S.form.mont = e.target.value;
+  if (e.target.id === "fText") { S.form.text = e.target.value; updateAuto(); majPartage(); }
+  if (e.target.id === "fMont") { S.form.mont = e.target.value; majPartage(); }
+  if (e.target.id === "fPartLibre") { S.form.partLibre = e.target.value; const c = partageCalc(), b = document.querySelectorAll("#fPartDet .parts b"); if (b.length === 2) { b[0].textContent = eur(c.pPaye); b[1].textContent = eur(c.pAutre); } }
   if (e.target.id === "fDate") S.form.date = e.target.value;
   const tk = { tM: "magasin", tD: "date", tT: "total" }[e.target.id];
   if (tk) { S.form[tk] = e.target.value; return; }

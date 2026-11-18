@@ -553,8 +553,8 @@ select option{color:#13285e}::placeholder{color:#a9bbe0}
 
 <script>
 "use strict";
-const APP_VERSION = "1.32.0";      // posé par build.py d'après src/version.json
-const SCRIPT_ATTENDU = 53;       // version du script que cette appli attend
+const APP_VERSION = "1.33.0";      // posé par build.py d'après src/version.json
+const SCRIPT_ATTENDU = 54;       // version du script que cette appli attend
 const CATS = { "Courses": "🛒", "Animaux": "🐾", "Bébé": "🍼", "Loisirs": "🎉", "Véhicule": "⛽", "Hors budget": "📦" };
 const ENVS = [["courses", "Courses", "🛒"], ["animaux", "Animaux", "🐾"], ["bebe", "Bébé", "🍼"], ["loisirs", "Loisirs", "🎉"], ["vehicule", "Véhicules", "⛽"]];
 const CAT_ENV = { "Courses": "courses", "Animaux": "animaux", "Bébé": "bebe", "Loisirs": "loisirs", "Véhicule": "vehicule" };
@@ -629,7 +629,8 @@ function parseQuick(text) {
 function computeView() {
   if (!S.base) return null;
   const v = JSON.parse(JSON.stringify(S.base));
-  S.queue.forEach(op => applyOp(v, op));
+  try { opsAppliquer(v); } catch (e) {}   // v1.33 : d'abord les saisies de l'autre téléphone pas encore comptées par le Sheet
+  S.queue.forEach(op => applyOp(v, op));   // puis les nôtres (une suppression de sa dépense s'applique donc bien après elle)
   try { fbAppliquer(v); } catch (e) {}   // v1.28 : courses en direct (Firestore) par-dessus
   return v;
 }
@@ -793,7 +794,7 @@ async function flush() {
       } else if (r.error === "clé invalide" || /code de l'appli/.test(r.error)) {
         S.error = r.error; toast("🔐 Code incorrect : vérifie les Réglages"); break;
       } else {
-        S.queue.shift(); saveQueue(); toast("Refusé par le Sheet : " + r.error);
+        S.queue.shift(); saveQueue(); try { opRetirer(op); } catch (e) {} toast("Refusé par le Sheet : " + r.error);
       }
     }
     if (!S.queue.length && !S.error && lourd) { const r2 = await call("state"); if (r2.ok) { S.base = r2.state; saveBase(); } }
@@ -808,6 +809,7 @@ function enqueue(type, payload) {
   if (S.roleM && RESERVE_G.includes(type)) { toast("Réservé à Gaétan"); return; }
   S.queue.push({ id: uid(), type, payload, ts: Date.now() });
   try { fbEcrire(type, payload); } catch (e) {}   // v1.28 : part aussi tout de suite dans Firestore (courses en direct)
+  try { opPublier(S.queue[S.queue.length - 1]); } catch (e) {}   // v1.33 : visible tout de suite sur l'autre téléphone
   saveQueue(); render(); setSync();
   flush();
 }
@@ -1295,7 +1297,7 @@ function viewJournal(v) {
     const tj = J.l.reduce((x, [j]) => x + (Number(j.mont) || 0), 0);
     h += `<div class="day"><span>${esc(fmtDay(J.date))}</span><span>${eur(tj)}</span></div><div class="card jjour">` + J.l.map(([j, i]) => `<div class="row ${j.pending ? "pend" : ""}" data-act="item" data-i="${i}">
       <div class="ic pas pas-${CAT_ENV[j.cat] || "hors"}">${CATS[j.cat] || "📦"}</div>
-      <div class="rt"><b>${esc(j.lib)}</b><span>${esc(j.cat)}${j.ldds ? " · 💙 amorti LDDS" : ""}${j.pending ? " · ⏳ en attente" : ""}</span></div>
+      <div class="rt"><b>${esc(j.lib)}</b><span>${esc(j.cat)}${j.ldds ? " · 💙 amorti LDDS" : ""}${j.pending ? (opDe(j.pending) ? " · ⚡ saisi par " + opDe(j.pending) : " · ⏳ en attente") : ""}</span></div>
       <div class="am ${j.ldds ? "l" : ""}">${eur(j.mont)}</div></div>`).join("") + `</div>`;
   });
   return h;
@@ -1708,7 +1710,7 @@ async function fbDemarrer() {
         // le code de l'appli a changé sur ce téléphone (autre profil) : on reprend un accès neuf
         if (LS.get("bf.fbProfil", "") !== fbProfil()) { await au.signOut(FB.auth); return; }
         if (!role) { FB.etat = "erreur"; FB.erreur = "accès sans profil"; majDirect(); return; }
-        FB.membre = { role }; FB.etat = "ok"; FB.erreur = ""; fbEcouter(); fbEcouterEtat(); try { photosEcouter(); } catch (e) {} majDirect();
+        FB.membre = { role }; FB.etat = "ok"; FB.erreur = ""; fbEcouter(); fbEcouterEtat(); try { photosEcouter(); } catch (e) {} try { opsEcouter(); } catch (e) {} majDirect();
       } catch (e) { FB.etat = "erreur"; FB.erreur = "Connexion à la base : " + (e.code || e.message); majDirect(); }
     });
   } catch (e) { FB.etat = "erreur"; FB.erreur = "Chargement impossible (réseau ?)"; majDirect(); }
@@ -1880,6 +1882,62 @@ const TIRELIRES = {"riche": "<svg class=\"tirelire3d\" viewBox=\"0 -8 214 194\" 
 const TIRELIRE_SEUILS = [[2000, "riche"], [1500, "heureuse"], [1000, "inquiete"], [500, "maigre"], [0, "brochette"]];
 function tirelireEtat(solde) { const s = Number(solde) || 0; for (const [m, k] of TIRELIRE_SEUILS) if (s >= m) return k; return "cassee"; }
 function tirelireHtml(solde) { return `<button type="button" class="tirebtn" data-tip="tirelire" aria-label="Pourquoi cette tirelire ?">${TIRELIRES[tirelireEtat(solde)]}</button>`; }
+// =====================================================================
+// v1.33 : SAISIES EN DIRECT ENTRE LES DEUX TÉLÉPHONES
+//   Chaque saisie (dépense, plein, solde, soin…) part dans la file vers le Sheet ET dans Firebase.
+//   L'autre téléphone l'applique tout de suite à son écran (mêmes calculs que pour ses propres saisies : solde,
+//   enveloppes, journal), tant que son état venu du Sheet ne la contient pas encore (« opsVus », tenu par le script).
+//   Gaétan : ses saisies privées (son onglet, sa bourse, ses congés…) vont dans « prive_gaetan/ops », illisible pour Mathilde.
+// =====================================================================
+const APP_ID = (() => { let a = LS.get("bf.appId", ""); if (!a) { a = uid(); LS.set("bf.appId", a); } return a; })();
+const OPS_COMMUNES = ["add", "del", "solde", "plein", "ticket", "soin", "soinmaj", "soindel", "entree", "amazon", "ldds", "annuel", "annuelmod", "annuelsup", "annuelajout"];
+const OPS_JAMAIS = /^(repas|scan|cartetp|voyphotos|fbjeton|state|conges$)/;   // courses : déjà en direct ; images : trop lourdes
+const opIdCourt = id => { const s = String(id); return s.length > 20 ? s.replace(/-/g, "").slice(0, 16) : s; };
+FB.ops = {};
+function opChemin(type, p) {
+  if (!FB.membre) return null;
+  if (FB.membre.role === "M") return ["ops"];
+  const commune = OPS_COMMUNES.includes(type) && !((type === "add" || type === "del") && p && p.qui === "Gaétan");
+  return commune ? ["ops"] : ["prive_gaetan", "ops"];
+}
+function opPublier(op) {
+  if (!directActif() || OPS_JAMAIS.test(op.type)) return;
+  let t; try { t = JSON.stringify(op.payload); } catch (e) { return; }
+  if (t.length > 40000) return;   // photo, capture : trop gros pour Firebase
+  const ch = opChemin(op.type, op.payload); if (!ch) return;
+  const { fs } = FB.m;
+  fs.setDoc(fs.doc(FB.db, ...ch, op.id), { type: op.type, payload: JSON.parse(t), ts: op.ts || Date.now(), par: FB.membre.role, app: APP_ID }).catch(() => {});
+}
+// le Sheet a refusé la saisie : on la retire aussi de l'autre téléphone
+function opRetirer(op) {
+  if (!directActif()) return;
+  const ch = opChemin(op.type, op.payload); if (!ch) return;
+  try { const { fs } = FB.m; fs.deleteDoc(fs.doc(FB.db, ...ch, op.id)).catch(() => {}); } catch (e) {}
+}
+function opsEcouter() {
+  if (!directActif() || FB.ecoutes.__ops) return;
+  const { fs } = FB.m, sources = [["ops"]].concat(FB.membre.role === "G" ? [["prive_gaetan", "ops"]] : []);
+  sources.forEach((ch, n) => {
+    FB.ecoutes["__ops" + (n ? n : "")] = fs.onSnapshot(fs.collection(FB.db, ...ch), snap => {
+      const vus = {}; snap.forEach(x => { vus[x.id] = Object.assign({ id: x.id, src: ch.join("/") }, x.data()); });
+      Object.keys(FB.ops).forEach(k => { if (FB.ops[k].src === ch.join("/") && !vus[k]) delete FB.ops[k]; });
+      Object.assign(FB.ops, vus);
+      if (!$("#sheet").classList.contains("open")) render();
+    }, () => {});
+  });
+  // ménage : nos propres saisies de plus de 2 jours (le Sheet les a comptées depuis longtemps)
+  setTimeout(() => {
+    Object.values(FB.ops).filter(o => o.app === APP_ID && Date.now() - (o.ts || 0) > 2 * 86400000).forEach(o => { try { fs.deleteDoc(fs.doc(FB.db, ...o.src.split("/"), o.id)).catch(() => {}); } catch (e) {} });
+  }, 8000);
+}
+// saisies de l'autre téléphone pas encore comptées par le Sheet : appliquées à l'écran (appelé par computeView)
+function opsDistantes() {
+  if (!S.base || !Array.isArray(S.base.opsVus)) return [];   // ancien script : on attend l'état du Sheet, sans risque de double compte
+  const vus = new Set(S.base.opsVus), miens = new Set(S.queue.map(o => o.id)), lim = Date.now() - 2 * 86400000;
+  return Object.values(FB.ops).filter(o => o.app !== APP_ID && !miens.has(o.id) && !vus.has(opIdCourt(o.id)) && (o.ts || 0) > lim).sort((a, b) => (a.ts || 0) - (b.ts || 0));
+}
+function opsAppliquer(v) { opsDistantes().forEach(o => { try { applyOp(v, { id: o.id, type: o.type, payload: o.payload, ts: o.ts, distante: o.par }); } catch (e) {} }); }
+const opDe = id => FB.ops[id] ? (FB.ops[id].par === "M" ? "Mathilde" : "Gaétan") : "";
 // =====================================================================
 // 🍽 REPAS : menus de la semaine, fiches recettes, liste de courses partagée, fond de tiroir (v1.6.0)
 // =====================================================================
